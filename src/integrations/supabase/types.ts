@@ -55,6 +55,505 @@ export type Database = {
           },
         ]
       }
+      ai_action_approvals: {
+        Row: {
+          action_id: string
+          created_at: string
+          decision: string
+          id: string
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          action_id: string
+          created_at?: string
+          decision: string
+          id?: string
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          action_id?: string
+          created_at?: string
+          decision?: string
+          id?: string
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_action_approvals_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "ai_actions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_actions: {
+        Row: {
+          agent_id: string | null
+          created_at: string
+          id: string
+          kind: string
+          needs_approval: boolean
+          payload: Json
+          prompt: string | null
+          result: Json | null
+          sources: Json
+          status: Database["public"]["Enums"]["ai_action_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agent_id?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          needs_approval?: boolean
+          payload?: Json
+          prompt?: string | null
+          result?: Json | null
+          sources?: Json
+          status?: Database["public"]["Enums"]["ai_action_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agent_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          needs_approval?: boolean
+          payload?: Json
+          prompt?: string | null
+          result?: Json | null
+          sources?: Json
+          status?: Database["public"]["Enums"]["ai_action_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_actions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_agent_runs: {
+        Row: {
+          agent_id: string
+          analyzed: Json | null
+          confidence: Database["public"]["Enums"]["ai_confidence"] | null
+          created_at: string
+          found: Json | null
+          id: string
+          input: Json | null
+          missing: Json | null
+          output: Json | null
+          recommendation: string | null
+          user_id: string
+        }
+        Insert: {
+          agent_id: string
+          analyzed?: Json | null
+          confidence?: Database["public"]["Enums"]["ai_confidence"] | null
+          created_at?: string
+          found?: Json | null
+          id?: string
+          input?: Json | null
+          missing?: Json | null
+          output?: Json | null
+          recommendation?: string | null
+          user_id: string
+        }
+        Update: {
+          agent_id?: string
+          analyzed?: Json | null
+          confidence?: Database["public"]["Enums"]["ai_confidence"] | null
+          created_at?: string
+          found?: Json | null
+          id?: string
+          input?: Json | null
+          missing?: Json | null
+          output?: Json | null
+          recommendation?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_agent_runs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_agents: {
+        Row: {
+          action_permissions: Json
+          allowed_data: Json
+          created_at: string
+          expires_at: string | null
+          id: string
+          min_confidence: Database["public"]["Enums"]["ai_confidence"]
+          name: string
+          output_format: string | null
+          purpose: string
+          scope: string | null
+          status: Database["public"]["Enums"]["ai_agent_status"]
+          system_prompt: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_permissions?: Json
+          allowed_data?: Json
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          min_confidence?: Database["public"]["Enums"]["ai_confidence"]
+          name: string
+          output_format?: string | null
+          purpose: string
+          scope?: string | null
+          status?: Database["public"]["Enums"]["ai_agent_status"]
+          system_prompt?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_permissions?: Json
+          allowed_data?: Json
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          min_confidence?: Database["public"]["Enums"]["ai_confidence"]
+          name?: string
+          output_format?: string | null
+          purpose?: string
+          scope?: string | null
+          status?: Database["public"]["Enums"]["ai_agent_status"]
+          system_prompt?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_confidence_logs: {
+        Row: {
+          confidence: Database["public"]["Enums"]["ai_confidence"]
+          created_at: string
+          id: string
+          rationale: string | null
+          sources: Json
+          subject: string
+          subject_id: string | null
+          user_id: string
+        }
+        Insert: {
+          confidence: Database["public"]["Enums"]["ai_confidence"]
+          created_at?: string
+          id?: string
+          rationale?: string | null
+          sources?: Json
+          subject: string
+          subject_id?: string | null
+          user_id: string
+        }
+        Update: {
+          confidence?: Database["public"]["Enums"]["ai_confidence"]
+          created_at?: string
+          id?: string
+          rationale?: string | null
+          sources?: Json
+          subject?: string
+          subject_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_memories: {
+        Row: {
+          confidence: Database["public"]["Enums"]["ai_confidence"]
+          created_at: string
+          id: string
+          key: string
+          metadata: Json
+          related_person_id: string | null
+          related_project_id: string | null
+          source_text: string | null
+          source_url: string | null
+          status: Database["public"]["Enums"]["ai_memory_status"]
+          type: Database["public"]["Enums"]["ai_memory_type"]
+          updated_at: string
+          user_id: string
+          value: string
+          zone: Database["public"]["Enums"]["ai_privacy_zone"]
+        }
+        Insert: {
+          confidence?: Database["public"]["Enums"]["ai_confidence"]
+          created_at?: string
+          id?: string
+          key: string
+          metadata?: Json
+          related_person_id?: string | null
+          related_project_id?: string | null
+          source_text?: string | null
+          source_url?: string | null
+          status?: Database["public"]["Enums"]["ai_memory_status"]
+          type: Database["public"]["Enums"]["ai_memory_type"]
+          updated_at?: string
+          user_id: string
+          value: string
+          zone?: Database["public"]["Enums"]["ai_privacy_zone"]
+        }
+        Update: {
+          confidence?: Database["public"]["Enums"]["ai_confidence"]
+          created_at?: string
+          id?: string
+          key?: string
+          metadata?: Json
+          related_person_id?: string | null
+          related_project_id?: string | null
+          source_text?: string | null
+          source_url?: string | null
+          status?: Database["public"]["Enums"]["ai_memory_status"]
+          type?: Database["public"]["Enums"]["ai_memory_type"]
+          updated_at?: string
+          user_id?: string
+          value?: string
+          zone?: Database["public"]["Enums"]["ai_privacy_zone"]
+        }
+        Relationships: []
+      }
+      ai_memory_sources: {
+        Row: {
+          created_at: string
+          excerpt: string | null
+          id: string
+          memory_id: string
+          source_id: string | null
+          source_type: string
+        }
+        Insert: {
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          memory_id: string
+          source_id?: string | null
+          source_type: string
+        }
+        Update: {
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          memory_id?: string
+          source_id?: string | null
+          source_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_memory_sources_memory_id_fkey"
+            columns: ["memory_id"]
+            isOneToOne: false
+            referencedRelation: "ai_memories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_questions: {
+        Row: {
+          answer: string | null
+          answered_at: string | null
+          context: Json | null
+          created_at: string
+          id: string
+          kind: string
+          question: string
+          status: Database["public"]["Enums"]["ai_question_status"]
+          user_id: string
+        }
+        Insert: {
+          answer?: string | null
+          answered_at?: string | null
+          context?: Json | null
+          created_at?: string
+          id?: string
+          kind?: string
+          question: string
+          status?: Database["public"]["Enums"]["ai_question_status"]
+          user_id: string
+        }
+        Update: {
+          answer?: string | null
+          answered_at?: string | null
+          context?: Json | null
+          created_at?: string
+          id?: string
+          kind?: string
+          question?: string
+          status?: Database["public"]["Enums"]["ai_question_status"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_rules: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          rule: string
+          scope: string | null
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          rule: string
+          scope?: string | null
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          rule?: string
+          scope?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_workflow_steps: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          owner_id: string | null
+          position: number
+          template_ref: string | null
+          title: string
+          workflow_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          owner_id?: string | null
+          position?: number
+          template_ref?: string | null
+          title: string
+          workflow_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          owner_id?: string | null
+          position?: number
+          template_ref?: string | null
+          title?: string
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_workflow_steps_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "ai_workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_workflows: {
+        Row: {
+          created_at: string
+          description: string | null
+          expected_output: string | null
+          id: string
+          metadata: Json
+          name: string
+          reminders: Json
+          status: Database["public"]["Enums"]["ai_workflow_status"]
+          trigger: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          expected_output?: string | null
+          id?: string
+          metadata?: Json
+          name: string
+          reminders?: Json
+          status?: Database["public"]["Enums"]["ai_workflow_status"]
+          trigger?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          expected_output?: string | null
+          id?: string
+          metadata?: Json
+          name?: string
+          reminders?: Json
+          status?: Database["public"]["Enums"]["ai_workflow_status"]
+          trigger?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      assistant_preferences: {
+        Row: {
+          disabled_memory_types: Json
+          memory_enabled: boolean
+          mode: Database["public"]["Enums"]["ai_assistant_mode"]
+          monitoring_scope: Json
+          notification_level: number
+          proactive_level: number
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          strictness: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          disabled_memory_types?: Json
+          memory_enabled?: boolean
+          mode?: Database["public"]["Enums"]["ai_assistant_mode"]
+          monitoring_scope?: Json
+          notification_level?: number
+          proactive_level?: number
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          strictness?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          disabled_memory_types?: Json
+          memory_enabled?: boolean
+          mode?: Database["public"]["Enums"]["ai_assistant_mode"]
+          monitoring_scope?: Json
+          notification_level?: number
+          proactive_level?: number
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          strictness?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       channel_members: {
         Row: {
           channel_id: string
@@ -139,6 +638,120 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      context_graph_edges: {
+        Row: {
+          created_at: string
+          edge_type: string
+          id: string
+          source_node: string
+          target_node: string
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          edge_type?: string
+          id?: string
+          source_node: string
+          target_node: string
+          user_id: string
+          weight?: number
+        }
+        Update: {
+          created_at?: string
+          edge_type?: string
+          id?: string
+          source_node?: string
+          target_node?: string
+          user_id?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "context_graph_edges_source_node_fkey"
+            columns: ["source_node"]
+            isOneToOne: false
+            referencedRelation: "context_graph_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "context_graph_edges_target_node_fkey"
+            columns: ["target_node"]
+            isOneToOne: false
+            referencedRelation: "context_graph_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      context_graph_nodes: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          metadata: Json
+          node_ref: string | null
+          node_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label: string
+          metadata?: Json
+          node_ref?: string | null
+          node_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          metadata?: Json
+          node_ref?: string | null
+          node_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      data_quality_issues: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          kind: Database["public"]["Enums"]["data_quality_kind"]
+          resolved: boolean
+          resolved_at: string | null
+          subject_id: string | null
+          subject_type: string
+          suggested_fix: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          kind: Database["public"]["Enums"]["data_quality_kind"]
+          resolved?: boolean
+          resolved_at?: string | null
+          subject_id?: string | null
+          subject_type: string
+          suggested_fix?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["data_quality_kind"]
+          resolved?: boolean
+          resolved_at?: string | null
+          subject_id?: string | null
+          subject_type?: string
+          suggested_fix?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       decision_approvals: {
         Row: {
@@ -983,6 +1596,36 @@ export type Database = {
           },
         ]
       }
+      user_privacy_zones: {
+        Row: {
+          created_at: string
+          cross_zone_allowed: boolean
+          enabled: boolean
+          id: string
+          notes: string | null
+          user_id: string
+          zone: Database["public"]["Enums"]["ai_privacy_zone"]
+        }
+        Insert: {
+          created_at?: string
+          cross_zone_allowed?: boolean
+          enabled?: boolean
+          id?: string
+          notes?: string | null
+          user_id: string
+          zone: Database["public"]["Enums"]["ai_privacy_zone"]
+        }
+        Update: {
+          created_at?: string
+          cross_zone_allowed?: boolean
+          enabled?: boolean
+          id?: string
+          notes?: string | null
+          user_id?: string
+          zone?: Database["public"]["Enums"]["ai_privacy_zone"]
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1063,6 +1706,48 @@ export type Database = {
       }
     }
     Enums: {
+      ai_action_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "executed"
+        | "failed"
+      ai_agent_status: "proposed" | "active" | "expired" | "revoked"
+      ai_assistant_mode:
+        | "calm"
+        | "executive"
+        | "project_controller"
+        | "strict_reviewer"
+        | "fast_operator"
+        | "personal_helper"
+        | "silent_observer"
+        | "critical_monitor"
+      ai_confidence: "high" | "medium" | "low"
+      ai_memory_status: "active" | "paused" | "rejected" | "archived"
+      ai_memory_type:
+        | "user_preference"
+        | "project_fact"
+        | "people_fact"
+        | "company_fact"
+        | "decision"
+        | "pattern"
+        | "correction"
+        | "workflow"
+        | "writing_style"
+        | "communication_style"
+        | "priority"
+        | "deadline"
+        | "risk"
+        | "personal"
+      ai_privacy_zone:
+        | "business"
+        | "personal"
+        | "family"
+        | "health"
+        | "finance"
+        | "legal"
+      ai_question_status: "open" | "answered" | "dismissed"
+      ai_workflow_status: "draft" | "active" | "archived"
       app_role:
         | "super_admin"
         | "admin"
@@ -1073,6 +1758,17 @@ export type Database = {
         | "client"
         | "investor"
         | "guest"
+      data_quality_kind:
+        | "duplicate"
+        | "outdated"
+        | "unlinked"
+        | "no_owner"
+        | "no_deadline"
+        | "no_agenda"
+        | "no_followup"
+        | "stale"
+        | "conflict"
+        | "missing_info"
       decision_impact: "low" | "medium" | "high" | "critical"
       decision_status:
         | "pending"
@@ -1228,6 +1924,52 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      ai_action_status: [
+        "pending",
+        "approved",
+        "rejected",
+        "executed",
+        "failed",
+      ],
+      ai_agent_status: ["proposed", "active", "expired", "revoked"],
+      ai_assistant_mode: [
+        "calm",
+        "executive",
+        "project_controller",
+        "strict_reviewer",
+        "fast_operator",
+        "personal_helper",
+        "silent_observer",
+        "critical_monitor",
+      ],
+      ai_confidence: ["high", "medium", "low"],
+      ai_memory_status: ["active", "paused", "rejected", "archived"],
+      ai_memory_type: [
+        "user_preference",
+        "project_fact",
+        "people_fact",
+        "company_fact",
+        "decision",
+        "pattern",
+        "correction",
+        "workflow",
+        "writing_style",
+        "communication_style",
+        "priority",
+        "deadline",
+        "risk",
+        "personal",
+      ],
+      ai_privacy_zone: [
+        "business",
+        "personal",
+        "family",
+        "health",
+        "finance",
+        "legal",
+      ],
+      ai_question_status: ["open", "answered", "dismissed"],
+      ai_workflow_status: ["draft", "active", "archived"],
       app_role: [
         "super_admin",
         "admin",
@@ -1238,6 +1980,18 @@ export const Constants = {
         "client",
         "investor",
         "guest",
+      ],
+      data_quality_kind: [
+        "duplicate",
+        "outdated",
+        "unlinked",
+        "no_owner",
+        "no_deadline",
+        "no_agenda",
+        "no_followup",
+        "stale",
+        "conflict",
+        "missing_info",
       ],
       decision_impact: ["low", "medium", "high", "critical"],
       decision_status: [
