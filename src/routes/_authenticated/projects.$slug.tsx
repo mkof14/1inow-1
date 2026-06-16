@@ -6,6 +6,8 @@ import { trackRecent } from "@/lib/wave1";
 import { StarButton } from "@/components/star-button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { RelatedItems } from "@/components/related-items";
+import { createRelation } from "@/lib/relations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
@@ -39,14 +41,25 @@ function ProjectDetail() {
 
   const createTask = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("tasks").insert({
+      const { data, error } = await supabase.from("tasks").insert({
         project_id: project.data!.id, title, status: status as any, created_by: user!.id, priority: "medium",
-      });
+      }).select("id").single();
       if (error) throw error;
+      // Auto-link the new task to this project
+      if (data?.id && user?.id) {
+        await createRelation({
+          sourceType: "project",
+          sourceId: project.data!.id,
+          targetType: "task",
+          targetId: data.id,
+          createdBy: user.id,
+        }).catch(() => {});
+      }
     },
     onSuccess: () => {
       toast.success("Task created");
       qc.invalidateQueries({ queryKey: ["tasks"] });
+      qc.invalidateQueries({ queryKey: ["relations"] });
       setOpen(false); setTitle("");
     },
     onError: (e: any) => toast.error(e.message),
@@ -137,8 +150,9 @@ function ProjectDetail() {
         </Dialog>
       </div>
 
-      <div className="mt-4 grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {columns.map((col) => {
+      <div className="mt-4 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
+          {columns.map((col) => {
           const colTasks = tasks.data?.filter((t: any) => t.status === col) ?? [];
           return (
             <div key={col} className="rounded-xl bg-muted/40 p-3 min-h-[300px]">
@@ -168,7 +182,11 @@ function ProjectDetail() {
               </div>
             </div>
           );
-        })}
+          })}
+        </div>
+        <aside className="space-y-4">
+          <RelatedItems sourceType="project" sourceId={p.id} title="Related Items" />
+        </aside>
       </div>
     </div>
   );
