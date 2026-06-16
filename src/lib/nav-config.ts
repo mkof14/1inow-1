@@ -2,6 +2,7 @@ import {
   LayoutDashboard, FolderKanban, CheckSquare, MessageSquare, Users, UserCircle,
   Calendar, FileText, FolderOpen, Video, Map, BarChart3, ShieldCheck,
   BookOpen, Sparkles, Settings2, Cog, Briefcase, Inbox, Star,
+  Globe,
 } from "lucide-react";
 
 export type NavGroup = {
@@ -33,6 +34,7 @@ export const navGroups: NavGroup[] = [
       { to: "/teams", label: "Teams", icon: Users },
       { to: "/people", label: "People", icon: UserCircle },
       { to: "/communication", label: "Communication", icon: MessageSquare },
+      { to: "/team-map", label: "Team Map", icon: Globe },
     ],
   },
   {

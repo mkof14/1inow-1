@@ -110,7 +110,7 @@ export async function fetchMessages(channelId: string, threadRootId: string | nu
 }
 
 export async function sendMessage(input: {
-  channel_id: string; body: string; message_type?: MessageType; thread_root_id?: string | null;
+  channel_id: string; body: string; message_type?: MessageType; thread_root_id?: string | null; original_language?: string;
 }) {
   const user = (await supabase.auth.getUser()).data.user;
   if (!user) throw new Error("Not signed in");
@@ -127,6 +127,7 @@ export async function sendMessage(input: {
       body: input.body,
       message_type: input.message_type ?? "normal",
       thread_root_id: input.thread_root_id ?? null,
+      original_language: input.original_language ?? null,
     })
     .select()
     .single();

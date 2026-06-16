@@ -140,6 +140,45 @@ export type Database = {
           },
         ]
       }
+      document_translations: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          language: string
+          title: string | null
+          translated_by: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          language: string
+          title?: string | null
+          translated_by?: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          language?: string
+          title?: string | null
+          translated_by?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -164,6 +203,39 @@ export type Database = {
           id?: string
           label?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      languages: {
+        Row: {
+          code: string
+          created_at: string
+          enabled: boolean
+          flag: string | null
+          name: string
+          native_name: string
+          rtl: boolean
+          sort_order: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          enabled?: boolean
+          flag?: string | null
+          name: string
+          native_name: string
+          rtl?: boolean
+          sort_order?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          enabled?: boolean
+          flag?: string | null
+          name?: string
+          native_name?: string
+          rtl?: boolean
+          sort_order?: number
         }
         Relationships: []
       }
@@ -228,6 +300,41 @@ export type Database = {
           },
         ]
       }
+      message_translations: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          language: string
+          message_id: string
+          translated_by: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          language: string
+          message_id: string
+          translated_by?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          language?: string
+          message_id?: string
+          translated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_translations_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           author_id: string | null
@@ -239,6 +346,7 @@ export type Database = {
           id: string
           message_type: string
           metadata: Json
+          original_language: string | null
           pinned_at: string | null
           thread_root_id: string | null
           updated_at: string
@@ -253,6 +361,7 @@ export type Database = {
           id?: string
           message_type?: string
           metadata?: Json
+          original_language?: string | null
           pinned_at?: string | null
           thread_root_id?: string | null
           updated_at?: string
@@ -267,6 +376,7 @@ export type Database = {
           id?: string
           message_type?: string
           metadata?: Json
+          original_language?: string | null
           pinned_at?: string | null
           thread_root_id?: string | null
           updated_at?: string
@@ -335,41 +445,71 @@ export type Database = {
       }
       profiles: {
         Row: {
+          auto_translate: boolean
           avatar_url: string | null
           bio: string | null
+          city: string | null
           country: string | null
           created_at: string
+          date_format: string
           department: string | null
           email: string | null
           full_name: string | null
           id: string
+          last_seen_at: string | null
+          number_format: string
+          office_status: string
+          online_status: string
           position: string | null
+          preferred_language: string
+          secondary_language: string | null
+          time_format: string
           timezone: string | null
           updated_at: string
         }
         Insert: {
+          auto_translate?: boolean
           avatar_url?: string | null
           bio?: string | null
+          city?: string | null
           country?: string | null
           created_at?: string
+          date_format?: string
           department?: string | null
           email?: string | null
           full_name?: string | null
           id: string
+          last_seen_at?: string | null
+          number_format?: string
+          office_status?: string
+          online_status?: string
           position?: string | null
+          preferred_language?: string
+          secondary_language?: string | null
+          time_format?: string
           timezone?: string | null
           updated_at?: string
         }
         Update: {
+          auto_translate?: boolean
           avatar_url?: string | null
           bio?: string | null
+          city?: string | null
           country?: string | null
           created_at?: string
+          date_format?: string
           department?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
+          last_seen_at?: string | null
+          number_format?: string
+          office_status?: string
+          online_status?: string
           position?: string | null
+          preferred_language?: string
+          secondary_language?: string | null
+          time_format?: string
           timezone?: string | null
           updated_at?: string
         }
@@ -604,6 +744,86 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      translation_memory: {
+        Row: {
+          approved: boolean
+          created_at: string
+          created_by: string | null
+          id: string
+          source_hash: string
+          source_language: string
+          source_text: string
+          target_language: string
+          target_text: string
+          use_count: number
+        }
+        Insert: {
+          approved?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          source_hash: string
+          source_language: string
+          source_text: string
+          target_language: string
+          target_text: string
+          use_count?: number
+        }
+        Update: {
+          approved?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          source_hash?: string
+          source_language?: string
+          source_text?: string
+          target_language?: string
+          target_text?: string
+          use_count?: number
+        }
+        Relationships: []
+      }
+      translations: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          language: string
+          namespace: string
+          updated_at: string
+          updated_by: string | null
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          language: string
+          namespace?: string
+          updated_at?: string
+          updated_by?: string | null
+          value: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          language?: string
+          namespace?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "translations_language_fkey"
+            columns: ["language"]
+            isOneToOne: false
+            referencedRelation: "languages"
+            referencedColumns: ["code"]
           },
         ]
       }

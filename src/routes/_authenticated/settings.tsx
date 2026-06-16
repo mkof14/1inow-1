@@ -9,6 +9,10 @@ import { Switch } from "@/components/ui/switch";
 import { PageSkeleton } from "@/components/empty-state";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
+import { dictionaries } from "@/lib/i18n/dictionaries";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsPage,
@@ -16,7 +20,39 @@ export const Route = createFileRoute("/_authenticated/settings")({
 
 function SettingsPage() {
   const qc = useQueryClient();
+  const { lang, setLang, t } = useI18n();
+  const { user } = useAuth();
   const { data, isLoading } = useQuery({ queryKey: ["user-settings"], queryFn: fetchSettings });
+  const { data: profile } = useQuery({
+    queryKey: ["my-profile"],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase.from("profiles")
+        .select("preferred_language, secondary_language, country, city, timezone, date_format, time_format, number_format, auto_translate")
+        .eq("id", user.id).maybeSingle();
+      return data;
+    },
+    enabled: !!user,
+  });
+  const [pf, setPf] = useState({
+    preferred_language: "en", secondary_language: "", country: "", city: "",
+    timezone: "UTC", date_format: "yyyy-MM-dd", time_format: "HH:mm",
+    number_format: "en-US", auto_translate: false,
+  });
+  useEffect(() => {
+    if (!profile) return;
+    setPf({
+      preferred_language: profile.preferred_language ?? "en",
+      secondary_language: profile.secondary_language ?? "",
+      country: profile.country ?? "",
+      city: profile.city ?? "",
+      timezone: profile.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
+      date_format: profile.date_format ?? "yyyy-MM-dd",
+      time_format: profile.time_format ?? "HH:mm",
+      number_format: profile.number_format ?? "en-US",
+      auto_translate: profile.auto_translate ?? false,
+    });
+  }, [profile]);
   const [form, setForm] = useState({
     language: "en", timezone: "UTC", theme: "light", default_project_view: "board",
     notif_email: true, notif_inapp: true, notif_mentions: true, notif_deadlines: true,
@@ -49,12 +85,103 @@ function SettingsPage() {
 
   if (isLoading) return <PageSkeleton />;
 
+  const saveProfile = async () => {
+    if (!user) return;
+    const { error } = await supabase.from("profiles").update({
+      preferred_language: pf.preferred_language,
+      secondary_language: pf.secondary_language || null,
+      country: pf.country || null, city: pf.city || null,
+      timezone: pf.timezone, date_format: pf.date_format,
+      time_format: pf.time_format, number_format: pf.number_format,
+      auto_translate: pf.auto_translate,
+    }).eq("id", user.id);
+    if (error) return toast.error(error.message);
+    setLang(pf.preferred_language);
+    toast.success(t("common.save"));
+    qc.invalidateQueries({ queryKey: ["my-profile"] });
+  };
+
   return (
     <div className="p-6 md:p-8 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-semibold tracking-tight mb-1">Settings</h1>
-      <p className="text-sm text-muted-foreground mb-8">Personal preferences for your workspace.</p>
+      <h1 className="text-2xl font-semibold tracking-tight mb-1">{t("settings.title")}</h1>
+      <p className="text-sm text-muted-foreground mb-8">{t("settings.subtitle")}</p>
 
       <div className="space-y-8">
+        <Section title={`🌐 ${t("common.language")} & ${t("common.timezone")}`}>
+          <Field label={t("settings.preferredLanguage")}>
+            <Select value={pf.preferred_language} onValueChange={(v) => setPf({ ...pf, preferred_language: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {Object.keys(dictionaries).map((c) => (
+                  <SelectItem key={c} value={c}>{c.toUpperCase()}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label={t("settings.secondaryLanguage")}>
+            <Select value={pf.secondary_language || "none"} onValueChange={(v) => setPf({ ...pf, secondary_language: v === "none" ? "" : v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">—</SelectItem>
+                {Object.keys(dictionaries).map((c) => (
+                  <SelectItem key={c} value={c}>{c.toUpperCase()}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label={t("common.country")}>
+            <Input value={pf.country} onChange={(e) => setPf({ ...pf, country: e.target.value })} placeholder="UA / US / DE…" />
+          </Field>
+          <Field label={t("common.city")}>
+            <Input value={pf.city} onChange={(e) => setPf({ ...pf, city: e.target.value })} />
+          </Field>
+          <Field label={t("common.timezone")}>
+            <Input value={pf.timezone} onChange={(e) => setPf({ ...pf, timezone: e.target.value })} placeholder="Europe/Kyiv" />
+          </Field>
+          <Field label={t("settings.numberFormat")}>
+            <Select value={pf.number_format} onValueChange={(v) => setPf({ ...pf, number_format: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en-US">1,234.56 (en-US)</SelectItem>
+                <SelectItem value="en-GB">1,234.56 (en-GB)</SelectItem>
+                <SelectItem value="de-DE">1.234,56 (de-DE)</SelectItem>
+                <SelectItem value="uk-UA">1 234,56 (uk-UA)</SelectItem>
+                <SelectItem value="ru-RU">1 234,56 (ru-RU)</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label={t("settings.dateFormat")}>
+            <Select value={pf.date_format} onValueChange={(v) => setPf({ ...pf, date_format: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="yyyy-MM-dd">2026-06-16</SelectItem>
+                <SelectItem value="dd.MM.yyyy">16.06.2026</SelectItem>
+                <SelectItem value="MM/dd/yyyy">06/16/2026</SelectItem>
+                <SelectItem value="dd/MM/yyyy">16/06/2026</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label={t("settings.timeFormat")}>
+            <Select value={pf.time_format} onValueChange={(v) => setPf({ ...pf, time_format: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="HH:mm">24h (14:30)</SelectItem>
+                <SelectItem value="hh:mm a">12h (2:30 PM)</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+          <div className="flex items-center justify-between rounded-md border border-border px-3 py-2.5 col-span-1 sm:col-span-2">
+            <div>
+              <div className="text-sm font-medium">{t("common.autoTranslate")}</div>
+              <div className="text-xs text-muted-foreground">Translate messages not in your preferred language automatically.</div>
+            </div>
+            <Switch checked={pf.auto_translate} onCheckedChange={(b) => setPf({ ...pf, auto_translate: b })} />
+          </div>
+          <div className="col-span-1 sm:col-span-2 flex justify-end">
+            <Button onClick={saveProfile}>{t("settings.saveChanges")}</Button>
+          </div>
+        </Section>
+
         <Section title="Preferences">
           <Field label="Language">
             <Select value={form.language} onValueChange={(v) => setForm({ ...form, language: v })}>
