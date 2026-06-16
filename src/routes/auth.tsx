@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { CompassLogo } from "@/components/icons/compass-icons";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — Digital Invest Compass" }] }),
@@ -34,11 +35,11 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [busy, setBusy] = useState(false);
-  // Google OAuth requires the Lovable broker (/~oauth/* proxy worker), which
-  // only exists on *.lovable.app and Lovable-managed custom domains. On
-  // Vercel/other hosts the redirect 404s, so we hide the button there.
-  // Flip VITE_ENABLE_GOOGLE_AUTH="true" to re-enable on Lovable.
-  const googleEnabled = import.meta.env.VITE_ENABLE_GOOGLE_AUTH === "true";
+  const [showPwd, setShowPwd] = useState(false);
+  const [showPwdUp, setShowPwdUp] = useState(false);
+  // Google OAuth uses the Lovable broker (/~oauth/*) — enabled by default on
+  // *.lovable.app and custom domains. Set VITE_ENABLE_GOOGLE_AUTH="false" to hide.
+  const googleEnabled = import.meta.env.VITE_ENABLE_GOOGLE_AUTH !== "false";
 
   useEffect(() => {
     if (!loading && user) navigate({ to: "/dashboard", replace: true });
@@ -75,6 +76,14 @@ function AuthPage() {
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-background">
+      <button
+        type="button"
+        onClick={() => navigate({ to: "/" })}
+        aria-label="Back"
+        className="absolute top-3 left-3 z-20 inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/70 backdrop-blur px-3 py-1.5 text-xs text-foreground hover:bg-background transition"
+      >
+        <ArrowLeft className="size-3.5" /> Back
+      </button>
       <div className="lg:hidden absolute top-3 right-3 z-10"><LanguageSwitcher /></div>
       <div className="hidden lg:flex flex-col justify-between p-12 gradient-compass text-primary-foreground relative overflow-hidden">
         <div className="flex items-center gap-3 relative">
@@ -108,6 +117,13 @@ function AuthPage() {
       <div className="flex items-center justify-center p-6 md:p-12">
         <div className="absolute top-3 right-3 hidden lg:block"><LanguageSwitcher /></div>
         <div className="w-full max-w-sm space-y-6">
+          <div className="flex items-center gap-3 lg:hidden">
+            <CompassLogo size={32} className="text-accent" />
+            <div className="leading-tight">
+              <div className="font-display text-base">Digital Invest</div>
+              <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">Compass</div>
+            </div>
+          </div>
           <div>
             <h2 className="font-display text-3xl">Welcome</h2>
             <p className="text-sm text-muted-foreground mt-1">
@@ -141,7 +157,12 @@ function AuthPage() {
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="pwd-in">Password</Label>
-                  <Input id="pwd-in" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                  <div className="relative">
+                    <Input id="pwd-in" type={showPwd ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} className="pr-10" />
+                    <button type="button" onClick={() => setShowPwd((v) => !v)} aria-label={showPwd ? "Hide password" : "Show password"} className="absolute inset-y-0 right-2 flex items-center text-muted-foreground hover:text-foreground">
+                      {showPwd ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
                 </div>
                 <Button type="submit" className="w-full" disabled={busy}>
                   {busy ? "Signing in…" : "Sign in"}
@@ -160,7 +181,12 @@ function AuthPage() {
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="pwd-up">Password</Label>
-                  <Input id="pwd-up" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} />
+                  <div className="relative">
+                    <Input id="pwd-up" type={showPwdUp ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} className="pr-10" />
+                    <button type="button" onClick={() => setShowPwdUp((v) => !v)} aria-label={showPwdUp ? "Hide password" : "Show password"} className="absolute inset-y-0 right-2 flex items-center text-muted-foreground hover:text-foreground">
+                      {showPwdUp ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
                 </div>
                 <Button type="submit" className="w-full" disabled={busy}>
                   {busy ? "Creating account…" : "Create account"}
