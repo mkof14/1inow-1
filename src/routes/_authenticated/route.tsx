@@ -8,14 +8,8 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 function AuthedLayout() {
-  const { user, loading } = useAuth();
-  if (loading) {
-    return (
-      <div className="min-h-screen grid place-items-center bg-background">
-        <div className="size-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-      </div>
-    );
-  }
-  if (!user) return <Navigate to="/auth" replace />;
+  // Auth temporarily disabled — open access during development.
+  void useAuth;
+  void Navigate;
   return <AppShell><Outlet /></AppShell>;
 }
