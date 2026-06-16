@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { fetchProjectBySlug, fetchTasks, TASK_STATUSES, TASK_STATUS_LABEL, PROJECT_STATUS_LABEL } from "@/lib/queries";
+import { trackRecent } from "@/lib/wave1";
+import { StarButton } from "@/components/star-button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -20,6 +22,11 @@ function ProjectDetail() {
   const qc = useQueryClient();
   const { user } = useAuth();
   const project = useQuery({ queryKey: ["project", slug], queryFn: () => fetchProjectBySlug(slug) });
+  useEffect(() => {
+    if (project.data?.id) {
+      trackRecent("project", project.data.id, project.data.name).catch(() => {});
+    }
+  }, [project.data?.id, project.data?.name]);
   const tasks = useQuery({
     queryKey: ["tasks", project.data?.id],
     queryFn: () => fetchTasks(project.data!.id),
@@ -85,6 +92,7 @@ function ProjectDetail() {
             <h1 className="text-2xl font-semibold tracking-tight">{p.name}</h1>
             <p className="text-sm text-muted-foreground mt-1 max-w-xl">{p.description}</p>
           </div>
+          <StarButton entityType="project" entityId={p.id} label={p.name} className="ml-1" />
         </div>
         <div className="flex items-center gap-2 text-xs">
           <span className="px-2.5 py-1 rounded-full bg-muted text-muted-foreground font-medium uppercase tracking-wider">
