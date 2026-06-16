@@ -35,12 +35,22 @@ export const simplicityRules: SimplicityRule[] = [
 
 /* ───────────── Copy templates used across pages ───────────── */
 
-export function firstScreenGreeting(firstName: string, attentionCount: number) {
+export function firstScreenGreeting(
+  firstName: string,
+  attentionCount: number,
+  i18n?: { hello?: string; calm?: string; one?: string; many?: string },
+) {
+  const hello = (i18n?.hello ?? "Hello {name}.").replace("{name}", firstName);
+  const calm = i18n?.calm ?? "Nothing needs your attention right now.";
+  const tplOne = i18n?.one ?? "Here is 1 thing that deserves your attention today.";
+  const tplMany = i18n?.many ?? "Here are {n} things that deserve your attention today.";
+  const sub =
+    attentionCount === 0 ? calm
+    : attentionCount === 1 ? tplOne
+    : tplMany.replace("{n}", String(attentionCount));
   return {
-    headline: `Hello ${firstName}.`,
-    subline: attentionCount === 0
-      ? "Nothing needs your attention right now."
-      : `Here ${attentionCount === 1 ? "is" : "are"} ${attentionCount} thing${attentionCount === 1 ? "" : "s"} that deserve your attention today.`,
+    headline: hello,
+    subline: sub,
   };
 }
 
