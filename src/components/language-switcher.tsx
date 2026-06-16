@@ -11,6 +11,8 @@ const META: Record<string, { native: string; flag: string }> = {
   en: { native: "English", flag: "🇬🇧" },
   uk: { native: "Українська", flag: "🇺🇦" },
   ru: { native: "Русский", flag: "🇷🇺" },
+  es: { native: "Español", flag: "🇪🇸" },
+  de: { native: "Deutsch", flag: "🇩🇪" },
 };
 
 export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
