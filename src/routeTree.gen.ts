@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedTeamMapRouteImport } from './routes/_authenticated/team-map'
+import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedPeopleRouteImport } from './routes/_authenticated/people'
@@ -47,6 +48,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthenticatedTeamMapRoute = AuthenticatedTeamMapRouteImport.update({
   id: '/team-map',
   path: '/team-map',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTasksRoute = AuthenticatedTasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -151,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/people': typeof AuthenticatedPeopleRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/tasks': typeof AuthenticatedTasksRoute
   '/team-map': typeof AuthenticatedTeamMapRoute
   '/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
@@ -172,6 +179,7 @@ export interface FileRoutesByTo {
   '/people': typeof AuthenticatedPeopleRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/tasks': typeof AuthenticatedTasksRoute
   '/team-map': typeof AuthenticatedTeamMapRoute
   '/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
@@ -195,6 +203,7 @@ export interface FileRoutesById {
   '/_authenticated/people': typeof AuthenticatedPeopleRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/_authenticated/team-map': typeof AuthenticatedTeamMapRoute
   '/_authenticated/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
@@ -218,6 +227,7 @@ export interface FileRouteTypes {
     | '/people'
     | '/reports'
     | '/settings'
+    | '/tasks'
     | '/team-map'
     | '/projects/$slug'
     | '/projects/'
@@ -239,6 +249,7 @@ export interface FileRouteTypes {
     | '/people'
     | '/reports'
     | '/settings'
+    | '/tasks'
     | '/team-map'
     | '/projects/$slug'
     | '/projects'
@@ -261,6 +272,7 @@ export interface FileRouteTypes {
     | '/_authenticated/people'
     | '/_authenticated/reports'
     | '/_authenticated/settings'
+    | '/_authenticated/tasks'
     | '/_authenticated/team-map'
     | '/_authenticated/projects/$slug'
     | '/_authenticated/projects/'
@@ -300,6 +312,13 @@ declare module '@tanstack/react-router' {
       path: '/team-map'
       fullPath: '/team-map'
       preLoaderRoute: typeof AuthenticatedTeamMapRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/tasks': {
+      id: '/_authenticated/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof AuthenticatedTasksRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings': {
@@ -432,6 +451,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPeopleRoute: typeof AuthenticatedPeopleRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedTeamMapRoute: typeof AuthenticatedTeamMapRoute
   AuthenticatedProjectsSlugRoute: typeof AuthenticatedProjectsSlugRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
@@ -452,6 +472,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPeopleRoute: AuthenticatedPeopleRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedTeamMapRoute: AuthenticatedTeamMapRoute,
   AuthenticatedProjectsSlugRoute: AuthenticatedProjectsSlugRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
