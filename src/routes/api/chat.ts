@@ -3,7 +3,14 @@ import { convertToModelMessages, streamText, type UIMessage } from "ai";
 import { createClient } from "@supabase/supabase-js";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 
-type ChatBody = { messages?: UIMessage[] };
+type PageContext = {
+  route?: string;
+  scope?: string;
+  title?: string;
+  ids?: Record<string, string | undefined>;
+  notes?: string;
+};
+type ChatBody = { messages?: UIMessage[]; pageContext?: PageContext };
 
 export const Route = createFileRoute("/api/chat")({
   server: {
@@ -12,7 +19,7 @@ export const Route = createFileRoute("/api/chat")({
         const key = process.env.LOVABLE_API_KEY;
         if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
 
-        const { messages } = (await request.json()) as ChatBody;
+        const { messages, pageContext } = (await request.json()) as ChatBody;
         if (!Array.isArray(messages)) return new Response("messages required", { status: 400 });
 
         // Gather lightweight user context from Supabase (best-effort)
@@ -56,6 +63,10 @@ export const Route = createFileRoute("/api/chat")({
           console.error("ai context fetch failed", e);
         }
 
+        const pageBlock = pageContext && (pageContext.scope || pageContext.route)
+          ? `\nCurrent page: ${pageContext.route ?? "?"}${pageContext.scope ? ` — ${pageContext.scope}` : ""}${pageContext.title ? ` "${pageContext.title}"` : ""}${pageContext.ids ? ` ids=${JSON.stringify(pageContext.ids)}` : ""}${pageContext.notes ? `\nPage notes: ${pageContext.notes}` : ""}`
+          : "";
+
         const system = `You are Compass, the intelligence layer of Digital Invest Compass — a private decision and execution environment.
 
 TRUTH-FIRST RULES (non-negotiable):
@@ -76,7 +87,7 @@ CORRECTIONS: When the user corrects you, acknowledge it, restate the new fact pr
 STYLE: Concise, warm, decisive. Short sentences. Light markdown (bold, lists) when it aids scanning. No filler praise. No corporate tone.
 
 Live context for this user:
-${contextBlock || "(no context available — say so before answering anything specific)"}`;
+${contextBlock || "(no context available — say so before answering anything specific)"}${pageBlock}`;
 
         const gateway = createLovableAiGatewayProvider(key);
         const result = streamText({
