@@ -20,6 +20,7 @@ export const primaryNav: NavItem[] = [
 
 /** "More" — collapsed by default */
 export const moreNav: NavItem[] = [
+  { to: "/brain",          label: "System Brain", icon: CompassMark },
   { to: "/calendar",       label: "Calendar",  icon: TimelinePulse },
   { to: "/reports",        label: "Reports",   icon: IntelligenceBars },
   { to: "/approvals",      label: "Decisions", icon: DecisionDiamond },
