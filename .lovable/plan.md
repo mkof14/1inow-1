@@ -1,68 +1,75 @@
-# Advanced Features — Phased Plan
+# Communication & Collaboration Center — Phased Plan
 
-40 feature areas is roughly 6–10 full sprints of work for a real team. To keep Digital Invest OS shippable at every step (no half-broken modules), I'll deliver in 4 waves. Each wave is independently usable, has real DB + RLS + working CRUD, and ends with the app in a stable state.
+This request is a full collaboration platform (~17 sub-systems). To keep the app stable, I'll deliver in 3 communication waves (C1–C3) that bolt onto the Wave 1 work already shipped. Each ends with a working, demoable system.
 
-You can approve the full plan, or tell me to start with Wave 1 only and re-decide later.
+## C1 — Communication Foundations (real, end-to-end)
 
-## Wave 1 — Personal productivity layer (real, end-to-end)
-The features users touch every day. All backed by real tables, RLS, and working UI.
+The skeleton everything else hangs off. All backed by real DB + RLS + working UI.
 
-- **Favorites** (#1) — `favorites` table (polymorphic: entity_type + entity_id), star buttons on projects/tasks/docs/channels, "Favorites" group in sidebar.
-- **Recent items** (#2) — `recent_items` table, auto-logged on open, shown in sidebar + Cmd+K.
-- **My Work** (#3) — single page with tabs: Assigned, Created, Today, This Week, Overdue, Blocked, Completed. Pure queries over existing `tasks` table.
-- **Inbox** (#4) — `notifications` table (type, actor, target, read_at, resolved_at), Inbox page with mark read/unread/resolve, unread badge in sidebar.
-- **Universal Quick Create** (#14) — floating + button → dialog with task/project/doc/note/meeting tabs.
-- **Keyboard shortcuts** (#15) — Cmd+K, C, P, /, G→D, G→T, G→P.
-- **Task detail side panel** (#25) — replaces full-page navigation; description, comments stub, activity, dependencies tab.
-- **Personal settings** (#13) — `user_settings` table; language, timezone, theme, working hours, default view.
-- **Empty / loading / error states** (#35–37) — shared `<EmptyState>`, skeleton loaders, error boundaries across all existing pages.
+**Database (one migration):**
+- `channels` (name, slug, type: dm/project/company/private/group, project_id?, created_by, archived_at)
+- `channel_members` (channel_id, user_id, role: owner/admin/member, last_read_at)
+- `messages` (channel_id, author_id, body, message_type: normal/update/decision/action_item/question/blocker/approval/announcement/file_share/meeting_note, thread_root_id?, edited_at, deleted_at, pinned_at, metadata jsonb)
+- `message_reactions` (message_id, user_id, emoji)
+- `message_read_receipts` (message_id, user_id, read_at)
+- `saved_messages` (user_id, message_id)
+- All with explicit GRANTs, RLS scoped to channel membership via SECURITY DEFINER `is_channel_member()` to avoid recursion.
+- Add `messages` & `message_reactions` to `supabase_realtime` publication.
 
-## Wave 2 — Collaboration & data model depth
-- **Mentions** (#26) — @user parsing in comments, generates notifications.
-- **Comments + Activity history** (#31) — `comments` and `activity_logs` (extend existing), shown on every entity.
-- **Presence** (#27) — Realtime presence channel, dots on avatars.
-- **Status updates / Daily standup** (#28, #29) — `status_updates` table, daily form, project feed.
-- **Dependencies** (#11) — `task_dependencies` (blocks/waits_on/related/duplicate), warning badges.
-- **Recurring tasks** (#10) — `recurrence_rule` on tasks + pg_cron job to materialize next instance.
-- **Custom fields** (#9) — `custom_fields` + `custom_field_values` tables, admin UI, render in task/project detail.
-- **Saved views + Advanced filters + Bulk actions** (#5, #6, #7) — `saved_views` table; filter bar component reused across Tasks/Projects/People; bulk select toolbar.
-- **Templates** (#8) — `templates` table for projects/tasks/docs, "Create from template" in Quick Create.
-- **Trash bin** (#32) — soft-delete (`deleted_at`) on all major tables + Trash page with restore.
-- **Audit history UI** (#31) — extend `activity_logs`, history drawer on each entity.
+**UI:**
+- `/communication` page replaces the stub: 3-pane layout (channel list | message stream | thread side panel).
+- Channel list grouped by: Pinned, Direct messages, Project channels, Company, Private. New channel button.
+- Message stream with: message types color-coded by left border, author avatar+presence, timestamp, reactions, hover toolbar (reply, react, pin, save, copy link, more).
+- "More" menu: edit, delete, mark unread, convert to task / decision / action item / meeting note, assign to user, set deadline.
+- Composer with message-type selector (dropdown), Cmd+Enter to send.
+- Threads open in right side panel (nested replies, participants, resolved/unresolved toggle, linked task/project pills).
+- Realtime subscription for new messages and reactions, scoped to active channel.
 
-## Wave 3 — Planning & visualization
-- **Advanced calendar** (#16) — month/week/day/agenda views over tasks+meetings+milestones.
-- **Gantt chart** (#17) — timeline with dependencies, drag-to-reschedule.
-- **Workload view** (#18) — team capacity heatmap.
-- **Kanban improvements** (#24) — DnD, swimlanes, WIP limits, collapsed columns.
-- **Project health score** (#19) — computed view from deadline/overdue/blocked/activity.
-- **Roadmaps** (#20) — quarter/year timeline by project/department.
-- **Goals / OKRs** (#21) — `goals` + `key_results` + linked tasks.
-- **Notes** (#22) — `notes` table, personal/project/meeting scopes, convert-to-task.
-- **Whiteboard placeholder** (#23) — `whiteboards` table, basic card/arrow canvas (react-flow), marked beta.
+**What this does NOT do yet:** decisions/action-items as standalone modules, announcements with acknowledgments, check-ins, analytics, AI. Those come in C2/C3.
 
-## Wave 4 — Automation, admin & onboarding
-- **Automations** (#12) — `automations` table (trigger JSON, action JSON), simple WHEN/THEN builder, runner via pg trigger or server fn.
-- **Weekly executive summary** (#30) — generated page from existing data + AI summary.
-- **Permissions matrix UI** (#38) — admin page rendering roles × permissions, edits write to a `role_permissions` table.
-- **Invite system** (#39) — `invitations` table, email via Lovable AI / resend, pre-assigned role + project access.
-- **Onboarding wizard** (#40) — first-login multi-step: org → invite → first project → first task → layout pick.
-- **Import / Export** (#33) — CSV import for tasks/contacts; CSV export for tasks/projects/reports.
-- **Mobile responsiveness pass** (#34) — audit sidebar→drawer, tables→cards, side panels→sheets across the app.
+## C2 — Structured Communication Outputs
+
+Turn messages into accountable artifacts. Convert actions from C1 now write to real tables.
+
+- **Decisions module** (`/decisions`): `decisions` table (title, description, project_id, owner_id, status: proposed/approved/rejected/reversed/archived, impact_level, review_date, source_message_id, linked_task_ids[], linked_doc_ids[]). List view + detail panel. "Convert to decision" from message context menu pre-fills + links source.
+- **Action Items module** (`/action-items`): `action_items` table (title, description, owner_id, deadline, priority, project_id, source_message_id, related_task_id, status). Personal "assigned to me" view + project view.
+- **Blockers** (`/blockers`): `blockers` table (raised_by, project_id, task_id?, description, severity, resolved_at, resolver_id). Mark-as-blocker on any message escalates: creates blocker row + notifies project manager. Surfaced on dashboard.
+- **Announcements** (`/announcements`): `announcements` table (title, body, target jsonb {all_company|project_ids|team_ids|role}, requires_ack, pinned, created_by). `announcement_reads` (announcement_id, user_id, read_at, acknowledged_at). Banner on dashboard for un-acknowledged required-ack announcements. Admin view shows ack matrix.
+- **Saved & Pinned**: dedicated `/saved` page (reuses `saved_messages`); pinned-per-channel pane.
+- **Smart Inbox tabs** extended: All / Mentions / Assignments / Approvals / Decisions / Blockers / Deadlines / Messages / Unread / Archived. Reuses existing `notifications` table, filtered by `type`.
+- **Mentions** (#26 from previous plan rolls in here): `@user` autocomplete in composer; on send, parse mentions → write notifications.
+- **Project Communication Hub**: each project's detail page gets tabs — Chat, Updates, Decisions, Blockers, Questions, Files, Meeting Notes, Announcements, Action Items — filtered to that project.
+
+## C3 — Remote Team Operations, Permissions, AI
+
+- **Presence** (Realtime presence channel): online/offline/away/busy/in-meeting state, surfaced as dot on every avatar + Remote Team page.
+- **User profile extensions**: timezone (already in user_settings), country, working_hours, out_of_office boolean+range, current_status text. Profile page shows local time, workload (count of open tasks), last active.
+- **Daily Check-Ins** (`/check-ins`): `check_ins` table (user_id, date, yesterday, today, blockers, help_needed, availability). One-per-user-per-day. Project dashboard shows today's check-ins for project members.
+- **Weekly Updates** (`/weekly-updates`): `weekly_updates` table (user_id OR project_id, week_start, completed, in_progress, blockers, risks, next_priorities, manager_comments).
+- **Read receipts & Acknowledgments**: receipts already in C1; acknowledgments table for critical messages with "must acknowledge" flag → reminder notification if not acked in 24h (pg_cron).
+- **Communication Analytics** (`/analytics/communication`): SQL views for unanswered questions, unresolved threads, open blockers, decisions made, pending acks, inactive projects (no message in 14d).
+- **Notification preferences** (`communication_preferences` table): per-project / per-channel / mention-type / quiet-hours overrides on top of existing `user_settings.notifications`.
+- **Permissions matrix** for communication: who can create/delete channels, post announcements, invite users, see executive/investor channels, export messages. Backed by `role_permissions` table (also serves the broader permissions matrix from earlier plan).
+- **Voice / Video / Loom placeholders**: clean attachment-type UI in composer + message renderer, with "Coming soon" tooltip — no backend.
+- **AI Communication Assistant** (`/communication/ai`): server function `summarizeChannel`, `summarizeUnread`, `extractDecisions`, `extractActionItems`, `detectBlockers`, `weeklyReport`, `translate`, `improve`, `replyDraft`. Uses Lovable AI (google/gemini-3-flash-preview) via TanStack server functions. Hooked into channel header ("Summarize"), inbox header ("Summarize unread"), composer ("Improve / Translate / Draft reply"), and a weekly cron report.
+- **Search across messages**: `/search?type=message` with filters person, project, channel, date, type, attachment, decision, action item, blocker, unread. Postgres full-text index on `messages.body`.
 
 ## What this plan does NOT do
-- It does not pretend any of these are "one-shot" features. Automations, Gantt drag-reschedule, recurring-task materialization, and the permissions matrix are each non-trivial — they get real DB + working baseline UI, with clearly marked "advanced editor coming soon" where the full UX would take another wave.
-- No mock data masquerading as real. Anything not wired to the DB will be labeled "Preview".
+- Real voice/video calling — placeholder UI only.
+- Real-time typing indicators in C1 (added in C3 with presence).
+- Custom emoji picker (uses a fixed set in C1, full picker C2).
+- Slack-grade rich text — markdown only.
+- Mobile-native gestures — desktop-first responsive only.
 
 ## Technical notes
-- New tables follow the existing pattern: `id`, `created_at`, `updated_at`, RLS on, explicit GRANTs, policies scoped via `has_role()` / `auth.uid()`.
-- Polymorphic tables (`favorites`, `recent_items`, `notifications`, `comments`, `activity_logs`) use `(entity_type text, entity_id uuid)` with a check constraint on allowed types.
-- Realtime enabled for `notifications`, `comments`, presence.
-- All new pages live under `src/routes/_authenticated/` and appear in the existing sidebar groups.
-- Task detail side panel = global `<Sheet>` controlled by a Zustand store + URL search param (`?task=<id>`) so it's deep-linkable without route change.
+- All polymorphic links (`source_message_id`, `linked_task_ids`, etc.) use FKs or uuid[] columns — no implicit polymorphism, every reference is typed.
+- RLS for `messages`/`reactions`/`receipts` goes through `public.is_channel_member(channel_id, user_id)` SECURITY DEFINER to prevent recursion.
+- Realtime is enabled per-table, not globally, to keep bills sane.
+- AI calls live in `src/lib/ai-comm.functions.ts` behind `requireSupabaseAuth`; no client keys.
+- Existing `notifications` table is reused — no parallel "inbox" tables.
 
 ## Recommended next step
-Approve the plan and I'll start Wave 1 immediately. Wave 1 alone is ~6–8 migrations and ~20 new files but leaves the app in a much more "real SaaS" state. Tell me if you'd rather:
-- **(a)** Ship Wave 1 now, then we re-scope 2–4 after you try it.
-- **(b)** Ship all 4 waves back-to-back (will take many turns; each wave ends in a stable state).
-- **(c)** Re-prioritize — name the 5–10 features you most want first and I'll collapse the plan around them.
+Approve and tell me which:
+- **(a)** Ship C1 now (channels, messages, threads, realtime, conversion menu, side-panel UX). One large turn.
+- **(b)** Ship C1 + C2 back-to-back (also Decisions, Action Items, Blockers, Announcements, Mentions, Smart Inbox, Project Hub). Multiple turns.
+- **(c)** Re-prioritize — tell me 3–5 of the listed sub-systems you most want first.
