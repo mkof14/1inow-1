@@ -15,11 +15,14 @@ import { QuickCreate } from "@/components/quick-create";
 import { CommandBar } from "@/components/command-bar";
 import { useShortcuts } from "@/hooks/use-shortcuts";
 import { Badge } from "@/components/ui/badge";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { useT } from "@/lib/i18n";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const t = useT();
   const [dark, setDark] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [quickOpen, setQuickOpen] = useState(0);
@@ -58,7 +61,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {navGroups.map((group) => (
             <div key={group.label}>
               <div className="px-3 pt-3 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                {group.label}
+                {t(`nav.${group.label}`, group.label)}
               </div>
               <div className="space-y-0.5">
                 {group.items.map((item) => {
@@ -76,7 +79,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                       )}
                     >
                       <Icon className="size-4" />
-                      <span className="flex-1">{item.label}</span>
+                      <span className="flex-1">{t(`nav.${item.label}`, item.label)}</span>
                       {item.to === "/inbox" && unread > 0 && (
                         <Badge variant="secondary" className="h-4 min-w-4 px-1 text-[10px]">{unread}</Badge>
                       )}
@@ -89,7 +92,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           {favorites.length > 0 && (
             <div>
-              <div className="px-3 pt-3 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Favorites</div>
+              <div className="px-3 pt-3 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{t("nav.Favorites_section", "Favorites")}</div>
               <div className="space-y-0.5">
                 {favorites.slice(0, 6).map((f) => (
                   <Link
@@ -107,7 +110,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           {recent.length > 0 && (
             <div>
-              <div className="px-3 pt-3 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Recent</div>
+              <div className="px-3 pt-3 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{t("nav.Recent", "Recent")}</div>
               <div className="space-y-0.5">
                 {recent.slice(0, 5).map((r) => (
                   <Link
@@ -137,16 +140,14 @@ export function AppShell({ children }: { children: ReactNode }) {
                 data-global-search
                 className="w-full text-left bg-muted/60 border-0 rounded-md pl-8 pr-12 py-1.5 text-sm text-muted-foreground hover:bg-muted transition-colors"
               >
-                Search projects, tasks, people…
+                {t("search.placeholder")}
               </button>
-              <input
-                type="hidden"
-                placeholder="Search projects, tasks, people…"
-              />
+              <input type="hidden" />
               <kbd className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-mono bg-background px-1.5 py-0.5 rounded border border-border text-muted-foreground">⌘K</kbd>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <LanguageSwitcher compact />
             <Button variant="ghost" size="icon" onClick={toggleDark}>
               {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
             </Button>
@@ -168,7 +169,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate({ to: "/settings" })}>
-                  Settings
+                  {t("common.settings")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={async () => {
@@ -177,7 +178,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   }}
                   className="text-destructive"
                 >
-                  <LogOut className="size-4 mr-2" /> Sign out
+                  <LogOut className="size-4 mr-2" /> {t("common.signOut")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
