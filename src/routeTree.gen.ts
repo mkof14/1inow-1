@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedTeamMapRouteImport } from './routes/_authenticated/team-map'
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -43,6 +44,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedTeamMapRoute = AuthenticatedTeamMapRouteImport.update({
@@ -159,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/team-map': typeof AuthenticatedTeamMapRoute
+  '/api/chat': typeof ApiChatRoute
   '/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
 }
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/team-map': typeof AuthenticatedTeamMapRoute
+  '/api/chat': typeof ApiChatRoute
   '/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
 }
@@ -205,6 +213,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/_authenticated/team-map': typeof AuthenticatedTeamMapRoute
+  '/api/chat': typeof ApiChatRoute
   '/_authenticated/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
 }
@@ -229,6 +238,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tasks'
     | '/team-map'
+    | '/api/chat'
     | '/projects/$slug'
     | '/projects/'
   fileRoutesByTo: FileRoutesByTo
@@ -251,6 +261,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tasks'
     | '/team-map'
+    | '/api/chat'
     | '/projects/$slug'
     | '/projects'
   id:
@@ -274,6 +285,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/tasks'
     | '/_authenticated/team-map'
+    | '/api/chat'
     | '/_authenticated/projects/$slug'
     | '/_authenticated/projects/'
   fileRoutesById: FileRoutesById
@@ -282,6 +294,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -305,6 +318,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/team-map': {
@@ -485,6 +505,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
