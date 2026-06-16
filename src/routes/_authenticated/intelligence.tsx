@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Brain, Bot, Workflow, Shield, ClipboardList, MessageSquareWarning, Database, Lock, History, Settings2, Trash2, Sparkles } from "lucide-react";
+import { Brain, Bot, Workflow, Shield, ClipboardList, MessageSquareWarning, Database, Lock, History, Settings2, Trash2, Sparkles, Bell } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/intelligence")({
   component: IntelligencePage,
@@ -62,6 +62,7 @@ function IntelligencePage() {
           <TabsTrigger value="workflows"><Workflow className="mr-1.5 h-4 w-4" />Workflows</TabsTrigger>
           <TabsTrigger value="rules"><Shield className="mr-1.5 h-4 w-4" />Rules</TabsTrigger>
           <TabsTrigger value="questions"><MessageSquareWarning className="mr-1.5 h-4 w-4" />Questions</TabsTrigger>
+          <TabsTrigger value="reminders"><Bell className="mr-1.5 h-4 w-4" />Reminders</TabsTrigger>
           <TabsTrigger value="quality"><Database className="mr-1.5 h-4 w-4" />Data Quality</TabsTrigger>
           <TabsTrigger value="privacy"><Lock className="mr-1.5 h-4 w-4" />Privacy</TabsTrigger>
           <TabsTrigger value="audit"><History className="mr-1.5 h-4 w-4" />Audit</TabsTrigger>
@@ -74,6 +75,7 @@ function IntelligencePage() {
           <TabsContent value="workflows"><WorkflowsPanel /></TabsContent>
           <TabsContent value="rules"><RulesPanel /></TabsContent>
           <TabsContent value="questions"><QuestionsPanel /></TabsContent>
+          <TabsContent value="reminders"><RemindersPanel /></TabsContent>
           <TabsContent value="quality"><QualityPanel /></TabsContent>
           <TabsContent value="privacy"><PrivacyPanel /></TabsContent>
           <TabsContent value="audit"><AuditPanel /></TabsContent>
