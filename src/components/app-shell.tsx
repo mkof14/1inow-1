@@ -174,7 +174,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     {t(`nav.section.${section.id}`, section.label)}
                   </div>
                   <ul className="space-y-1.5">
-                    {section.items.map((item) => (
+                    {section.items.filter((i) => !i.adminOnly || isAdmin).map((item) => (
                       <li key={item.to}>
                         <Link
                           to={item.to}
