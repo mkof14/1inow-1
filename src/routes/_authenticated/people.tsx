@@ -5,11 +5,13 @@ import { fetchProfiles } from "@/lib/queries";
 import { PeopleOrbit } from "@/components/icons/compass-icons";
 import { Input } from "@/components/ui/input";
 import { Search, LayoutGrid, List, Globe } from "lucide-react";
+import { useSetPageContext } from "@/lib/ai-context";
 
 export const Route = createFileRoute("/_authenticated/people")({ component: PeoplePage });
 
 function PeoplePage() {
   const profiles = useQuery({ queryKey: ["profiles"], queryFn: fetchProfiles });
+  useSetPageContext({ route: "/people", scope: "people", title: "People" }, []);
   const [view, setView] = useState<"grid" | "table">("grid");
   const [q, setQ] = useState("");
 
