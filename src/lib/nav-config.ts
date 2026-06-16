@@ -30,6 +30,7 @@ export const moreNav: NavItem[] = [
   { to: "/documents",      label: "Knowledge", icon: KnowledgeLens },
   { to: "/intelligence",   label: "Intelligence", icon: IntelligenceBars },
   { to: "/principles",     label: "Principles", icon: ShieldLine },
+  { to: "/simplicity",     label: "Simplicity", icon: ShieldLine },
   { to: "/settings",       label: "Settings",  icon: GearMark },
   { to: "/administration", label: "Admin",     icon: ShieldLine, adminOnly: true },
 ];
