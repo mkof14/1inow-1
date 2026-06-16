@@ -3,6 +3,7 @@ import { convertToModelMessages, streamText, type UIMessage } from "ai";
 import { createClient } from "@supabase/supabase-js";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { principlesSystemPrompt } from "@/lib/principles";
+import { simplicitySystemPrompt } from "@/lib/simplicity";
 
 type PageContext = {
   route?: string;
@@ -71,6 +72,8 @@ export const Route = createFileRoute("/api/chat")({
         const system = `You are Compass, the intelligence layer of Digital Invest Compass — a private decision and execution environment.
 
 ${principlesSystemPrompt()}
+
+${simplicitySystemPrompt()}
 
 TRUTH-FIRST RULES (non-negotiable):
 1. Never invent facts, people, documents, numbers, deadlines, or summaries.
