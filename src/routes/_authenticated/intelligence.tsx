@@ -110,7 +110,7 @@ function MemoryPanel() {
   });
 
   const update = useMutation({
-    mutationFn: async ({ id, patch }: { id: string; patch: Record<string, unknown> }) => {
+    mutationFn: async ({ id, patch }: { id: string; patch: { status?: "active" | "paused" | "rejected" | "archived" } }) => {
       const { error } = await supabase.from("ai_memories").update(patch).eq("id", id);
       if (error) throw error;
     },
@@ -217,7 +217,7 @@ function AgentsPanel() {
     onSuccess: () => { toast.success("Agent proposed"); setDraft({ name: "", purpose: "", scope: "" }); qc.invalidateQueries({ queryKey: ["ai_agents"] }); },
   });
   const setStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+    mutationFn: async ({ id, status }: { id: string; status: "proposed" | "active" | "expired" | "revoked" }) => {
       const { error } = await supabase.from("ai_agents").update({ status }).eq("id", id);
       if (error) throw error;
     },
@@ -454,7 +454,7 @@ function PrivacyPanel() {
     queryFn: async () => (await supabase.from("user_privacy_zones").select("*")).data ?? [],
   });
   const upsert = useMutation({
-    mutationFn: async ({ zone, patch }: { zone: string; patch: Record<string, unknown> }) => {
+    mutationFn: async ({ zone, patch }: { zone: string; patch: { enabled?: boolean; cross_zone_allowed?: boolean } }) => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("not signed in");
       const existing = data.find((d) => d.zone === zone);
