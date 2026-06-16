@@ -1,15 +1,14 @@
 import { type ReactNode, useState, useEffect } from "react";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { primaryNav, moreNav } from "@/lib/nav-config";
+import { navSections, footerSections, type NavItem } from "@/lib/nav-config";
 import { useAuth } from "@/hooks/use-auth";
-import { Search, Bell, LogOut, Moon, Sun, MoreHorizontal } from "lucide-react";
+import { Search, Bell, LogOut, Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useQuery } from "@tanstack/react-query";
 import { fetchNotifications } from "@/lib/wave1";
 import { QuickCreate } from "@/components/quick-create";
@@ -63,10 +62,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const initials = (user?.user_metadata?.full_name || user?.email || "U")
     .split(/\s|@/)[0].slice(0, 2).toUpperCase();
 
-  const visibleMore = moreNav.filter((m) => !m.adminOnly || isAdmin);
-  const moreActive = visibleMore.some((m) => pathname.startsWith(m.to));
-
-  const navItem = (item: typeof primaryNav[number]) => {
+  const navItem = (item: NavItem) => {
     const active = pathname === item.to || pathname.startsWith(item.to + "/");
     const Icon = item.icon;
     return (
@@ -81,13 +77,15 @@ export function AppShell({ children }: { children: ReactNode }) {
         )}
       >
         <Icon className={cn("size-4 shrink-0", active && "text-accent")} />
-        <span className="flex-1">{t(`nav.${item.label}`, item.label)}</span>
+        <span className="flex-1 truncate">{t(`nav.${item.label}`, item.label)}</span>
         {item.to === "/communication" && unread > 0 && (
           <Badge variant="secondary" className="h-4 min-w-4 px-1 text-[10px]">{unread}</Badge>
         )}
       </Link>
     );
   };
+
+  const visibleFooterSections = footerSections.filter((s) => !s.adminOnly || isAdmin);
 
   return (
     <div className="flex min-h-screen w-full bg-background text-foreground">
@@ -100,44 +98,18 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </Link>
 
-        <nav className="flex-1 overflow-y-auto px-2.5 pb-4 space-y-0.5 pt-2">
-          {primaryNav.map(navItem)}
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                className={cn(
-                  "w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
-                  moreActive
-                    ? "bg-accent/10 text-foreground font-medium"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
-              >
-                <MoreHorizontal className={cn("size-4", moreActive && "text-accent")} />
-                <span className="flex-1 text-left">{t("nav.More", "More")}</span>
-              </button>
-            </PopoverTrigger>
-            <PopoverContent side="right" align="start" className="w-56 p-1.5">
-              {visibleMore.map((m) => {
-                const Icon = m.icon;
-                return (
-                  <Link
-                    key={m.to}
-                    to={m.to}
-                    className="flex items-center gap-3 rounded-md px-2.5 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-                  >
-                    <Icon className="size-4" />
-                    <span>{t(`nav.${m.label}`, m.label)}</span>
-                  </Link>
-                );
-              })}
-            </PopoverContent>
-          </Popover>
+        <nav className="flex-1 overflow-y-auto px-2.5 pb-4 pt-2">
+          {navSections.map((section, idx) => (
+            <div key={section.id} className={cn(idx > 0 && "mt-4")}>
+              <div className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70">
+                {t(`nav.section.${section.id}`, section.label)}
+              </div>
+              <div className="space-y-0.5">
+                {section.items.map(navItem)}
+              </div>
+            </div>
+          ))}
         </nav>
-
-        <div className="border-t border-sidebar-border px-2.5 py-2.5">
-          <LanguageSwitcher compact />
-        </div>
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
@@ -157,6 +129,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <LanguageSwitcher />
             <Button variant="ghost" size="icon" onClick={toggleDark}>
               {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
             </Button>
@@ -191,8 +164,37 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-1 min-w-0 overflow-x-hidden overflow-y-auto">
-          <div className="min-w-0 w-full">{children}</div>
+        <main className="flex-1 min-w-0 overflow-x-hidden overflow-y-auto flex flex-col">
+          <div className="min-w-0 w-full flex-1">{children}</div>
+          <footer className="mt-12 border-t border-border bg-muted/20">
+            <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+              {visibleFooterSections.map((section) => (
+                <div key={section.id} className="min-w-0">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-2.5">
+                    {t(`nav.section.${section.id}`, section.label)}
+                  </div>
+                  <ul className="space-y-1.5">
+                    {section.items.map((item) => (
+                      <li key={item.to}>
+                        <Link
+                          to={item.to}
+                          className="text-xs text-muted-foreground hover:text-foreground truncate block"
+                        >
+                          {t(`nav.${item.label}`, item.label)}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+            <div className="border-t border-border">
+              <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
+                <span>© {new Date().getFullYear()} Digital Invest Compass</span>
+                <span>v1.0</span>
+              </div>
+            </div>
+          </footer>
         </main>
         <QuickCreate openSignal={quickOpen} />
         <CommandBar open={cmdOpen} onOpenChange={setCmdOpen} />
