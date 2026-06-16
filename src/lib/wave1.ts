@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 
 export type EntityType = "project" | "task" | "document" | "channel" | "report" | "note" | "file" | "meeting";
 
@@ -96,14 +97,7 @@ export async function fetchSettings() {
   return created;
 }
 
-type SettingsPatch = Partial<{
-  language: string;
-  timezone: string;
-  theme: string;
-  default_project_view: string;
-  notifications: Record<string, unknown>;
-  working_hours: Record<string, unknown>;
-}>;
+type SettingsPatch = Database["public"]["Tables"]["user_settings"]["Update"];
 
 export async function saveSettings(patch: SettingsPatch) {
   const user = (await supabase.auth.getUser()).data.user;
