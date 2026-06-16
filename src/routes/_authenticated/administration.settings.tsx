@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchSystemSettings, updateSystemSetting } from "@/lib/admin-queries";
+import { fetchSystemSettings, updateSystemSetting, type SystemSetting } from "@/lib/admin-queries";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,7 @@ function SettingsPage() {
   });
 
   const grouped = useMemo(() => {
-    const map = new Map<string, typeof settings.data extends infer T ? (T extends Array<infer U> ? U[] : never) : never>();
+    const map = new Map<string, SystemSetting[]>();
     (settings.data ?? []).forEach((s) => {
       const list = map.get(s.category) ?? [];
       list.push(s); map.set(s.category, list);
