@@ -6,6 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState, PageSkeleton } from "@/components/empty-state";
 import { Briefcase } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/my-work")({
   component: MyWork,
@@ -18,6 +19,7 @@ type Task = {
 };
 
 function MyWork() {
+  const t = useT();
   const { user } = useAuth();
   const { data, isLoading } = useQuery({
     queryKey: ["my-work", user?.id],
@@ -52,22 +54,26 @@ function MyWork() {
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">My Work</h1>
-        <p className="text-sm text-muted-foreground mt-1">Everything assigned to you or created by you.</p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("myWork.title")}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t("myWork.subtitle")}</p>
       </div>
 
       <Tabs defaultValue="assigned">
         <TabsList className="flex-wrap h-auto">
           {Object.entries(buckets).map(([k, v]) => (
             <TabsTrigger key={k} value={k} className="capitalize gap-2">
-              {k} <Badge variant="secondary" className="h-5">{v.length}</Badge>
+              {t(`myWork.bucket.${k}`, k)} <Badge variant="secondary" className="h-5">{v.length}</Badge>
             </TabsTrigger>
           ))}
         </TabsList>
         {Object.entries(buckets).map(([k, list]) => (
           <TabsContent key={k} value={k} className="mt-5">
             {list.length === 0 ? (
-              <EmptyState icon={Briefcase} title={`Nothing ${k}`} description="Take a breath. New work will appear here automatically." />
+              <EmptyState
+                icon={Briefcase}
+                title={t("myWork.emptyTitle").replace("{bucket}", t(`myWork.bucket.${k}`, k))}
+                description={t("myWork.emptyDesc")}
+              />
             ) : (
               <div className="border border-border rounded-lg overflow-hidden bg-card">
                 {list.map((t) => (

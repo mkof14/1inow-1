@@ -3,21 +3,23 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchFavorites } from "@/lib/wave1";
 import { EmptyState, PageSkeleton } from "@/components/empty-state";
 import { Star } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/favorites")({
   component: FavoritesPage,
 });
 
 function FavoritesPage() {
+  const t = useT();
   const { data = [], isLoading } = useQuery({ queryKey: ["favorites"], queryFn: fetchFavorites });
   if (isLoading) return <PageSkeleton />;
 
   return (
     <div className="p-6 md:p-8 max-w-5xl mx-auto">
-      <h1 className="text-2xl font-semibold tracking-tight mb-1">Favorites</h1>
-      <p className="text-sm text-muted-foreground mb-6">Quick access to the things you starred.</p>
+      <h1 className="text-2xl font-semibold tracking-tight mb-1">{t("favorites.title")}</h1>
+      <p className="text-sm text-muted-foreground mb-6">{t("favorites.subtitle")}</p>
       {data.length === 0 ? (
-        <EmptyState icon={Star} title="No favorites yet" description="Star projects, tasks, documents and channels to pin them here." />
+        <EmptyState icon={Star} title={t("favorites.emptyTitle")} description={t("favorites.emptyDesc")} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {data.map((f) => (

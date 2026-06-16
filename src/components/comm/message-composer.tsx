@@ -16,7 +16,7 @@ export function MessageComposer({ channelId, threadRootId = null, placeholder }:
   const [body, setBody] = useState("");
   const [type, setType] = useState<MessageType>("normal");
   const qc = useQueryClient();
-  const { lang } = useI18n();
+  const { lang, t } = useI18n();
 
   const send = useMutation({
     mutationFn: () => sendMessage({ channel_id: channelId, body, message_type: type, thread_root_id: threadRootId, original_language: lang }),
@@ -55,7 +55,7 @@ export function MessageComposer({ channelId, threadRootId = null, placeholder }:
         value={body}
         onChange={(e) => setBody(e.target.value)}
         onKeyDown={onKey}
-        placeholder={placeholder ?? "Write a message…"}
+        placeholder={placeholder ?? t("comm.composer.placeholder")}
         rows={2}
         className="border-0 focus-visible:ring-0 resize-none"
       />
@@ -66,7 +66,7 @@ export function MessageComposer({ channelId, threadRootId = null, placeholder }:
           <Button variant="ghost" size="icon" className="h-7 w-7" title="Video / Loom (coming soon)" disabled><Video className="size-3.5" /></Button>
         </div>
         <Button size="sm" onClick={() => send.mutate()} disabled={!body.trim() || send.isPending}>
-          <Send className="size-3.5 mr-1.5" /> Send
+          <Send className="size-3.5 mr-1.5" /> {t("common.send")}
         </Button>
       </div>
     </div>

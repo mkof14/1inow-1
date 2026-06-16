@@ -9,12 +9,14 @@ import { EmptyState, PageSkeleton } from "@/components/empty-state";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/inbox")({
   component: InboxPage,
 });
 
 function InboxPage() {
+  const t = useT();
   const qc = useQueryClient();
   const { user } = useAuth();
   const { data = [], isLoading } = useQuery({ queryKey: ["notifications"], queryFn: fetchNotifications });
@@ -47,19 +49,19 @@ function InboxPage() {
     <div className="p-6 md:p-8 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Inbox</h1>
-          <p className="text-sm text-muted-foreground mt-1">{unread.length} unread</p>
+          <h1 className="text-2xl font-semibold tracking-tight">{t("inbox.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("inbox.unread").replace("{n}", String(unread.length))}</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => allMut.mutate()} disabled={unread.length === 0}>
-          <CheckCheck className="size-4 mr-1.5" /> Mark all read
+          <CheckCheck className="size-4 mr-1.5" /> {t("common.markAllRead")}
         </Button>
       </div>
 
       <Tabs defaultValue="all">
         <TabsList>
-          <TabsTrigger value="all">All <Badge variant="secondary" className="ml-2 h-5">{data.length}</Badge></TabsTrigger>
-          <TabsTrigger value="unread">Unread <Badge variant="secondary" className="ml-2 h-5">{unread.length}</Badge></TabsTrigger>
-          <TabsTrigger value="resolved">Resolved <Badge variant="secondary" className="ml-2 h-5">{resolved.length}</Badge></TabsTrigger>
+          <TabsTrigger value="all">{t("common.all")} <Badge variant="secondary" className="ml-2 h-5">{data.length}</Badge></TabsTrigger>
+          <TabsTrigger value="unread">{t("common.unread")} <Badge variant="secondary" className="ml-2 h-5">{unread.length}</Badge></TabsTrigger>
+          <TabsTrigger value="resolved">{t("common.resolved")} <Badge variant="secondary" className="ml-2 h-5">{resolved.length}</Badge></TabsTrigger>
         </TabsList>
 
         {(["all", "unread", "resolved"] as const).map((tab) => {
@@ -67,7 +69,7 @@ function InboxPage() {
           return (
             <TabsContent key={tab} value={tab} className="mt-5">
               {list.length === 0 ? (
-                <EmptyState icon={InboxIcon} title="Your inbox is clear" description="Mentions, task updates, approvals and deadlines will land here." />
+                <EmptyState icon={InboxIcon} title={t("inbox.emptyTitle")} description={t("inbox.emptyDesc")} />
               ) : (
                 <div className="border border-border rounded-lg overflow-hidden bg-card">
                   {list.map((n) => (
@@ -89,7 +91,7 @@ function InboxPage() {
                         )}
                         {!n.resolved_at && (
                           <Button size="sm" variant="ghost" onClick={() => markMut.mutate({ id: n.id, fields: { resolved_at: new Date().toISOString(), read_at: n.read_at ?? new Date().toISOString() } })}>
-                            Resolve
+                            {t("common.resolve")}
                           </Button>
                         )}
                       </div>

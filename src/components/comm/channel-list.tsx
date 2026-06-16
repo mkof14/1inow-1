@@ -5,17 +5,23 @@ import { Hash, Lock, Globe, Plus, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { NewChannelDialog } from "./new-channel-dialog";
+import { useT } from "@/lib/i18n";
 
 const ICONS: Record<string, typeof Hash> = {
   company: Globe, project: Hash, private: Lock, group: Users, dm: Hash,
 };
 
 const GROUP_ORDER = ["company", "project", "group", "private", "dm"] as const;
-const GROUP_LABEL: Record<string, string> = {
-  company: "Company", project: "Projects", group: "Groups", private: "Private", dm: "Direct messages",
+const GROUP_KEY: Record<string, string> = {
+  company: "comm.section.company",
+  project: "comm.section.project",
+  group: "comm.section.groups",
+  private: "comm.section.private",
+  dm: "comm.section.dm",
 };
 
 export function ChannelList({ activeId, onSelect }: { activeId: string | null; onSelect: (c: Channel) => void }) {
+  const t = useT();
   const { data: channels = [] } = useQuery({ queryKey: ["channels"], queryFn: fetchChannels });
   const [creating, setCreating] = useState(false);
 
@@ -24,14 +30,14 @@ export function ChannelList({ activeId, onSelect }: { activeId: string | null; o
   return (
     <aside className="w-64 shrink-0 border-r border-border bg-sidebar/40 flex flex-col">
       <div className="h-14 px-4 flex items-center justify-between border-b border-border">
-        <div className="text-sm font-semibold">Channels</div>
+        <div className="text-sm font-semibold">{t("comm.channels")}</div>
         <Button variant="ghost" size="icon" onClick={() => setCreating(true)}><Plus className="size-4" /></Button>
       </div>
       <div className="flex-1 overflow-y-auto py-2">
         {grouped.map((g) => (
           <div key={g.key} className="mb-3">
             <div className="px-4 py-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-              {GROUP_LABEL[g.key]}
+              {t(GROUP_KEY[g.key], g.key)}
             </div>
             {g.items.map((c) => {
               const Icon = ICONS[c.type] ?? Hash;
