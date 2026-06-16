@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { DecisionDiamond } from "@/components/icons/compass-icons";
 import { Check, X, Clock, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/approvals")({ component: DecisionsPage });
 
@@ -32,6 +33,7 @@ const IMPACT_DOT: Record<DecisionImpact, string> = {
 };
 
 function DecisionsPage() {
+  const t = useT();
   const { user } = useAuth();
   const qc = useQueryClient();
   const decisions = useQuery({ queryKey: ["decisions"], queryFn: fetchDecisions });
@@ -82,16 +84,16 @@ function DecisionsPage() {
         <div className="flex items-center gap-4">
           <div className="text-accent"><DecisionDiamond size={44} /></div>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight font-display">Decisions</h1>
-            <p className="text-sm text-muted-foreground mt-1">Direction-shaping calls across the portfolio.</p>
+            <h1 className="text-2xl font-semibold tracking-tight font-display">{t("page.decisions.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{t("page.decisions.subtitle")}</p>
           </div>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button><Plus className="size-4" /> Open decision</Button></DialogTrigger>
+          <DialogTrigger asChild><Button><Plus className="size-4" /> {t("page.decisions.open")}</Button></DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>Open a decision</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{t("page.decisions.openA")}</DialogTitle></DialogHeader>
             <div className="space-y-3">
-              <div><Label>Title</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="What needs to be decided?" /></div>
+              <div><Label>Title</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder={t("page.decisions.titlePh")} /></div>
               <div><Label>Context</Label><Textarea rows={3} value={form.context} onChange={(e) => setForm({ ...form, context: e.target.value })} /></div>
               <div><Label>Recommendation</Label><Textarea rows={2} value={form.recommendation} onChange={(e) => setForm({ ...form, recommendation: e.target.value })} /></div>
               <div className="grid grid-cols-2 gap-3">
@@ -105,7 +107,7 @@ function DecisionsPage() {
                   <Select value={form.project_id} onValueChange={(v) => setForm({ ...form, project_id: v })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">No project</SelectItem>
+                      <SelectItem value="none">{t("page.decisions.noProject")}</SelectItem>
                       {projects.data?.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
@@ -113,8 +115,8 @@ function DecisionsPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button onClick={() => create.mutate()} disabled={!form.title || create.isPending}>Open</Button>
+              <Button variant="outline" onClick={() => setOpen(false)}>{t("common.cancel")}</Button>
+              <Button onClick={() => create.mutate()} disabled={!form.title || create.isPending}>{t("btn.open")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -135,7 +137,7 @@ function DecisionsPage() {
       <div className="grid gap-3">
         {rows.length === 0 && (
           <div className="text-center text-sm text-muted-foreground p-12 border border-dashed border-border rounded-xl">
-            No decisions yet. Open one to start the trail.
+            {t("page.decisions.empty")}
           </div>
         )}
         {rows.map((d: any) => (
@@ -162,7 +164,7 @@ function DecisionsPage() {
                 {d.context && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{d.context}</p>}
                 {d.recommendation && (
                   <div className="mt-2 text-xs px-3 py-2 rounded-md bg-muted/40 border border-border">
-                    <span className="font-semibold text-foreground/80">Recommended:</span> {d.recommendation}
+                    <span className="font-semibold text-foreground/80">{t("page.decisions.recommended")}</span> {d.recommendation}
                   </div>
                 )}
               </div>
@@ -170,11 +172,11 @@ function DecisionsPage() {
                 <div className="flex flex-col gap-1.5 shrink-0">
                   <Button size="sm" variant="outline" className="border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10"
                     onClick={() => decide.mutate({ id: d.id, status: "approved" })}>
-                    <Check className="size-3.5" /> Approve
+                    <Check className="size-3.5" /> {t("btn.approve")}
                   </Button>
                   <Button size="sm" variant="outline" className="border-rose-500/40 text-rose-600 hover:bg-rose-500/10"
                     onClick={() => decide.mutate({ id: d.id, status: "rejected" })}>
-                    <X className="size-3.5" /> Reject
+                    <X className="size-3.5" /> {t("btn.reject")}
                   </Button>
                 </div>
               ) : null}
