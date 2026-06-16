@@ -760,6 +760,42 @@ export type Database = {
         }
         Relationships: []
       }
+      relations: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string | null
+          relation_type: string
+          source_id: string
+          source_type: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          relation_type?: string
+          source_id: string
+          source_type: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          relation_type?: string
+          source_id?: string
+          source_type?: string
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: []
+      }
       saved_messages: {
         Row: {
           created_at: string
