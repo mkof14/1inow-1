@@ -16,6 +16,7 @@ import { Route as AuthenticatedTeamMapRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
+import { Route as AuthenticatedPeopleRouteImport } from './routes/_authenticated/people'
 import { Route as AuthenticatedMyWorkRouteImport } from './routes/_authenticated/my-work'
 import { Route as AuthenticatedInboxRouteImport } from './routes/_authenticated/inbox'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
@@ -62,6 +63,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
 const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPeopleRoute = AuthenticatedPeopleRouteImport.update({
+  id: '/people',
+  path: '/people',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedMyWorkRoute = AuthenticatedMyWorkRouteImport.update({
@@ -148,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/files': typeof AuthenticatedFilesRoute
   '/inbox': typeof AuthenticatedInboxRoute
   '/my-work': typeof AuthenticatedMyWorkRoute
+  '/people': typeof AuthenticatedPeopleRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tasks': typeof AuthenticatedTasksRoute
@@ -169,6 +176,7 @@ export interface FileRoutesByTo {
   '/files': typeof AuthenticatedFilesRoute
   '/inbox': typeof AuthenticatedInboxRoute
   '/my-work': typeof AuthenticatedMyWorkRoute
+  '/people': typeof AuthenticatedPeopleRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tasks': typeof AuthenticatedTasksRoute
@@ -192,6 +200,7 @@ export interface FileRoutesById {
   '/_authenticated/files': typeof AuthenticatedFilesRoute
   '/_authenticated/inbox': typeof AuthenticatedInboxRoute
   '/_authenticated/my-work': typeof AuthenticatedMyWorkRoute
+  '/_authenticated/people': typeof AuthenticatedPeopleRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
@@ -215,6 +224,7 @@ export interface FileRouteTypes {
     | '/files'
     | '/inbox'
     | '/my-work'
+    | '/people'
     | '/reports'
     | '/settings'
     | '/tasks'
@@ -236,6 +246,7 @@ export interface FileRouteTypes {
     | '/files'
     | '/inbox'
     | '/my-work'
+    | '/people'
     | '/reports'
     | '/settings'
     | '/tasks'
@@ -258,6 +269,7 @@ export interface FileRouteTypes {
     | '/_authenticated/files'
     | '/_authenticated/inbox'
     | '/_authenticated/my-work'
+    | '/_authenticated/people'
     | '/_authenticated/reports'
     | '/_authenticated/settings'
     | '/_authenticated/tasks'
@@ -321,6 +333,13 @@ declare module '@tanstack/react-router' {
       path: '/reports'
       fullPath: '/reports'
       preLoaderRoute: typeof AuthenticatedReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/people': {
+      id: '/_authenticated/people'
+      path: '/people'
+      fullPath: '/people'
+      preLoaderRoute: typeof AuthenticatedPeopleRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/my-work': {
@@ -429,6 +448,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
   AuthenticatedInboxRoute: typeof AuthenticatedInboxRoute
   AuthenticatedMyWorkRoute: typeof AuthenticatedMyWorkRoute
+  AuthenticatedPeopleRoute: typeof AuthenticatedPeopleRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
@@ -449,6 +469,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
   AuthenticatedInboxRoute: AuthenticatedInboxRoute,
   AuthenticatedMyWorkRoute: AuthenticatedMyWorkRoute,
+  AuthenticatedPeopleRoute: AuthenticatedPeopleRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
