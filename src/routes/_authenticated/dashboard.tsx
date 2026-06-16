@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchProjects, fetchTasks, fetchProfiles } from "@/lib/queries";
 import { fetchNotifications } from "@/lib/wave1";
 import { useAuth } from "@/hooks/use-auth";
-import { FolderPlus, CheckSquare, MessageSquare, Calendar, ArrowRight, Clock, AlertCircle } from "lucide-react";
+import { Play, ListChecks, Mic, Sparkles, ArrowRight, Clock, AlertCircle, MessageSquare, Calendar } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({ component: HomePage });
 
@@ -28,27 +28,54 @@ function HomePage() {
     t.assignee_id === user?.id && t.status !== "done" && t.status !== "canceled"
   );
   const activeProjects = (projects.data ?? []).filter((p: any) => p.status === "active" || p.status === "in_progress");
+  const blockedProjects = (projects.data ?? []).filter((p: any) => p.status === "on_hold" || p.status === "blocked");
   const needsAttention = (projects.data ?? []).filter((p: any) => p.priority === "critical" || p.priority === "high").length;
   const unread = (notifs.data ?? []).filter((n: any) => !n.read_at).length;
   const today = new Date(); today.setHours(0,0,0,0);
   const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
-  const todaysTasks = myTasks.filter((t: any) => t.due_date && new Date(t.due_date) < tomorrow);
+  const overdueTasks = myTasks.filter((t: any) => t.due_date && new Date(t.due_date) < today);
+  const todaysTasks = myTasks.filter((t: any) => t.due_date && new Date(t.due_date) >= today && new Date(t.due_date) < tomorrow);
 
-  const actions = [
-    { label: "New project", icon: FolderPlus, to: "/projects" as const, tone: "from-accent to-accent/70" },
-    { label: "New task",    icon: CheckSquare, to: "/tasks" as const, tone: "from-emerald-500 to-emerald-400" },
-    { label: "Message",     icon: MessageSquare, to: "/communication" as const, tone: "from-blue-500 to-blue-400" },
-    { label: "Meeting",     icon: Calendar, to: "/calendar" as const, tone: "from-amber-500 to-amber-400" },
-  ];
+  // Estimate focused work — heuristic (30m per open task, capped 8h)
+  const focusMin = Math.min(8 * 60, myTasks.length * 30);
+  const fh = Math.floor(focusMin / 60), fm = focusMin % 60;
 
   return (
-    <div className="p-6 md:p-10 max-w-[1200px] mx-auto">
-      {/* Greeting */}
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-display tracking-tight">
-          {greeting()}, <span className="text-accent">{name}</span>
-        </h1>
-        <p className="text-sm text-muted-foreground mt-2">Today's focus — here's what's waiting for you.</p>
+    <div className="p-6 md:p-10 max-w-[1100px] mx-auto">
+      {/* AI Briefing */}
+      <div className="mb-8 rounded-3xl border border-border bg-gradient-to-br from-accent/8 via-card to-card p-6 md:p-8 shadow-sm">
+        <div className="flex items-start gap-3 mb-4">
+          <div className="size-10 rounded-2xl gradient-compass grid place-items-center text-primary-foreground shrink-0">
+            <Sparkles className="size-5" />
+          </div>
+          <div className="flex-1">
+            <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Compass briefing</div>
+            <h1 className="text-2xl md:text-3xl font-display tracking-tight mt-1">
+              {greeting()}, <span className="text-accent">{name}</span>.
+            </h1>
+          </div>
+        </div>
+        <div className="text-[15px] leading-relaxed text-foreground/90 space-y-1.5 pl-13 md:pl-[52px]">
+          <p>Today you have:</p>
+          <ul className="list-none space-y-1">
+            <Briefing n={todaysTasks.length} unit="task" tail="due today" />
+            <Briefing n={overdueTasks.length} unit="task" tail="overdue" tone="warn" />
+            <Briefing n={blockedProjects.length} unit="project" tail="blocked" tone={blockedProjects.length ? "warn" : undefined} />
+            <Briefing n={unread} unit="unread message" tail="waiting" />
+            <Briefing n={needsAttention} unit="high-priority project" tail="needs attention" />
+          </ul>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Estimated focused work: <span className="font-mono text-foreground">{fh}h {fm}m</span>
+          </p>
+        </div>
+
+        <div className="mt-6 flex flex-wrap gap-2 pl-13 md:pl-[52px]">
+          <PrimaryAction icon={Play} label="Start Work" onClick={() => navigate({ to: "/tasks" })} />
+          <SecondaryAction icon={ListChecks} label="Review Today" onClick={() => navigate({ to: "/calendar" })} />
+          <SecondaryAction icon={MessageSquare} label="Talk" onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "j", metaKey: true }))} />
+          <SecondaryAction icon={AlertCircle} label="Show Priorities" onClick={() => navigate({ to: "/projects" })} />
+          <SecondaryAction icon={Mic} label="Voice" onClick={() => alert("Voice mode coming soon.")} />
+        </div>
       </div>
 
       {/* Today summary */}
@@ -59,24 +86,6 @@ function HomePage() {
         <SummaryCard label="needs attention" value={needsAttention} to="/projects" tone={needsAttention > 0 ? "warn" : undefined} />
       </div>
 
-      {/* Big action buttons */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
-        {actions.map((a) => (
-          <button
-            key={a.label}
-            onClick={() => navigate({ to: a.to })}
-            className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 text-left hover:shadow-md hover:border-accent/40 hover:-translate-y-0.5 transition-all"
-          >
-            <div className={`size-10 rounded-xl bg-gradient-to-br ${a.tone} grid place-items-center text-white shadow-sm mb-3`}>
-              <a.icon className="size-5" />
-            </div>
-            <div className="font-medium">{a.label}</div>
-            <ArrowRight className="absolute top-5 right-5 size-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
-          </button>
-        ))}
-      </div>
-
-      {/* Two-column content */}
       <div className="grid md:grid-cols-3 gap-6">
         {/* My projects */}
         <Section title="My projects" to="/projects" className="md:col-span-2">
