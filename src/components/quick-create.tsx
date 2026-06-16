@@ -9,8 +9,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-export function QuickCreate() {
+export function QuickCreate({ openSignal = 0 }: { openSignal?: number }) {
   const [open, setOpen] = useState(false);
+  // open externally when signal changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // we intentionally watch openSignal only
+  const lastSignal = useRef(openSignal);
+  if (openSignal !== lastSignal.current) {
+    lastSignal.current = openSignal;
+    if (openSignal > 0 && !open) setTimeout(() => setOpen(true), 0);
+  }
   const [tab, setTab] = useState<"task" | "project" | "note">("task");
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
