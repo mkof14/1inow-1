@@ -13,12 +13,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2, LayoutGrid, Table as TableIcon, Activity, Search } from "lucide-react";
 import { toast } from "sonner";
 import { PortfolioCard } from "@/components/icons/compass-icons";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/projects/")({
   component: ProjectsPage,
 });
 
 function ProjectsPage() {
+  const t = useT();
   const projects = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -73,16 +75,16 @@ function ProjectsPage() {
         <div className="flex items-center gap-4">
           <div className="text-accent"><PortfolioCard size={44} /></div>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight font-display">Portfolio</h1>
-            <p className="text-sm text-muted-foreground mt-1">All portfolio companies and initiatives.</p>
+            <h1 className="text-2xl font-semibold tracking-tight font-display">{t("page.projects.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{t("page.projects.subtitle")}</p>
           </div>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button><Plus className="size-4" /> New entity</Button>
+            <Button><Plus className="size-4" /> {t("page.projects.new")}</Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>Create project</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{t("page.projects.create")}</DialogTitle></DialogHeader>
             <div className="space-y-3">
               <div className="space-y-1.5">
                 <Label>Name</Label>
@@ -118,8 +120,8 @@ function ProjectsPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button onClick={() => create.mutate()} disabled={!form.name || create.isPending}>Create</Button>
+              <Button variant="outline" onClick={() => setOpen(false)}>{t("common.cancel")}</Button>
+              <Button onClick={() => create.mutate()} disabled={!form.name || create.isPending}>{t("common.create")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -128,12 +130,12 @@ function ProjectsPage() {
       <div className="flex flex-wrap items-center gap-3 mb-5">
         <div className="relative flex-1 min-w-[220px] max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search portfolio…" className="pl-9 h-9" />
+          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("page.projects.searchPh")} className="pl-9 h-9" />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[160px] h-9"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectTrigger className="w-[160px] h-9"><SelectValue placeholder={t("tbl.status")} /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="all">{t("page.projects.allStatuses")}</SelectItem>
             {PROJECT_STATUSES.map((s) => <SelectItem key={s} value={s}>{PROJECT_STATUS_LABEL[s]}</SelectItem>)}
           </SelectContent>
         </Select>
@@ -168,10 +170,10 @@ function ProjectsPage() {
                 </span>
               </div>
               <h3 className="font-semibold tracking-tight">{p.name}</h3>
-              <p className="text-xs text-muted-foreground mt-1 line-clamp-2 min-h-[2rem]">{p.description ?? "No description"}</p>
+              <p className="text-xs text-muted-foreground mt-1 line-clamp-2 min-h-[2rem]">{p.description ?? t("page.projects.noDescription")}</p>
               <div className="mt-4">
                 <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
-                  <span>{p.priority} priority</span>
+                  <span>{t("page.projects.priority").replace("{p}", p.priority)}</span>
                   <span className="font-mono text-foreground">{p.progress}%</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-muted overflow-hidden">
@@ -181,13 +183,13 @@ function ProjectsPage() {
             </Link>
             <div className="mt-4 pt-4 border-t border-border flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
               <Link to="/projects/$slug" params={{ slug: p.slug }} className="text-xs text-accent font-medium hover:underline">
-                Open →
+                {t("btn.open")} →
               </Link>
               <button
-                onClick={() => { if (confirm("Archive this project?")) archive.mutate(p.id); }}
+                onClick={() => { if (confirm(t("page.projects.archiveConfirm"))) archive.mutate(p.id); }}
                 className="text-xs text-muted-foreground hover:text-destructive inline-flex items-center gap-1"
               >
-                <Trash2 className="size-3" /> Archive
+                <Trash2 className="size-3" /> {t("btn.archive")}
               </button>
             </div>
           </div>
@@ -200,7 +202,7 @@ function ProjectsPage() {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 border-b border-border">
               <tr className="text-left">
-                {["Entity","Status","Priority","Progress","Created"].map(h => (
+                {[t("tbl.entity"), t("tbl.status"), t("tbl.priority"), t("tbl.progress"), t("tbl.created")].map(h => (
                   <th key={h} className="px-4 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{h}</th>
                 ))}
               </tr>
