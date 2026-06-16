@@ -12,4 +12,8 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // Force-enable nitro outside the Lovable sandbox (e.g. Vercel CI) so the build
+  // produces a deployable server bundle. Preset is controlled by NITRO_PRESET
+  // (set to "vercel" in vercel.json).
+  nitro: true,
 });
