@@ -19,10 +19,17 @@ export function ThreadPanel({
     queryFn: async () => {
       const { data } = await supabase
         .from("messages")
-        .select("*, profiles:author_id(id,full_name,avatar_url)")
+        .select("*")
         .eq("id", threadRootId)
         .maybeSingle();
-      return data;
+      if (!data) return null;
+      let profile = null;
+      if (data.author_id) {
+        const { data: p } = await supabase
+          .from("profiles").select("id,full_name,avatar_url").eq("id", data.author_id).maybeSingle();
+        profile = p ?? null;
+      }
+      return { ...data, profiles: profile };
     },
   });
   const replies = useQuery({
