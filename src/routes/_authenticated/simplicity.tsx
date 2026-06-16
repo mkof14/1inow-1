@@ -2,17 +2,19 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageContainer, SectionHeader, ResponsiveGrid } from "@/components/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { simplicityRules, forbiddenJargon } from "@/lib/simplicity";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/simplicity")({
   component: SimplicityPage,
 });
 
 function SimplicityPage() {
+  const t = useT();
   return (
     <PageContainer size="wide">
       <SectionHeader
-        title="Simplicity Framework"
-        description="The product optimizes for understanding, not functionality. These rules apply to every screen."
+        title={t("page.simplicity.title")}
+        description={t("page.simplicity.subtitle")}
       />
 
       <Card className="mb-6 border-primary/30 bg-primary/5">
