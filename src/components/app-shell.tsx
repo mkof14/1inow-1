@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useState, useEffect } from "react";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { primaryNav, moreNav } from "@/lib/nav-config";
 import { useAuth } from "@/hooks/use-auth";
@@ -20,6 +20,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { useT } from "@/lib/i18n";
 import { CompassLogo } from "@/components/icons/compass-icons";
 import { Fab } from "@/components/fab";
+import { AiSidebar, CollapsedRail, type AiSidebarMode } from "@/components/ai-sidebar";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -29,6 +30,24 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [dark, setDark] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [quickOpen, setQuickOpen] = useState(0);
+  const [aiOpen, setAiOpen] = useState(true);
+  const [aiMode, setAiMode] = useState<AiSidebarMode>("docked");
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const inField = target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
+        e.preventDefault();
+        setAiOpen((v) => !v);
+      } else if (e.code === "Space" && !inField && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        setAiOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   useShortcuts(() => setCmdOpen(true), () => setQuickOpen((n) => n + 1));
 
@@ -177,6 +196,14 @@ export function AppShell({ children }: { children: ReactNode }) {
         <CommandBar open={cmdOpen} onOpenChange={setCmdOpen} />
         <Fab />
       </div>
+
+      {aiMode !== "floating" && aiOpen && (
+        <AiSidebar open={aiOpen} mode="docked" onModeChange={setAiMode} onClose={() => setAiOpen(false)} />
+      )}
+      {!aiOpen && <CollapsedRail onOpen={() => setAiOpen(true)} />}
+      {aiMode === "floating" && aiOpen && (
+        <AiSidebar open={aiOpen} mode="floating" onModeChange={setAiMode} onClose={() => setAiOpen(false)} />
+      )}
     </div>
   );
 }
