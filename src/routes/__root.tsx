@@ -80,10 +80,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Digital Invest OS" },
-      { name: "description", content: "One workspace. Unlimited projects. The operating system for Digital Invest." },
-      { property: "og:title", content: "Digital Invest OS" },
-      { property: "og:description", content: "One workspace. Unlimited projects." },
+      { title: "Digital Invest Compass" },
+      { name: "description", content: "A premium command and execution environment for Digital Invest — portfolio, signals, decisions, people, knowledge." },
+      { property: "og:title", content: "Digital Invest Compass" },
+      { property: "og:description", content: "Command. Portfolio. Signals. Decisions. Execution." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
@@ -92,6 +92,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "stylesheet",
         href: appCss,
+      },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500;600;700&display=swap",
       },
     ],
   }),

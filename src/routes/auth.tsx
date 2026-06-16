@@ -9,9 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { CompassLogo } from "@/components/icons/compass-icons";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Sign in — Digital Invest OS" }] }),
+  head: () => ({ meta: [{ title: "Sign in — Digital Invest Compass" }] }),
   component: AuthPage,
 });
 
@@ -70,36 +71,42 @@ function AuthPage() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-background">
       <div className="lg:hidden absolute top-3 right-3 z-10"><LanguageSwitcher /></div>
-      <div className="hidden lg:flex flex-col justify-between p-12 bg-primary text-primary-foreground relative overflow-hidden">
-        <div className="flex items-center gap-3">
-          <div className="size-9 rounded-lg bg-background/10 grid place-items-center">
-            <div className="size-3.5 rounded-full border-2 border-accent" />
+      <div className="hidden lg:flex flex-col justify-between p-12 gradient-compass text-primary-foreground relative overflow-hidden">
+        <div className="flex items-center gap-3 relative">
+          <CompassLogo size={36} className="text-accent" />
+          <div className="leading-tight">
+            <div className="font-display text-lg">Digital Invest</div>
+            <div className="text-[10px] uppercase tracking-[0.22em] text-primary-foreground/60">Compass</div>
           </div>
-          <span className="font-semibold tracking-tight">Digital Invest OS</span>
         </div>
-        <div className="space-y-5 max-w-md">
-          <h1 className="text-4xl font-semibold tracking-tight leading-tight text-balance">
-            One workspace. <span className="text-accent">Unlimited projects.</span>
+        <div className="space-y-5 max-w-md relative">
+          <h1 className="font-display text-5xl leading-[1.05] text-balance">
+            Command.<br />
+            <span className="text-accent">Portfolio. Decisions.</span><br />
+            Execution.
           </h1>
           <p className="text-primary-foreground/70 text-pretty leading-relaxed">
-            The operating system for Digital Invest — projects, tasks, teams, documents,
-            communication and reporting, unified.
+            A private command and execution environment for Digital Invest — for the
+            portfolio, for the people, for every decision in flight.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-primary-foreground/50">
-          <div className="size-1.5 rounded-full bg-accent animate-pulse" />
-          Secure · Real-time · Enterprise-grade
+        <div className="flex items-center gap-2 text-xs text-primary-foreground/50 relative">
+          <div className="size-1.5 rounded-full bg-accent signal-pulse" />
+          Private · Real-time · Multilingual
         </div>
-        <div aria-hidden className="absolute -bottom-32 -right-32 size-96 rounded-full bg-accent/10 blur-3xl" />
+        <div aria-hidden className="absolute -bottom-40 -right-40 size-[28rem] rounded-full border border-accent/20" />
+        <div aria-hidden className="absolute -bottom-32 -right-32 size-96 rounded-full border border-accent/15" />
+        <div aria-hidden className="absolute -bottom-24 -right-24 size-72 rounded-full border border-accent/10" />
+        <div aria-hidden className="absolute top-1/3 right-12 text-accent/20 compass-spin"><CompassLogo size={220} /></div>
       </div>
 
       <div className="flex items-center justify-center p-6 md:p-12">
         <div className="absolute top-3 right-3 hidden lg:block"><LanguageSwitcher /></div>
         <div className="w-full max-w-sm space-y-6">
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight">Welcome</h2>
+            <h2 className="font-display text-3xl">Welcome</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Sign in to your Digital Invest workspace.
+              Sign in to Digital Invest Compass.
             </p>
           </div>
 

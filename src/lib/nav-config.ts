@@ -1,65 +1,56 @@
 import {
-  LayoutDashboard, FolderKanban, CheckSquare, MessageSquare, Users, UserCircle,
-  Calendar, FileText, FolderOpen, Video, Map, BarChart3, ShieldCheck,
-  BookOpen, Sparkles, Settings2, Cog, Briefcase, Inbox, Star,
-  Globe,
-} from "lucide-react";
+  CompassMark, PortfolioCard, ExecutionNode, SignalWave, TimelinePulse,
+  PeopleOrbit, KnowledgeLens, VaultMark, DecisionDiamond, IntelligenceBars,
+  AdvisorRing, ShieldLine, WorkMark, InboxRoute,
+} from "@/components/icons/compass-icons";
+import type { ComponentType, SVGProps } from "react";
+
+export type NavIcon = ComponentType<SVGProps<SVGSVGElement> & { size?: number | string }>;
 
 export type NavGroup = {
   label: string;
-  items: { to: string; label: string; icon: typeof LayoutDashboard }[];
+  items: { to: string; label: string; icon: NavIcon }[];
 };
 
+/**
+ * Sidebar groups. Labels are i18n keys ("nav.<Label>").
+ * Routes that do not yet exist will be added in later waves; for now the link
+ * resolves to the legacy path so navigation never dead-ends.
+ */
 export const navGroups: NavGroup[] = [
   {
     label: "Personal",
     items: [
-      { to: "/my-work", label: "My Work", icon: Briefcase },
-      { to: "/inbox", label: "Inbox", icon: Inbox },
-      { to: "/favorites", label: "Favorites", icon: Star },
+      { to: "/my-work", label: "My Work", icon: WorkMark },
+      { to: "/inbox", label: "Inbox", icon: InboxRoute },
+      { to: "/favorites", label: "Favorites", icon: CompassMark },
     ],
   },
   {
-    label: "Workspace",
+    label: "Command",
     items: [
-      { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { to: "/projects", label: "Projects", icon: FolderKanban },
-      { to: "/tasks", label: "Tasks", icon: CheckSquare },
-      { to: "/calendar", label: "Calendar", icon: Calendar },
+      { to: "/dashboard", label: "Command View", icon: CompassMark },
+      { to: "/projects", label: "Portfolio", icon: PortfolioCard },
+      { to: "/tasks", label: "Execution", icon: ExecutionNode },
+      { to: "/communication", label: "Signals", icon: SignalWave },
+      { to: "/calendar", label: "Timeline", icon: TimelinePulse },
     ],
   },
   {
-    label: "People",
+    label: "People & Knowledge",
     items: [
-      { to: "/teams", label: "Teams", icon: Users },
-      { to: "/people", label: "People", icon: UserCircle },
-      { to: "/communication", label: "Communication", icon: MessageSquare },
-      { to: "/team-map", label: "Team Map", icon: Globe },
+      { to: "/people", label: "People", icon: PeopleOrbit },
+      { to: "/documents", label: "Knowledge", icon: KnowledgeLens },
+      { to: "/files", label: "Vault", icon: VaultMark },
     ],
   },
   {
-    label: "Knowledge",
+    label: "Direction",
     items: [
-      { to: "/documents", label: "Documents", icon: FileText },
-      { to: "/files", label: "Files", icon: FolderOpen },
-      { to: "/knowledge-base", label: "Knowledge Base", icon: BookOpen },
-    ],
-  },
-  {
-    label: "Operations",
-    items: [
-      { to: "/meetings", label: "Meetings", icon: Video },
-      { to: "/roadmaps", label: "Roadmaps", icon: Map },
-      { to: "/reports", label: "Reports", icon: BarChart3 },
-      { to: "/approvals", label: "Approvals", icon: ShieldCheck },
-    ],
-  },
-  {
-    label: "System",
-    items: [
-      { to: "/ai", label: "AI Assistant", icon: Sparkles },
-      { to: "/administration", label: "Administration", icon: Cog },
-      { to: "/settings", label: "Settings", icon: Settings2 },
+      { to: "/approvals", label: "Decisions", icon: DecisionDiamond },
+      { to: "/reports", label: "Intelligence", icon: IntelligenceBars },
+      { to: "/ai", label: "Advisor", icon: AdvisorRing },
+      { to: "/administration", label: "Control", icon: ShieldLine },
     ],
   },
 ];
