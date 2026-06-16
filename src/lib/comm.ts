@@ -81,7 +81,7 @@ export async function joinChannel(channelId: string) {
 export async function fetchMessages(channelId: string, threadRootId: string | null = null) {
   let q = supabase
     .from("messages")
-    .select("*, profiles:author_id(id,full_name,avatar_url)")
+    .select("*")
     .eq("channel_id", channelId)
     .is("deleted_at", null)
     .order("created_at", { ascending: true })
@@ -93,7 +93,20 @@ export async function fetchMessages(channelId: string, threadRootId: string | nu
   }
   const { data, error } = await q;
   if (error) throw error;
-  return (data ?? []) as Message[];
+  const rows = data ?? [];
+  const authorIds = Array.from(new Set(rows.map((r) => r.author_id).filter(Boolean))) as string[];
+  let profilesById: Record<string, { id: string; full_name: string | null; avatar_url: string | null }> = {};
+  if (authorIds.length > 0) {
+    const { data: profs } = await supabase
+      .from("profiles")
+      .select("id,full_name,avatar_url")
+      .in("id", authorIds);
+    profilesById = Object.fromEntries((profs ?? []).map((p) => [p.id, p]));
+  }
+  return rows.map((r) => ({
+    ...r,
+    profiles: r.author_id ? (profilesById[r.author_id] ?? null) : null,
+  })) as unknown as Message[];
 }
 
 export async function sendMessage(input: {
