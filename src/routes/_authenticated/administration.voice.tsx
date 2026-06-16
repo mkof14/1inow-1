@@ -13,7 +13,7 @@ import { MicIndicator } from "@/components/voice/mic-indicator";
 import { Mic, Volume2, Keyboard, Save, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { systemSettingsQuery, updateSystemSetting } from "@/lib/admin-queries";
+import { fetchSystemSettings, updateSystemSetting, type SystemSetting } from "@/lib/admin-queries";
 import { useI18n } from "@/lib/i18n";
 import { dictionaries } from "@/lib/i18n/dictionaries";
 
@@ -47,7 +47,10 @@ function loadUserPrefs(): UserVoicePrefs {
 function VoicePage() {
   const { t } = useI18n();
   const qc = useQueryClient();
-  const { data: settings = [] } = useQuery(systemSettingsQuery);
+  const { data: settings = [] } = useQuery<SystemSetting[]>({
+    queryKey: ["admin", "system-settings"],
+    queryFn: fetchSystemSettings,
+  });
 
   const getSetting = (key: string, fb: unknown) =>
     settings.find((s) => s.key === key)?.value ?? fb;
