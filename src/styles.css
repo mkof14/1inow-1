@@ -249,3 +249,47 @@
   color: var(--sidebar-accent-foreground);
   box-shadow: inset 2px 0 0 0 var(--accent);
 }
+
+/* ------------------------------------------------------------------ */
+/* Global layout safety rails — prevent overflow, stretched images,   */
+/* unbounded tables, and broken modals across the whole application.  */
+/* ------------------------------------------------------------------ */
+
+/* Never let media stretch its container or distort. */
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* When width/height are both set explicitly (avatars, logos), keep them. */
+img[width][height] {
+  height: auto;
+}
+
+/* Long words / URLs must wrap instead of breaking layout. */
+:where(p, h1, h2, h3, h4, h5, h6, li, dd, dt, td, th, span, a, button) {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Tables should never silently overflow their parent. */
+:where(main) table {
+  max-width: 100%;
+}
+
+/* Radix Dialog content (centered modals only — not Sheets which set data-side). */
+[role="dialog"]:not([data-side]) {
+  max-width: min(calc(100vw - 2rem), 42rem);
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+}
+
+/* Single-line ellipsis helper. */
+@utility text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
