@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Plus, FolderKanban, CheckSquare, FileText, Video, StickyNote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -11,14 +11,13 @@ import { toast } from "sonner";
 
 export function QuickCreate({ openSignal = 0 }: { openSignal?: number }) {
   const [open, setOpen] = useState(false);
-  // open externally when signal changes
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  // we intentionally watch openSignal only
-  const lastSignal = useRef(openSignal);
-  if (openSignal !== lastSignal.current) {
-    lastSignal.current = openSignal;
-    if (openSignal > 0 && !open) setTimeout(() => setOpen(true), 0);
-  }
+  const lastSignal = useRef(0);
+  useEffect(() => {
+    if (openSignal !== lastSignal.current) {
+      lastSignal.current = openSignal;
+      if (openSignal > 0) setOpen(true);
+    }
+  }, [openSignal]);
   const [tab, setTab] = useState<"task" | "project" | "note">("task");
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
