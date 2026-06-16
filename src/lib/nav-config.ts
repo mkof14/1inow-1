@@ -4,6 +4,7 @@ import {
   ShieldLine, GearMark,
 } from "@/components/icons/compass-icons";
 import { BrainPulse } from "@/components/icons/brain-pulse";
+import { ThinkingLoop } from "@/components/icons/thinking-loop";
 import type { ComponentType, SVGProps } from "react";
 
 export type NavIcon = ComponentType<SVGProps<SVGSVGElement> & { size?: number | string }>;
@@ -22,6 +23,7 @@ export const primaryNav: NavItem[] = [
 /** "More" — collapsed by default */
 export const moreNav: NavItem[] = [
   { to: "/brain",          label: "System Brain", icon: BrainPulse },
+  { to: "/thinking",       label: "Thinking Engine", icon: ThinkingLoop },
   { to: "/calendar",       label: "Calendar",  icon: TimelinePulse },
   { to: "/reports",        label: "Reports",   icon: IntelligenceBars },
   { to: "/approvals",      label: "Decisions", icon: DecisionDiamond },
