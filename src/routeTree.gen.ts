@@ -18,6 +18,7 @@ import { Route as AuthenticatedTeamMapRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
+import { Route as AuthenticatedPrinciplesRouteImport } from './routes/_authenticated/principles'
 import { Route as AuthenticatedPeopleRouteImport } from './routes/_authenticated/people'
 import { Route as AuthenticatedMyWorkRouteImport } from './routes/_authenticated/my-work'
 import { Route as AuthenticatedIntelligenceRouteImport } from './routes/_authenticated/intelligence'
@@ -77,6 +78,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
 const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPrinciplesRoute = AuthenticatedPrinciplesRouteImport.update({
+  id: '/principles',
+  path: '/principles',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPeopleRoute = AuthenticatedPeopleRouteImport.update({
@@ -182,6 +188,7 @@ export interface FileRoutesByFullPath {
   '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/my-work': typeof AuthenticatedMyWorkRoute
   '/people': typeof AuthenticatedPeopleRoute
+  '/principles': typeof AuthenticatedPrinciplesRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tasks': typeof AuthenticatedTasksRoute
@@ -208,6 +215,7 @@ export interface FileRoutesByTo {
   '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/my-work': typeof AuthenticatedMyWorkRoute
   '/people': typeof AuthenticatedPeopleRoute
+  '/principles': typeof AuthenticatedPrinciplesRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tasks': typeof AuthenticatedTasksRoute
@@ -236,6 +244,7 @@ export interface FileRoutesById {
   '/_authenticated/intelligence': typeof AuthenticatedIntelligenceRoute
   '/_authenticated/my-work': typeof AuthenticatedMyWorkRoute
   '/_authenticated/people': typeof AuthenticatedPeopleRoute
+  '/_authenticated/principles': typeof AuthenticatedPrinciplesRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
@@ -264,6 +273,7 @@ export interface FileRouteTypes {
     | '/intelligence'
     | '/my-work'
     | '/people'
+    | '/principles'
     | '/reports'
     | '/settings'
     | '/tasks'
@@ -290,6 +300,7 @@ export interface FileRouteTypes {
     | '/intelligence'
     | '/my-work'
     | '/people'
+    | '/principles'
     | '/reports'
     | '/settings'
     | '/tasks'
@@ -317,6 +328,7 @@ export interface FileRouteTypes {
     | '/_authenticated/intelligence'
     | '/_authenticated/my-work'
     | '/_authenticated/people'
+    | '/_authenticated/principles'
     | '/_authenticated/reports'
     | '/_authenticated/settings'
     | '/_authenticated/tasks'
@@ -397,6 +409,13 @@ declare module '@tanstack/react-router' {
       path: '/reports'
       fullPath: '/reports'
       preLoaderRoute: typeof AuthenticatedReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/principles': {
+      id: '/_authenticated/principles'
+      path: '/principles'
+      fullPath: '/principles'
+      preLoaderRoute: typeof AuthenticatedPrinciplesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/people': {
@@ -529,6 +548,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedIntelligenceRoute: typeof AuthenticatedIntelligenceRoute
   AuthenticatedMyWorkRoute: typeof AuthenticatedMyWorkRoute
   AuthenticatedPeopleRoute: typeof AuthenticatedPeopleRoute
+  AuthenticatedPrinciplesRoute: typeof AuthenticatedPrinciplesRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
@@ -553,6 +573,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIntelligenceRoute: AuthenticatedIntelligenceRoute,
   AuthenticatedMyWorkRoute: AuthenticatedMyWorkRoute,
   AuthenticatedPeopleRoute: AuthenticatedPeopleRoute,
+  AuthenticatedPrinciplesRoute: AuthenticatedPrinciplesRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
