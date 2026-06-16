@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Sparkles, X, Maximize2, Minimize2, Mic, Send, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAiPageContext } from "@/lib/ai-context";
 
 type Mode = "docked" | "floating" | "collapsed";
 
@@ -15,16 +16,28 @@ const SUGGESTIONS = [
   "What's blocked right now?",
 ];
 
-const transport = new DefaultChatTransport({
-  api: "/api/chat",
-  fetch: async (url, init) => {
-    const { data } = await supabase.auth.getSession();
-    const token = data.session?.access_token;
-    const headers = new Headers(init?.headers);
-    if (token) headers.set("Authorization", `Bearer ${token}`);
-    return fetch(url as string, { ...init, headers });
-  },
-});
+function makeTransport(getCtx: () => unknown) {
+  return new DefaultChatTransport({
+    api: "/api/chat",
+    fetch: async (url, init) => {
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      const headers = new Headers(init?.headers);
+      if (token) headers.set("Authorization", `Bearer ${token}`);
+      // Inject page context into body
+      let body = init?.body;
+      try {
+        if (typeof body === "string") {
+          const parsed = JSON.parse(body);
+          parsed.pageContext = getCtx();
+          body = JSON.stringify(parsed);
+          headers.set("content-type", "application/json");
+        }
+      } catch {}
+      return fetch(url as string, { ...init, headers, body });
+    },
+  });
+}
 
 export function AiSidebar({ open, mode, onModeChange, onClose }: {
   open: boolean;
@@ -33,6 +46,10 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
   onClose: () => void;
 }) {
   const [input, setInput] = useState("");
+  const { context } = useAiPageContext();
+  const ctxRef = useRef(context);
+  ctxRef.current = context;
+  const [transport] = useState(() => makeTransport(() => ctxRef.current));
   const { messages, sendMessage, status } = useChat({ transport });
   const scrollRef = useRef<HTMLDivElement>(null);
 

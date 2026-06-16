@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/hooks/use-auth";
 import { Toaster } from "sonner";
 import { I18nProvider } from "@/lib/i18n";
+import { AiPageContextProvider } from "@/lib/ai-context";
 
 function NotFoundComponent() {
   return (
@@ -128,8 +129,10 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <I18nProvider>
-          <Outlet />
-          <Toaster richColors position="top-right" />
+          <AiPageContextProvider>
+            <Outlet />
+            <Toaster richColors position="top-right" />
+          </AiPageContextProvider>
         </I18nProvider>
       </AuthProvider>
     </QueryClientProvider>

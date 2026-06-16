@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Brain, Bot, Workflow, Shield, ClipboardList, MessageSquareWarning, Database, Lock, History, Settings2, Trash2, Sparkles } from "lucide-react";
+import { Brain, Bot, Workflow, Shield, ClipboardList, MessageSquareWarning, Database, Lock, History, Settings2, Trash2, Sparkles, Bell } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/intelligence")({
   component: IntelligencePage,
@@ -62,6 +62,7 @@ function IntelligencePage() {
           <TabsTrigger value="workflows"><Workflow className="mr-1.5 h-4 w-4" />Workflows</TabsTrigger>
           <TabsTrigger value="rules"><Shield className="mr-1.5 h-4 w-4" />Rules</TabsTrigger>
           <TabsTrigger value="questions"><MessageSquareWarning className="mr-1.5 h-4 w-4" />Questions</TabsTrigger>
+          <TabsTrigger value="reminders"><Bell className="mr-1.5 h-4 w-4" />Reminders</TabsTrigger>
           <TabsTrigger value="quality"><Database className="mr-1.5 h-4 w-4" />Data Quality</TabsTrigger>
           <TabsTrigger value="privacy"><Lock className="mr-1.5 h-4 w-4" />Privacy</TabsTrigger>
           <TabsTrigger value="audit"><History className="mr-1.5 h-4 w-4" />Audit</TabsTrigger>
@@ -74,6 +75,7 @@ function IntelligencePage() {
           <TabsContent value="workflows"><WorkflowsPanel /></TabsContent>
           <TabsContent value="rules"><RulesPanel /></TabsContent>
           <TabsContent value="questions"><QuestionsPanel /></TabsContent>
+          <TabsContent value="reminders"><RemindersPanel /></TabsContent>
           <TabsContent value="quality"><QualityPanel /></TabsContent>
           <TabsContent value="privacy"><PrivacyPanel /></TabsContent>
           <TabsContent value="audit"><AuditPanel /></TabsContent>
@@ -589,4 +591,118 @@ function NumField({ label, value, onChange }: { label: string; value: number; on
 
 function EmptyHint({ label }: { label: string }) {
   return <div className="rounded-lg border border-dashed bg-muted/30 p-6 text-center text-sm text-muted-foreground">{label}</div>;
+}
+
+// ----------------- REMINDERS -----------------
+function RemindersPanel() {
+  const qc = useQueryClient();
+  const { data = [] } = useQuery({
+    queryKey: ["ai_reminders"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("ai_reminders").select("*").order("reminder_time", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const [form, setForm] = useState({ title: "", message: "", reminder_time: "", priority: "normal" });
+
+  const add = useMutation({
+    mutationFn: async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) throw new Error("not signed in");
+      if (!form.title || !form.reminder_time) throw new Error("title and time required");
+      const { error } = await supabase.from("ai_reminders").insert({
+        user_id: u.user.id,
+        title: form.title,
+        message: form.message || null,
+        reminder_time: new Date(form.reminder_time).toISOString(),
+        priority: form.priority,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Reminder added");
+      setForm({ title: "", message: "", reminder_time: "", priority: "normal" });
+      qc.invalidateQueries({ queryKey: ["ai_reminders"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const update = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const { error } = await supabase.from("ai_reminders").update({ status }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["ai_reminders"] }),
+  });
+
+  const del = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("ai_reminders").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["ai_reminders"] }); },
+  });
+
+  return (
+    <div className="grid gap-6 md:grid-cols-[1fr_320px]">
+      <Card className="p-5">
+        <h3 className="text-sm font-medium">Reminders ({data.length})</h3>
+        <p className="mt-1 text-xs text-muted-foreground">Compass will surface these at the right moment. Snooze or dismiss anything.</p>
+        <div className="mt-4 space-y-2">
+          {data.length === 0 && <EmptyHint label="No reminders yet. Add one on the right or ask Compass to set one in chat." />}
+          {data.map((r) => (
+            <div key={r.id} className="group rounded-lg border bg-card p-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 text-xs">
+                    <Badge variant="secondary">{r.priority}</Badge>
+                    {r.status !== "pending" && <Badge variant="outline">{r.status}</Badge>}
+                    <span className="text-muted-foreground">· {new Date(r.reminder_time).toLocaleString()}</span>
+                  </div>
+                  <div className="mt-1.5 text-sm font-medium">{r.title}</div>
+                  {r.message && <div className="text-sm text-muted-foreground">{r.message}</div>}
+                </div>
+                <div className="flex shrink-0 items-center gap-1 opacity-0 transition group-hover:opacity-100">
+                  {r.status === "pending" && (
+                    <Button size="sm" variant="ghost" onClick={() => update.mutate({ id: r.id, status: "done" })}>Done</Button>
+                  )}
+                  <Button size="icon" variant="ghost" onClick={() => del.mutate(r.id)}><Trash2 className="h-4 w-4" /></Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+      <Card className="p-5 space-y-3">
+        <h3 className="text-sm font-medium">Add reminder</h3>
+        <div className="space-y-2">
+          <Label className="text-xs">Title</Label>
+          <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Call partner about term sheet" />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs">When</Label>
+          <Input type="datetime-local" value={form.reminder_time} onChange={(e) => setForm({ ...form, reminder_time: e.target.value })} />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs">Note</Label>
+          <Textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} rows={3} />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs">Priority</Label>
+          <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="low">Low</SelectItem>
+              <SelectItem value="normal">Normal</SelectItem>
+              <SelectItem value="high">High</SelectItem>
+              <SelectItem value="urgent">Urgent</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <Button onClick={() => add.mutate()} disabled={add.isPending} className="w-full">Add reminder</Button>
+      </Card>
+    </div>
+  );
 }
