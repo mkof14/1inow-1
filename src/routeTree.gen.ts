@@ -37,6 +37,10 @@ import { Route as AuthenticatedAdministrationRouteImport } from './routes/_authe
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects.index'
 import { Route as AuthenticatedAdministrationIndexRouteImport } from './routes/_authenticated/administration.index'
 import { Route as AuthenticatedProjectsSlugRouteImport } from './routes/_authenticated/projects.$slug'
+import { Route as AuthenticatedLegalTermsRouteImport } from './routes/_authenticated/legal.terms'
+import { Route as AuthenticatedLegalPrivacyRouteImport } from './routes/_authenticated/legal.privacy'
+import { Route as AuthenticatedHelpLearningRouteImport } from './routes/_authenticated/help.learning'
+import { Route as AuthenticatedHelpFaqRouteImport } from './routes/_authenticated/help.faq'
 import { Route as AuthenticatedAdministrationVoiceRouteImport } from './routes/_authenticated/administration.voice'
 import { Route as AuthenticatedAdministrationUsersRouteImport } from './routes/_authenticated/administration.users'
 import { Route as AuthenticatedAdministrationSettingsRouteImport } from './routes/_authenticated/administration.settings'
@@ -191,6 +195,28 @@ const AuthenticatedProjectsSlugRoute =
     path: '/projects/$slug',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLegalTermsRoute = AuthenticatedLegalTermsRouteImport.update({
+  id: '/legal/terms',
+  path: '/legal/terms',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLegalPrivacyRoute =
+  AuthenticatedLegalPrivacyRouteImport.update({
+    id: '/legal/privacy',
+    path: '/legal/privacy',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHelpLearningRoute =
+  AuthenticatedHelpLearningRouteImport.update({
+    id: '/help/learning',
+    path: '/help/learning',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHelpFaqRoute = AuthenticatedHelpFaqRouteImport.update({
+  id: '/help/faq',
+  path: '/help/faq',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAdministrationVoiceRoute =
   AuthenticatedAdministrationVoiceRouteImport.update({
     id: '/voice',
@@ -273,6 +299,10 @@ export interface FileRoutesByFullPath {
   '/administration/settings': typeof AuthenticatedAdministrationSettingsRoute
   '/administration/users': typeof AuthenticatedAdministrationUsersRoute
   '/administration/voice': typeof AuthenticatedAdministrationVoiceRoute
+  '/help/faq': typeof AuthenticatedHelpFaqRoute
+  '/help/learning': typeof AuthenticatedHelpLearningRoute
+  '/legal/privacy': typeof AuthenticatedLegalPrivacyRoute
+  '/legal/terms': typeof AuthenticatedLegalTermsRoute
   '/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/administration/': typeof AuthenticatedAdministrationIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
@@ -309,6 +339,10 @@ export interface FileRoutesByTo {
   '/administration/settings': typeof AuthenticatedAdministrationSettingsRoute
   '/administration/users': typeof AuthenticatedAdministrationUsersRoute
   '/administration/voice': typeof AuthenticatedAdministrationVoiceRoute
+  '/help/faq': typeof AuthenticatedHelpFaqRoute
+  '/help/learning': typeof AuthenticatedHelpLearningRoute
+  '/legal/privacy': typeof AuthenticatedLegalPrivacyRoute
+  '/legal/terms': typeof AuthenticatedLegalTermsRoute
   '/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/administration': typeof AuthenticatedAdministrationIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
@@ -348,6 +382,10 @@ export interface FileRoutesById {
   '/_authenticated/administration/settings': typeof AuthenticatedAdministrationSettingsRoute
   '/_authenticated/administration/users': typeof AuthenticatedAdministrationUsersRoute
   '/_authenticated/administration/voice': typeof AuthenticatedAdministrationVoiceRoute
+  '/_authenticated/help/faq': typeof AuthenticatedHelpFaqRoute
+  '/_authenticated/help/learning': typeof AuthenticatedHelpLearningRoute
+  '/_authenticated/legal/privacy': typeof AuthenticatedLegalPrivacyRoute
+  '/_authenticated/legal/terms': typeof AuthenticatedLegalTermsRoute
   '/_authenticated/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/_authenticated/administration/': typeof AuthenticatedAdministrationIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
@@ -387,6 +425,10 @@ export interface FileRouteTypes {
     | '/administration/settings'
     | '/administration/users'
     | '/administration/voice'
+    | '/help/faq'
+    | '/help/learning'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/projects/$slug'
     | '/administration/'
     | '/projects/'
@@ -423,6 +465,10 @@ export interface FileRouteTypes {
     | '/administration/settings'
     | '/administration/users'
     | '/administration/voice'
+    | '/help/faq'
+    | '/help/learning'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/projects/$slug'
     | '/administration'
     | '/projects'
@@ -461,6 +507,10 @@ export interface FileRouteTypes {
     | '/_authenticated/administration/settings'
     | '/_authenticated/administration/users'
     | '/_authenticated/administration/voice'
+    | '/_authenticated/help/faq'
+    | '/_authenticated/help/learning'
+    | '/_authenticated/legal/privacy'
+    | '/_authenticated/legal/terms'
     | '/_authenticated/projects/$slug'
     | '/_authenticated/administration/'
     | '/_authenticated/projects/'
@@ -671,6 +721,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsSlugRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/legal/terms': {
+      id: '/_authenticated/legal/terms'
+      path: '/legal/terms'
+      fullPath: '/legal/terms'
+      preLoaderRoute: typeof AuthenticatedLegalTermsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/legal/privacy': {
+      id: '/_authenticated/legal/privacy'
+      path: '/legal/privacy'
+      fullPath: '/legal/privacy'
+      preLoaderRoute: typeof AuthenticatedLegalPrivacyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/help/learning': {
+      id: '/_authenticated/help/learning'
+      path: '/help/learning'
+      fullPath: '/help/learning'
+      preLoaderRoute: typeof AuthenticatedHelpLearningRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/help/faq': {
+      id: '/_authenticated/help/faq'
+      path: '/help/faq'
+      fullPath: '/help/faq'
+      preLoaderRoute: typeof AuthenticatedHelpFaqRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/administration/voice': {
       id: '/_authenticated/administration/voice'
       path: '/voice'
@@ -791,6 +869,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedTeamMapRoute: typeof AuthenticatedTeamMapRoute
   AuthenticatedThinkingRoute: typeof AuthenticatedThinkingRoute
+  AuthenticatedHelpFaqRoute: typeof AuthenticatedHelpFaqRoute
+  AuthenticatedHelpLearningRoute: typeof AuthenticatedHelpLearningRoute
+  AuthenticatedLegalPrivacyRoute: typeof AuthenticatedLegalPrivacyRoute
+  AuthenticatedLegalTermsRoute: typeof AuthenticatedLegalTermsRoute
   AuthenticatedProjectsSlugRoute: typeof AuthenticatedProjectsSlugRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
 }
@@ -818,6 +900,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedTeamMapRoute: AuthenticatedTeamMapRoute,
   AuthenticatedThinkingRoute: AuthenticatedThinkingRoute,
+  AuthenticatedHelpFaqRoute: AuthenticatedHelpFaqRoute,
+  AuthenticatedHelpLearningRoute: AuthenticatedHelpLearningRoute,
+  AuthenticatedLegalPrivacyRoute: AuthenticatedLegalPrivacyRoute,
+  AuthenticatedLegalTermsRoute: AuthenticatedLegalTermsRoute,
   AuthenticatedProjectsSlugRoute: AuthenticatedProjectsSlugRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
 }
