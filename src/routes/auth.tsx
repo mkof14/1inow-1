@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — Digital Invest OS" }] }),
@@ -68,6 +69,7 @@ function AuthPage() {
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-background">
+      <div className="lg:hidden absolute top-3 right-3 z-10"><LanguageSwitcher /></div>
       <div className="hidden lg:flex flex-col justify-between p-12 bg-primary text-primary-foreground relative overflow-hidden">
         <div className="flex items-center gap-3">
           <div className="size-9 rounded-lg bg-background/10 grid place-items-center">
@@ -92,6 +94,7 @@ function AuthPage() {
       </div>
 
       <div className="flex items-center justify-center p-6 md:p-12">
+        <div className="absolute top-3 right-3 hidden lg:block"><LanguageSwitcher /></div>
         <div className="w-full max-w-sm space-y-6">
           <div>
             <h2 className="text-2xl font-semibold tracking-tight">Welcome</h2>
