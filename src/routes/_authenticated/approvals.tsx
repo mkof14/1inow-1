@@ -128,7 +128,7 @@ function DecisionsPage() {
             className={`px-3 py-1.5 rounded-full text-xs font-medium border whitespace-nowrap transition ${
               filter === s ? "bg-accent text-accent-foreground border-accent" : "bg-card text-muted-foreground border-border hover:text-foreground"
             }`}>
-            {s === "all" ? "All" : DECISION_STATUS_LABEL[s as DecisionStatus]}
+            {s === "all" ? t("common.all") : DECISION_STATUS_LABEL[s as DecisionStatus]}
             <span className="ml-1.5 opacity-60">{s === "all" ? (decisions.data?.length ?? 0) : (counts[s] ?? 0)}</span>
           </button>
         ))}
