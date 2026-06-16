@@ -42,6 +42,16 @@ Optional, only if you use them in server functions:
 - `LOVABLE_API_KEY` — for the Lovable AI gateway.
 - `SUPABASE_SERVICE_ROLE_KEY` — only if you call privileged admin APIs.
 
+### Google sign-in on Vercel
+
+Google OAuth in this app uses the Lovable broker (`/~oauth/*`), which only
+exists on `*.lovable.app` and Lovable-managed custom domains. On Vercel that
+path 404s, so the **Continue with Google** button is hidden by default.
+
+Email/password sign-in via the backend works on Vercel without any extra
+setup. To turn the Google button back on (only when deploying on Lovable),
+set `VITE_ENABLE_GOOGLE_AUTH="true"` in that environment.
+
 ## 4. Deploy
 
 Vercel builds on every push to the default branch (Production) and on every PR (Preview). The first deploy is triggered automatically once you click **Deploy** in the Vercel import flow.

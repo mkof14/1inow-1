@@ -34,6 +34,11 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [busy, setBusy] = useState(false);
+  // Google OAuth requires the Lovable broker (/~oauth/* proxy worker), which
+  // only exists on *.lovable.app and Lovable-managed custom domains. On
+  // Vercel/other hosts the redirect 404s, so we hide the button there.
+  // Flip VITE_ENABLE_GOOGLE_AUTH="true" to re-enable on Lovable.
+  const googleEnabled = import.meta.env.VITE_ENABLE_GOOGLE_AUTH === "true";
 
   useEffect(() => {
     if (!loading && user) navigate({ to: "/dashboard", replace: true });
@@ -110,15 +115,18 @@ function AuthPage() {
             </p>
           </div>
 
-          <Button onClick={handleGoogle} variant="outline" className="w-full">
-            <GoogleIcon /> Continue with Google
-          </Button>
-
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-border" />
-            <span className="text-xs text-muted-foreground uppercase tracking-widest">or</span>
-            <div className="flex-1 h-px bg-border" />
-          </div>
+          {googleEnabled && (
+            <>
+              <Button onClick={handleGoogle} variant="outline" className="w-full">
+                <GoogleIcon /> Continue with Google
+              </Button>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-xs text-muted-foreground uppercase tracking-widest">or</span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
+            </>
+          )}
 
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid grid-cols-2 w-full">
