@@ -55,6 +55,78 @@ export type Database = {
           },
         ]
       }
+      favorites: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          label: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          label?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          label?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          actor_id: string | null
+          body: string | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          read_at: string | null
+          resolved_at: string | null
+          title: string
+          type: string
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          body?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          read_at?: string | null
+          resolved_at?: string | null
+          title: string
+          type: string
+          url?: string | null
+          user_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          body?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          read_at?: string | null
+          resolved_at?: string | null
+          title?: string
+          type?: string
+          url?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -195,6 +267,33 @@ export type Database = {
         }
         Relationships: []
       }
+      recent_items: {
+        Row: {
+          entity_id: string
+          entity_type: string
+          id: string
+          label: string | null
+          opened_at: string
+          user_id: string
+        }
+        Insert: {
+          entity_id: string
+          entity_type: string
+          id?: string
+          label?: string | null
+          opened_at?: string
+          user_id: string
+        }
+        Update: {
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          label?: string | null
+          opened_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tasks: {
         Row: {
           actual_hours: number | null
@@ -288,6 +387,42 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string
+          default_project_view: string
+          language: string
+          notifications: Json
+          theme: string
+          timezone: string
+          updated_at: string
+          user_id: string
+          working_hours: Json
+        }
+        Insert: {
+          created_at?: string
+          default_project_view?: string
+          language?: string
+          notifications?: Json
+          theme?: string
+          timezone?: string
+          updated_at?: string
+          user_id: string
+          working_hours?: Json
+        }
+        Update: {
+          created_at?: string
+          default_project_view?: string
+          language?: string
+          notifications?: Json
+          theme?: string
+          timezone?: string
+          updated_at?: string
+          user_id?: string
+          working_hours?: Json
         }
         Relationships: []
       }
