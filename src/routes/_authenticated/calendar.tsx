@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { fetchTasks } from "@/lib/queries";
 import { TimelinePulse } from "@/components/icons/compass-icons";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/calendar")({ component: TimelinePage });
 
@@ -16,6 +17,7 @@ function startOfWeek(d: Date) {
 }
 
 function TimelinePage() {
+  const t = useT();
   const [anchor, setAnchor] = useState(() => startOfWeek(new Date()));
   const tasks = useQuery({ queryKey: ["tasks"], queryFn: () => fetchTasks() });
 
@@ -44,8 +46,8 @@ function TimelinePage() {
         <div className="flex items-center gap-4">
           <div className="text-accent"><TimelinePulse size={44} /></div>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight font-display">Timeline</h1>
-            <p className="text-sm text-muted-foreground mt-1">Deadlines, milestones and decisions across the week.</p>
+            <h1 className="text-2xl font-semibold tracking-tight font-display">{t("page.calendar.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{t("page.calendar.subtitle")}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -55,7 +57,7 @@ function TimelinePage() {
           <button onClick={() => { const d = new Date(anchor); d.setDate(d.getDate() + 7); setAnchor(d); }}
             className="size-8 rounded-md border border-border bg-card hover:bg-muted grid place-items-center"><ChevronRight className="size-4" /></button>
           <button onClick={() => setAnchor(startOfWeek(new Date()))}
-            className="ml-1 h-8 px-3 rounded-md border border-border bg-card hover:bg-muted text-xs font-medium">Today</button>
+            className="ml-1 h-8 px-3 rounded-md border border-border bg-card hover:bg-muted text-xs font-medium">{t("page.calendar.today")}</button>
         </div>
       </div>
 

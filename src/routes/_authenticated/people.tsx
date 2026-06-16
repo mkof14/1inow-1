@@ -6,10 +6,12 @@ import { PeopleOrbit } from "@/components/icons/compass-icons";
 import { Input } from "@/components/ui/input";
 import { Search, LayoutGrid, List, Globe } from "lucide-react";
 import { useSetPageContext } from "@/lib/ai-context";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/people")({ component: PeoplePage });
 
 function PeoplePage() {
+  const t = useT();
   const profiles = useQuery({ queryKey: ["profiles"], queryFn: fetchProfiles });
   useSetPageContext({ route: "/people", scope: "people", title: "People" }, []);
   const [view, setView] = useState<"grid" | "table">("grid");
@@ -27,13 +29,13 @@ function PeoplePage() {
         <div className="flex items-center gap-4">
           <div className="text-accent"><PeopleOrbit size={44} /></div>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight font-display">People</h1>
-            <p className="text-sm text-muted-foreground mt-1">Global team — across timezones, roles and projects.</p>
+            <h1 className="text-2xl font-semibold tracking-tight font-display">{t("page.people.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{t("page.people.subtitle")}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Link to="/team-map" className="h-8 px-3 inline-flex items-center gap-1.5 rounded-md border border-border bg-card hover:bg-muted text-xs font-medium">
-            <Globe className="size-3.5" /> Team Map
+            <Globe className="size-3.5" /> {t("page.people.teamMap")}
           </Link>
           <div className="inline-flex rounded-lg border border-border p-0.5 bg-card">
             {[
@@ -51,7 +53,7 @@ function PeoplePage() {
 
       <div className="relative max-w-md mb-5">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search people…" className="pl-9 h-9" />
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("page.people.searchPh")} className="pl-9 h-9" />
       </div>
 
       {view === "grid" && (
@@ -70,14 +72,14 @@ function PeoplePage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-medium truncate">{p.full_name ?? p.email}</div>
-                <div className="text-xs text-muted-foreground truncate">{p.position ?? "Member"} · {p.department ?? "—"}</div>
+                <div className="text-xs text-muted-foreground truncate">{p.position ?? t("page.people.member")} · {p.department ?? "—"}</div>
                 {p.timezone && <div className="text-[10px] text-muted-foreground/70 mt-0.5">{p.country ?? ""} · {p.timezone}</div>}
               </div>
             </div>
           ))}
           {rows.length === 0 && (
             <div className="col-span-full text-center text-sm text-muted-foreground p-8 border border-dashed border-border rounded-xl">
-              No people match.
+              {t("page.people.noMatch")}
             </div>
           )}
         </div>
@@ -88,7 +90,7 @@ function PeoplePage() {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 border-b border-border">
               <tr className="text-left">
-                {["Name","Role","Department","Timezone","Status"].map(h => (
+                {[t("tbl.name"), t("tbl.role"), t("tbl.department"), t("tbl.timezone"), t("tbl.status")].map(h => (
                   <th key={h} className="px-4 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{h}</th>
                 ))}
               </tr>

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchAdminStats, fetchAuditLogs } from "@/lib/admin-queries";
 import { Card } from "@/components/ui/card";
 import { Users, Mail, Activity, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/administration/")({
   component: AdminDashboard,
@@ -26,32 +27,33 @@ function StatCard({ icon: Icon, label, value, hint, tone = "default" }: {
 }
 
 function AdminDashboard() {
+  const t = useT();
   const stats = useQuery({ queryKey: ["admin-stats"], queryFn: fetchAdminStats });
   const audit = useQuery({ queryKey: ["admin-audit-recent"], queryFn: () => fetchAuditLogs(10) });
   const s = stats.data;
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Admin Dashboard</h1>
-        <p className="text-sm text-muted-foreground mt-1">System overview and recent admin activity.</p>
+        <h1 className="text-2xl font-semibold">{t("page.adminHome.title")}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t("page.adminHome.subtitle")}</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-        <StatCard icon={Users} label="Total users" value={s?.totalUsers ?? "—"} />
-        <StatCard icon={CheckCircle2} label="Active users" value={s?.activeUsers ?? "—"} tone="success" />
-        <StatCard icon={Mail} label="Pending invites" value={s?.pendingInvites ?? "—"} />
-        <StatCard icon={Activity} label="Recent audit events" value={s?.recentAuditCount ?? "—"} />
-        <StatCard icon={AlertTriangle} label="Security alerts" value={s?.alerts ?? "—"} tone="warning" />
+        <StatCard icon={Users} label={t("page.users.title")} value={s?.totalUsers ?? "—"} />
+        <StatCard icon={CheckCircle2} label={t("page.users.title") + " · " + t("status.online")} value={s?.activeUsers ?? "—"} tone="success" />
+        <StatCard icon={Mail} label={t("page.invitations.title")} value={s?.pendingInvites ?? "—"} />
+        <StatCard icon={Activity} label={t("page.audit.title")} value={s?.recentAuditCount ?? "—"} />
+        <StatCard icon={AlertTriangle} label={t("page.audit.severity.warning")} value={s?.alerts ?? "—"} tone="warning" />
       </div>
 
       <Card className="p-5">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold">Recent admin actions</h2>
+          <h2 className="font-semibold">{t("page.adminHome.recent")}</h2>
         </div>
         {audit.isLoading ? (
-          <div className="text-sm text-muted-foreground">Loading…</div>
+          <div className="text-sm text-muted-foreground">{t("common.loading")}</div>
         ) : (audit.data?.length ?? 0) === 0 ? (
-          <div className="text-sm text-muted-foreground py-6 text-center">No audit events yet.</div>
+          <div className="text-sm text-muted-foreground py-6 text-center">{t("page.adminHome.empty")}</div>
         ) : (
           <div className="divide-y divide-border">
             {audit.data!.map((a) => (

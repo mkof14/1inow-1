@@ -8,17 +8,19 @@ import {
   featureReviewChecklist,
   assistantBehavior,
 } from "@/lib/principles";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/principles")({
   component: PrinciplesPage,
 });
 
 function PrinciplesPage() {
+  const t = useT();
   return (
     <PageContainer size="wide">
       <SectionHeader
-        title="Product Principles"
-        description="How this product behaves. Apply to every feature, page, form and assistant response."
+        title={t("page.principles.title")}
+        description={t("page.principles.subtitle")}
       />
 
       <Card className="mb-6 border-primary/30 bg-primary/5">

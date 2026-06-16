@@ -9,12 +9,14 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search } from "lucide-react";
 import { toast } from "sonner";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/administration/users")({
   component: UsersPage,
 });
 
 function UsersPage() {
+  const t = useT();
   const qc = useQueryClient();
   const [q, setQ] = useState("");
   const profiles = useQuery({ queryKey: ["admin-profiles"], queryFn: fetchProfiles });
@@ -48,12 +50,12 @@ function UsersPage() {
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Users</h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage user accounts, roles, and status.</p>
+          <h1 className="text-2xl font-semibold">{t("page.users.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.users.subtitle")}</p>
         </div>
         <div className="relative w-72">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name or email" className="pl-8" />
+          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("page.users.searchPh")} className="pl-8" />
         </div>
       </div>
 
@@ -62,22 +64,22 @@ function UsersPage() {
           <table className="w-full text-sm">
             <thead className="bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground">
               <tr>
-                <th className="text-left px-4 py-2.5 font-medium">User</th>
-                <th className="text-left px-4 py-2.5 font-medium">Email</th>
-                <th className="text-left px-4 py-2.5 font-medium">Role</th>
-                <th className="text-left px-4 py-2.5 font-medium">Status</th>
-                <th className="text-left px-4 py-2.5 font-medium">Language</th>
-                <th className="text-left px-4 py-2.5 font-medium">Joined</th>
-                <th className="text-right px-4 py-2.5 font-medium">Actions</th>
+                <th className="text-left px-4 py-2.5 font-medium">{t("tbl.user")}</th>
+                <th className="text-left px-4 py-2.5 font-medium">{t("tbl.email")}</th>
+                <th className="text-left px-4 py-2.5 font-medium">{t("tbl.role")}</th>
+                <th className="text-left px-4 py-2.5 font-medium">{t("tbl.status")}</th>
+                <th className="text-left px-4 py-2.5 font-medium">{t("tbl.language")}</th>
+                <th className="text-left px-4 py-2.5 font-medium">{t("tbl.joined")}</th>
+                <th className="text-right px-4 py-2.5 font-medium">{t("tbl.actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {profiles.isLoading && (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">Loading…</td></tr>
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">{t("common.loading")}</td></tr>
               )}
               {!profiles.isLoading && filtered.length === 0 && (
                 <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                  {profiles.error ? "Sign in as admin to view users." : "No users found."}
+                  {profiles.error ? t("page.users.signInPrompt") : t("page.users.empty")}
                 </td></tr>
               )}
               {filtered.map((p) => {
@@ -115,7 +117,7 @@ function UsersPage() {
                         size="sm" variant="ghost"
                         onClick={() => setStatus.mutate({ id: p.id, status: p.status === "active" ? "inactive" : "active" })}
                       >
-                        {p.status === "active" ? "Deactivate" : "Activate"}
+                        {p.status === "active" ? t("btn.deactivate") : t("btn.activate")}
                       </Button>
                     </td>
                   </tr>

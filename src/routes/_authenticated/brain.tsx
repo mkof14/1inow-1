@@ -9,6 +9,7 @@ import {
 } from "@/components/layout";
 import { BrainPulse } from "@/components/icons/brain-pulse";
 import { Badge } from "@/components/ui/badge";
+import { useT } from "@/lib/i18n";
 import {
   scoreProject, detectOpenLoops, buildToday, buildWaitingFor,
   buildAttention, buildCleanup, endOfDay, endOfWeek,
@@ -28,6 +29,7 @@ const HEALTH_STYLE: Record<HealthLevel, { dot: string; label: string; chip: stri
 };
 
 function BrainPage() {
+  const t = useT();
   const { user } = useAuth();
   const projects = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
   const tasks    = useQuery({ queryKey: ["tasks"],    queryFn: () => fetchTasks() });
@@ -62,10 +64,10 @@ function BrainPage() {
         title={
           <span className="inline-flex items-center gap-2">
             <BrainPulse size={22} className="text-accent" />
-            System Brain
+            {t("page.brain.title")}
           </span>
         }
-        description="The app observes itself: project health, open loops, waiting-for, attention, and your shortlist for today. Nothing invented — only signals derived from your data."
+        description={t("page.brain.subtitle")}
       />
 
       {/* Today */}

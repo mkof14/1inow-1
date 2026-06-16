@@ -6,12 +6,14 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { useMemo } from "react";
 import { toast } from "sonner";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/administration/settings")({
   component: SettingsPage,
 });
 
 function SettingsPage() {
+  const t = useT();
   const qc = useQueryClient();
   const settings = useQuery({ queryKey: ["admin-settings"], queryFn: fetchSystemSettings });
 
@@ -33,14 +35,14 @@ function SettingsPage() {
   return (
     <div className="p-6 space-y-4 max-w-3xl">
       <div>
-        <h1 className="text-2xl font-semibold">System Settings</h1>
-        <p className="text-sm text-muted-foreground mt-1">Global configuration for the platform.</p>
+        <h1 className="text-2xl font-semibold">{t("page.systemSettings.title")}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t("page.systemSettings.subtitle")}</p>
       </div>
 
-      {settings.isLoading && <div className="text-sm text-muted-foreground">Loading…</div>}
+      {settings.isLoading && <div className="text-sm text-muted-foreground">{t("common.loading")}</div>}
       {!settings.isLoading && grouped.length === 0 && (
         <Card className="p-6 text-center text-sm text-muted-foreground">
-          Sign in as admin to view system settings.
+          {t("page.systemSettings.empty")}
         </Card>
       )}
 
