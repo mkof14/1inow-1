@@ -37,6 +37,7 @@ import { Route as AuthenticatedAdministrationRouteImport } from './routes/_authe
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects.index'
 import { Route as AuthenticatedAdministrationIndexRouteImport } from './routes/_authenticated/administration.index'
 import { Route as AuthenticatedProjectsSlugRouteImport } from './routes/_authenticated/projects.$slug'
+import { Route as AuthenticatedAdministrationVoiceRouteImport } from './routes/_authenticated/administration.voice'
 import { Route as AuthenticatedAdministrationUsersRouteImport } from './routes/_authenticated/administration.users'
 import { Route as AuthenticatedAdministrationSettingsRouteImport } from './routes/_authenticated/administration.settings'
 import { Route as AuthenticatedAdministrationRolesRouteImport } from './routes/_authenticated/administration.roles'
@@ -190,6 +191,12 @@ const AuthenticatedProjectsSlugRoute =
     path: '/projects/$slug',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdministrationVoiceRoute =
+  AuthenticatedAdministrationVoiceRouteImport.update({
+    id: '/voice',
+    path: '/voice',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
 const AuthenticatedAdministrationUsersRoute =
   AuthenticatedAdministrationUsersRouteImport.update({
     id: '/users',
@@ -265,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/administration/roles': typeof AuthenticatedAdministrationRolesRoute
   '/administration/settings': typeof AuthenticatedAdministrationSettingsRoute
   '/administration/users': typeof AuthenticatedAdministrationUsersRoute
+  '/administration/voice': typeof AuthenticatedAdministrationVoiceRoute
   '/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/administration/': typeof AuthenticatedAdministrationIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
@@ -300,6 +308,7 @@ export interface FileRoutesByTo {
   '/administration/roles': typeof AuthenticatedAdministrationRolesRoute
   '/administration/settings': typeof AuthenticatedAdministrationSettingsRoute
   '/administration/users': typeof AuthenticatedAdministrationUsersRoute
+  '/administration/voice': typeof AuthenticatedAdministrationVoiceRoute
   '/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/administration': typeof AuthenticatedAdministrationIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
@@ -338,6 +347,7 @@ export interface FileRoutesById {
   '/_authenticated/administration/roles': typeof AuthenticatedAdministrationRolesRoute
   '/_authenticated/administration/settings': typeof AuthenticatedAdministrationSettingsRoute
   '/_authenticated/administration/users': typeof AuthenticatedAdministrationUsersRoute
+  '/_authenticated/administration/voice': typeof AuthenticatedAdministrationVoiceRoute
   '/_authenticated/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/_authenticated/administration/': typeof AuthenticatedAdministrationIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
@@ -376,6 +386,7 @@ export interface FileRouteTypes {
     | '/administration/roles'
     | '/administration/settings'
     | '/administration/users'
+    | '/administration/voice'
     | '/projects/$slug'
     | '/administration/'
     | '/projects/'
@@ -411,6 +422,7 @@ export interface FileRouteTypes {
     | '/administration/roles'
     | '/administration/settings'
     | '/administration/users'
+    | '/administration/voice'
     | '/projects/$slug'
     | '/administration'
     | '/projects'
@@ -448,6 +460,7 @@ export interface FileRouteTypes {
     | '/_authenticated/administration/roles'
     | '/_authenticated/administration/settings'
     | '/_authenticated/administration/users'
+    | '/_authenticated/administration/voice'
     | '/_authenticated/projects/$slug'
     | '/_authenticated/administration/'
     | '/_authenticated/projects/'
@@ -658,6 +671,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsSlugRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/administration/voice': {
+      id: '/_authenticated/administration/voice'
+      path: '/voice'
+      fullPath: '/administration/voice'
+      preLoaderRoute: typeof AuthenticatedAdministrationVoiceRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
     '/_authenticated/administration/users': {
       id: '/_authenticated/administration/users'
       path: '/users'
@@ -718,6 +738,7 @@ interface AuthenticatedAdministrationRouteChildren {
   AuthenticatedAdministrationRolesRoute: typeof AuthenticatedAdministrationRolesRoute
   AuthenticatedAdministrationSettingsRoute: typeof AuthenticatedAdministrationSettingsRoute
   AuthenticatedAdministrationUsersRoute: typeof AuthenticatedAdministrationUsersRoute
+  AuthenticatedAdministrationVoiceRoute: typeof AuthenticatedAdministrationVoiceRoute
   AuthenticatedAdministrationIndexRoute: typeof AuthenticatedAdministrationIndexRoute
 }
 
@@ -737,6 +758,8 @@ const AuthenticatedAdministrationRouteChildren: AuthenticatedAdministrationRoute
       AuthenticatedAdministrationSettingsRoute,
     AuthenticatedAdministrationUsersRoute:
       AuthenticatedAdministrationUsersRoute,
+    AuthenticatedAdministrationVoiceRoute:
+      AuthenticatedAdministrationVoiceRoute,
     AuthenticatedAdministrationIndexRoute:
       AuthenticatedAdministrationIndexRoute,
   }
