@@ -3,6 +3,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MESSAGE_TYPES, MESSAGE_TYPE_META, sendMessage, type MessageType } from "@/lib/comm";
+import { useI18n } from "@/lib/i18n";
 import { Send, Mic, Video, Paperclip } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -17,7 +18,7 @@ export function MessageComposer({ channelId, threadRootId = null, placeholder }:
   const qc = useQueryClient();
 
   const send = useMutation({
-    mutationFn: () => sendMessage({ channel_id: channelId, body, message_type: type, thread_root_id: threadRootId }),
+    mutationFn: () => sendMessage({ channel_id: channelId, body, message_type: type, thread_root_id: threadRootId, original_language: lang }),
     onSuccess: () => {
       setBody("");
       qc.invalidateQueries({ queryKey: ["messages", channelId, threadRootId] });
