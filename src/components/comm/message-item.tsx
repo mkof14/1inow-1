@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
+import { TranslateButton } from "@/components/translate-button";
+import { useI18n } from "@/lib/i18n";
 
 const QUICK_REACTIONS = ["👍", "🎉", "❤️", "👀", "✅", "🚀"];
 
@@ -22,6 +24,8 @@ export function MessageItem({
   const qc = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(m.body);
+  const [translation, setTranslation] = useState<{ text: string; mode: "translated" | "both" } | null>(null);
+  const { lang } = useI18n();
   const meta = MESSAGE_TYPE_META[m.message_type];
 
   const myReactions = reactions.filter((r) => r.message_id === m.id);
@@ -69,7 +73,27 @@ export function MessageItem({
               </div>
             </div>
           ) : (
-            <div className="text-sm text-foreground whitespace-pre-wrap break-words mt-0.5">{m.body}</div>
+            <>
+              {(!translation || translation.mode === "both") && (
+                <div className="text-sm text-foreground whitespace-pre-wrap break-words mt-0.5">{m.body}</div>
+              )}
+              {translation && (
+                <div className="text-sm text-foreground whitespace-pre-wrap break-words mt-1 pl-2 border-l-2 border-accent/40">
+                  {translation.text}
+                </div>
+              )}
+              <div className="mt-1">
+                <TranslateButton
+                  text={m.body}
+                  sourceLang={(m as unknown as { original_language?: string }).original_language ?? undefined}
+                  onTranslated={(text, mode) => {
+                    if (mode === "original") setTranslation(null);
+                    else setTranslation({ text, mode });
+                    void lang;
+                  }}
+                />
+              </div>
+            </>
           )}
           {Object.keys(grouped).length > 0 && (
             <div className="flex flex-wrap gap-1 mt-1.5">
