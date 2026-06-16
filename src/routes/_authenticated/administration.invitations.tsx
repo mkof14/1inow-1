@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Mail, Plus, Copy } from "lucide-react";
 import { toast } from "sonner";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/administration/invitations")({
   component: InvitationsPage,
@@ -26,6 +27,7 @@ const statusVariants: Record<string, "default" | "secondary" | "outline" | "dest
 };
 
 function InvitationsPage() {
+  const t = useT();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -87,15 +89,15 @@ function InvitationsPage() {
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Invitations</h1>
-          <p className="text-sm text-muted-foreground mt-1">Invite users by email. Email sending is disabled in development mode.</p>
+          <h1 className="text-2xl font-semibold">{t("page.invitations.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.invitations.subtitle")}</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button><Plus className="size-4 mr-1.5" /> New invitation</Button>
+            <Button><Plus className="size-4 mr-1.5" /> {t("page.invitations.new")}</Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>Invite a user</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{t("page.invitations.inviteUser")}</DialogTitle></DialogHeader>
             <div className="space-y-3 py-2">
               <div className="space-y-1.5">
                 <Label htmlFor="inv-email">Email *</Label>
@@ -149,19 +151,19 @@ function InvitationsPage() {
           <table className="w-full text-sm">
             <thead className="bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground">
               <tr>
-                <th className="text-left px-4 py-2.5 font-medium">Recipient</th>
-                <th className="text-left px-4 py-2.5 font-medium">Role</th>
-                <th className="text-left px-4 py-2.5 font-medium">Status</th>
-                <th className="text-left px-4 py-2.5 font-medium">Expires</th>
-                <th className="text-right px-4 py-2.5 font-medium">Actions</th>
+                <th className="text-left px-4 py-2.5 font-medium">{t("tbl.recipient")}</th>
+                <th className="text-left px-4 py-2.5 font-medium">{t("tbl.role")}</th>
+                <th className="text-left px-4 py-2.5 font-medium">{t("tbl.status")}</th>
+                <th className="text-left px-4 py-2.5 font-medium">{t("tbl.expires")}</th>
+                <th className="text-right px-4 py-2.5 font-medium">{t("tbl.actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {invitations.isLoading && (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">Loading…</td></tr>
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">{t("common.loading")}</td></tr>
               )}
               {!invitations.isLoading && (invitations.data?.length ?? 0) === 0 && (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">No invitations yet.</td></tr>
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">{t("page.invitations.empty")}</td></tr>
               )}
               {invitations.data?.map((inv) => (
                 <tr key={inv.id} className="hover:bg-muted/20">
@@ -182,9 +184,9 @@ function InvitationsPage() {
                     </Button>
                     {inv.status !== "accepted" && inv.status !== "canceled" && (
                       <>
-                        <Button size="sm" variant="ghost" onClick={() => resend.mutate(inv.id)}>Resend</Button>
+                        <Button size="sm" variant="ghost" onClick={() => resend.mutate(inv.id)}>{t("btn.resend")}</Button>
                         <Button size="sm" variant="ghost" className="text-destructive"
-                          onClick={() => cancelInv.mutate(inv.id)}>Cancel</Button>
+                          onClick={() => cancelInv.mutate(inv.id)}>{t("common.cancel")}</Button>
                       </>
                     )}
                   </td>
