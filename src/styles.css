@@ -280,16 +280,11 @@ img[width][height] {
   max-width: 100%;
 }
 
-/* Radix Dialog content — keep modals inside the viewport on any size. */
-[role="dialog"] {
+/* Radix Dialog content (centered modals only — not Sheets which set data-side). */
+[role="dialog"]:not([data-side]) {
   max-width: min(calc(100vw - 2rem), 42rem);
   max-height: calc(100vh - 2rem);
   overflow: auto;
-}
-
-/* Sheet / Drawer overlays must not exceed viewport width on mobile. */
-[data-state][data-side] {
-  max-width: 100vw;
 }
 
 /* Single-line ellipsis helper. */
