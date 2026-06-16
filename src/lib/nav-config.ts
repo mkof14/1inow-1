@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, FolderKanban, CheckSquare, MessageSquare, Users, UserCircle,
   Calendar, FileText, FolderOpen, Video, Map, BarChart3, ShieldCheck,
-  BookOpen, Sparkles, Settings2, Cog, Briefcase, Inbox, Star, Trash2,
+  BookOpen, Sparkles, Settings2, Cog, Briefcase, Inbox, Star,
 } from "lucide-react";
 
 export type NavGroup = {
@@ -58,7 +58,6 @@ export const navGroups: NavGroup[] = [
       { to: "/ai", label: "AI Assistant", icon: Sparkles },
       { to: "/administration", label: "Administration", icon: Cog },
       { to: "/settings", label: "Settings", icon: Settings2 },
-      { to: "/trash", label: "Trash", icon: Trash2 },
     ],
   },
 ];
