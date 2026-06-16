@@ -32,7 +32,7 @@ export function ProjectSuggestions({ projectId }: { projectId: string }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("projects")
-        .select("id,owner_id,end_date,status")
+        .select("id,owner_id,deadline,status")
         .eq("id", projectId)
         .maybeSingle();
       if (error) throw error;
@@ -50,7 +50,7 @@ export function ProjectSuggestions({ projectId }: { projectId: string }) {
     if (p && !p.owner_id) {
       out.push({ id: "no-owner", icon: <UserX className="size-3.5" />, label: "Missing owner", hint: "This project has no owner assigned." });
     }
-    if (p && !p.end_date) {
+    if (p && !(p as any).deadline) {
       out.push({ id: "no-deadline", icon: <Clock className="size-3.5" />, label: "Missing deadline", hint: "No end date set for this project." });
     }
 
