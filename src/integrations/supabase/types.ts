@@ -140,6 +140,126 @@ export type Database = {
           },
         ]
       }
+      decision_approvals: {
+        Row: {
+          comment: string | null
+          created_at: string
+          decision_id: string
+          id: string
+          user_id: string
+          vote: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          decision_id: string
+          id?: string
+          user_id: string
+          vote: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          decision_id?: string
+          id?: string
+          user_id?: string
+          vote?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "decision_approvals_decision_id_fkey"
+            columns: ["decision_id"]
+            isOneToOne: false
+            referencedRelation: "decisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      decisions: {
+        Row: {
+          context: string | null
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          due_at: string | null
+          id: string
+          impact: Database["public"]["Enums"]["decision_impact"]
+          message_id: string | null
+          project_id: string | null
+          rationale: string | null
+          recommendation: string | null
+          requested_by: string | null
+          review_at: string | null
+          status: Database["public"]["Enums"]["decision_status"]
+          tags: string[] | null
+          task_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          context?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          due_at?: string | null
+          id?: string
+          impact?: Database["public"]["Enums"]["decision_impact"]
+          message_id?: string | null
+          project_id?: string | null
+          rationale?: string | null
+          recommendation?: string | null
+          requested_by?: string | null
+          review_at?: string | null
+          status?: Database["public"]["Enums"]["decision_status"]
+          tags?: string[] | null
+          task_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          context?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          due_at?: string | null
+          id?: string
+          impact?: Database["public"]["Enums"]["decision_impact"]
+          message_id?: string | null
+          project_id?: string | null
+          rationale?: string | null
+          recommendation?: string | null
+          requested_by?: string | null
+          review_at?: string | null
+          status?: Database["public"]["Enums"]["decision_status"]
+          tags?: string[] | null
+          task_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "decisions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "decisions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "decisions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_translations: {
         Row: {
           content: string
@@ -917,6 +1037,13 @@ export type Database = {
         | "client"
         | "investor"
         | "guest"
+      decision_impact: "low" | "medium" | "high" | "critical"
+      decision_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "deferred"
+        | "review"
       project_priority: "critical" | "high" | "medium" | "low"
       project_status:
         | "idea"
@@ -1075,6 +1202,14 @@ export const Constants = {
         "client",
         "investor",
         "guest",
+      ],
+      decision_impact: ["low", "medium", "high", "critical"],
+      decision_status: [
+        "pending",
+        "approved",
+        "rejected",
+        "deferred",
+        "review",
       ],
       project_priority: ["critical", "high", "medium", "low"],
       project_status: [
