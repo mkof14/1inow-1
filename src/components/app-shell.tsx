@@ -2,19 +2,34 @@ import { type ReactNode, useState } from "react";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { navGroups } from "@/lib/nav-config";
 import { useAuth } from "@/hooks/use-auth";
-import { Search, Bell, LogOut, Moon, Sun } from "lucide-react";
+import { Search, Bell, LogOut, Moon, Sun, Star, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useQuery } from "@tanstack/react-query";
+import { fetchFavorites, fetchRecent, fetchNotifications } from "@/lib/wave1";
+import { QuickCreate } from "@/components/quick-create";
+import { CommandBar } from "@/components/command-bar";
+import { useShortcuts } from "@/hooks/use-shortcuts";
+import { Badge } from "@/components/ui/badge";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [dark, setDark] = useState(false);
+  const [cmdOpen, setCmdOpen] = useState(false);
+  const [quickOpen, setQuickOpen] = useState(0);
+
+  useShortcuts(() => setCmdOpen(true), () => setQuickOpen((n) => n + 1));
+
+  const { data: favorites = [] } = useQuery({ queryKey: ["favorites"], queryFn: fetchFavorites, enabled: !!user });
+  const { data: recent = [] } = useQuery({ queryKey: ["recent"], queryFn: () => fetchRecent(5), enabled: !!user });
+  const { data: notifs = [] } = useQuery({ queryKey: ["notifications"], queryFn: fetchNotifications, enabled: !!user });
+  const unread = notifs.filter((n) => !n.read_at).length;
 
   const toggleDark = () => {
     const next = !dark;
@@ -61,13 +76,52 @@ export function AppShell({ children }: { children: ReactNode }) {
                       )}
                     >
                       <Icon className="size-4" />
-                      <span>{item.label}</span>
+                      <span className="flex-1">{item.label}</span>
+                      {item.to === "/inbox" && unread > 0 && (
+                        <Badge variant="secondary" className="h-4 min-w-4 px-1 text-[10px]">{unread}</Badge>
+                      )}
                     </Link>
                   );
                 })}
               </div>
             </div>
           ))}
+
+          {favorites.length > 0 && (
+            <div>
+              <div className="px-3 pt-3 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Favorites</div>
+              <div className="space-y-0.5">
+                {favorites.slice(0, 6).map((f) => (
+                  <Link
+                    key={f.id}
+                    to={f.entity_type === "project" ? "/projects" : "/tasks"}
+                    className="flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                  >
+                    <Star className="size-3.5 text-accent fill-accent" />
+                    <span className="truncate">{f.label ?? f.entity_type}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {recent.length > 0 && (
+            <div>
+              <div className="px-3 pt-3 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Recent</div>
+              <div className="space-y-0.5">
+                {recent.slice(0, 5).map((r) => (
+                  <Link
+                    key={r.id}
+                    to={r.entity_type === "project" ? "/projects" : "/tasks"}
+                    className="flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                  >
+                    <Clock className="size-3.5" />
+                    <span className="truncate">{r.label ?? r.entity_type}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </nav>
       </aside>
 
@@ -77,9 +131,17 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-2 max-w-md flex-1">
             <div className="relative w-full max-w-sm">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <button
+                type="button"
+                onClick={() => setCmdOpen(true)}
+                data-global-search
+                className="w-full text-left bg-muted/60 border-0 rounded-md pl-8 pr-12 py-1.5 text-sm text-muted-foreground hover:bg-muted transition-colors"
+              >
+                Search projects, tasks, people…
+              </button>
               <input
+                type="hidden"
                 placeholder="Search projects, tasks, people…"
-                className="w-full bg-muted/60 border-0 rounded-md pl-8 pr-12 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
               />
               <kbd className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-mono bg-background px-1.5 py-0.5 rounded border border-border text-muted-foreground">⌘K</kbd>
             </div>
@@ -88,9 +150,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Button variant="ghost" size="icon" onClick={toggleDark}>
               {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
             </Button>
-            <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className="relative" onClick={() => navigate({ to: "/inbox" })}>
               <Bell className="size-4" />
-              <span className="absolute top-2 right-2 size-1.5 rounded-full bg-accent" />
+              {unread > 0 && <span className="absolute top-2 right-2 size-1.5 rounded-full bg-accent" />}
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -123,6 +185,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
 
         <main className="flex-1 overflow-auto">{children}</main>
+        <QuickCreate openSignal={quickOpen} />
+        <CommandBar open={cmdOpen} onOpenChange={setCmdOpen} />
       </div>
     </div>
   );

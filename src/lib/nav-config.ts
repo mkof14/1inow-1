@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, FolderKanban, CheckSquare, MessageSquare, Users, UserCircle,
   Calendar, FileText, FolderOpen, Video, Map, BarChart3, ShieldCheck,
-  BookOpen, Sparkles, Settings2, Cog,
+  BookOpen, Sparkles, Settings2, Cog, Briefcase, Inbox, Star,
 } from "lucide-react";
 
 export type NavGroup = {
@@ -10,6 +10,14 @@ export type NavGroup = {
 };
 
 export const navGroups: NavGroup[] = [
+  {
+    label: "Personal",
+    items: [
+      { to: "/my-work", label: "My Work", icon: Briefcase },
+      { to: "/inbox", label: "Inbox", icon: Inbox },
+      { to: "/favorites", label: "Favorites", icon: Star },
+    ],
+  },
   {
     label: "Workspace",
     items: [
