@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { RelatedItems } from "@/components/related-items";
 import { createRelation } from "@/lib/relations";
+import { useSetPageContext } from "@/lib/ai-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
@@ -24,6 +25,15 @@ function ProjectDetail() {
   const qc = useQueryClient();
   const { user } = useAuth();
   const project = useQuery({ queryKey: ["project", slug], queryFn: () => fetchProjectBySlug(slug) });
+  useSetPageContext(
+    {
+      route: `/projects/${slug}`,
+      scope: "project",
+      title: project.data?.name,
+      ids: { projectId: project.data?.id, slug },
+    },
+    [project.data?.id, slug],
+  );
   useEffect(() => {
     if (project.data?.id) {
       trackRecent("project", project.data.id, project.data.name).catch(() => {});
