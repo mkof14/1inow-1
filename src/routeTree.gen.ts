@@ -37,6 +37,7 @@ import { Route as AuthenticatedAdministrationRouteImport } from './routes/_authe
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects.index'
 import { Route as AuthenticatedAdministrationIndexRouteImport } from './routes/_authenticated/administration.index'
 import { Route as AuthenticatedProjectsSlugRouteImport } from './routes/_authenticated/projects.$slug'
+import { Route as AuthenticatedAdministrationUsersRouteImport } from './routes/_authenticated/administration.users'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -183,6 +184,12 @@ const AuthenticatedProjectsSlugRoute =
     path: '/projects/$slug',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdministrationUsersRoute =
+  AuthenticatedAdministrationUsersRouteImport.update({
+    id: '/users',
+    path: '/users',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -209,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/team-map': typeof AuthenticatedTeamMapRoute
   '/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
+  '/administration/users': typeof AuthenticatedAdministrationUsersRoute
   '/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/administration/': typeof AuthenticatedAdministrationIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
@@ -237,6 +245,7 @@ export interface FileRoutesByTo {
   '/team-map': typeof AuthenticatedTeamMapRoute
   '/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
+  '/administration/users': typeof AuthenticatedAdministrationUsersRoute
   '/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/administration': typeof AuthenticatedAdministrationIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
@@ -268,6 +277,7 @@ export interface FileRoutesById {
   '/_authenticated/team-map': typeof AuthenticatedTeamMapRoute
   '/_authenticated/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
+  '/_authenticated/administration/users': typeof AuthenticatedAdministrationUsersRoute
   '/_authenticated/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/_authenticated/administration/': typeof AuthenticatedAdministrationIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
@@ -299,6 +309,7 @@ export interface FileRouteTypes {
     | '/team-map'
     | '/thinking'
     | '/api/chat'
+    | '/administration/users'
     | '/projects/$slug'
     | '/administration/'
     | '/projects/'
@@ -327,6 +338,7 @@ export interface FileRouteTypes {
     | '/team-map'
     | '/thinking'
     | '/api/chat'
+    | '/administration/users'
     | '/projects/$slug'
     | '/administration'
     | '/projects'
@@ -357,6 +369,7 @@ export interface FileRouteTypes {
     | '/_authenticated/team-map'
     | '/_authenticated/thinking'
     | '/api/chat'
+    | '/_authenticated/administration/users'
     | '/_authenticated/projects/$slug'
     | '/_authenticated/administration/'
     | '/_authenticated/projects/'
@@ -567,15 +580,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsSlugRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/administration/users': {
+      id: '/_authenticated/administration/users'
+      path: '/users'
+      fullPath: '/administration/users'
+      preLoaderRoute: typeof AuthenticatedAdministrationUsersRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
   }
 }
 
 interface AuthenticatedAdministrationRouteChildren {
+  AuthenticatedAdministrationUsersRoute: typeof AuthenticatedAdministrationUsersRoute
   AuthenticatedAdministrationIndexRoute: typeof AuthenticatedAdministrationIndexRoute
 }
 
 const AuthenticatedAdministrationRouteChildren: AuthenticatedAdministrationRouteChildren =
   {
+    AuthenticatedAdministrationUsersRoute:
+      AuthenticatedAdministrationUsersRoute,
     AuthenticatedAdministrationIndexRoute:
       AuthenticatedAdministrationIndexRoute,
   }
