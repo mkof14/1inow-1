@@ -229,3 +229,29 @@ function Empty({ msg, cta, onClick }: { msg: string; cta?: string; onClick?: () 
     </div>
   );
 }
+
+function Briefing({ n, unit, tail, tone }: { n: number; unit: string; tail: string; tone?: "warn" }) {
+  if (n === 0) return null;
+  return (
+    <li className="flex items-baseline gap-2">
+      <span className={`inline-block min-w-[28px] font-display text-xl ${tone === "warn" ? "text-amber-600" : "text-accent"}`}>{n}</span>
+      <span>{unit}{n === 1 ? "" : "s"} {tail}</span>
+    </li>
+  );
+}
+
+function PrimaryAction({ icon: Icon, label, onClick }: { icon: any; label: string; onClick: () => void }) {
+  return (
+    <button onClick={onClick} className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:opacity-90 transition shadow-sm">
+      <Icon className="size-4" /> {label}
+    </button>
+  );
+}
+
+function SecondaryAction({ icon: Icon, label, onClick }: { icon: any; label: string; onClick: () => void }) {
+  return (
+    <button onClick={onClick} className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm hover:border-accent/40 hover:bg-accent/5 transition">
+      <Icon className="size-4" /> {label}
+    </button>
+  );
+}
