@@ -3,7 +3,8 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Sparkles, X, Maximize2, Minimize2, Mic, Send, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
+import { X, Maximize2, Minimize2, Mic, Send, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
+import { CompassMark } from "@/components/icons/compass-mark";
 import { cn } from "@/lib/utils";
 import { useAiPageContext } from "@/lib/ai-context";
 
@@ -76,7 +77,7 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
       <header className="h-12 px-3 flex items-center justify-between border-b border-border bg-gradient-to-r from-accent/5 to-transparent">
         <div className="flex items-center gap-2">
           <div className="size-7 rounded-lg gradient-compass grid place-items-center text-primary-foreground">
-            <Sparkles className="size-3.5" />
+            <CompassMark className="size-4" />
           </div>
           <div className="leading-tight">
             <div className="text-sm font-medium">Compass AI</div>
@@ -177,7 +178,7 @@ export function AiSidebarToggle({ onClick }: { onClick: () => void }) {
       className="hidden lg:flex fixed right-4 bottom-24 z-30 size-12 rounded-full gradient-compass text-primary-foreground shadow-xl items-center justify-center hover:scale-105 transition"
       title="Open Compass AI (⌘J)"
     >
-      <Sparkles className="size-5" />
+      <CompassMark className="size-5" />
     </button>
   );
 }
@@ -192,7 +193,7 @@ export function CollapsedRail({ onOpen }: { onOpen: () => void }) {
       title="Open Compass AI"
     >
       <div className="flex flex-col items-center gap-3">
-        <Sparkles className="size-4 text-accent" />
+        <CompassMark className="size-4 text-accent" />
         <ChevronLeft className="size-3 text-muted-foreground" />
       </div>
     </button>

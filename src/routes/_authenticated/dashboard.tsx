@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchProjects, fetchTasks, fetchProfiles } from "@/lib/queries";
 import { fetchNotifications } from "@/lib/wave1";
 import { useAuth } from "@/hooks/use-auth";
-import { Play, ListChecks, Mic, Sparkles, ArrowRight, Clock, AlertCircle, MessageSquare, Calendar } from "lucide-react";
+import { Play, ListChecks, Mic, ArrowRight, Clock, AlertCircle, MessageSquare, Calendar } from "lucide-react";
+import { CompassMark } from "@/components/icons/compass-mark";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({ component: HomePage });
 
@@ -46,7 +47,7 @@ function HomePage() {
       <div className="mb-8 rounded-3xl border border-border bg-gradient-to-br from-accent/8 via-card to-card p-6 md:p-8 shadow-sm">
         <div className="flex items-start gap-3 mb-4">
           <div className="size-10 rounded-2xl gradient-compass grid place-items-center text-primary-foreground shrink-0">
-            <Sparkles className="size-5" />
+            <CompassMark className="size-5" />
           </div>
           <div className="flex-1">
             <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Compass briefing</div>
