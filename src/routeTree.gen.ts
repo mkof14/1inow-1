@@ -38,6 +38,7 @@ import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdministrationIndexRouteImport } from './routes/_authenticated/administration.index'
 import { Route as AuthenticatedProjectsSlugRouteImport } from './routes/_authenticated/projects.$slug'
 import { Route as AuthenticatedAdministrationUsersRouteImport } from './routes/_authenticated/administration.users'
+import { Route as AuthenticatedAdministrationSettingsRouteImport } from './routes/_authenticated/administration.settings'
 import { Route as AuthenticatedAdministrationRolesRouteImport } from './routes/_authenticated/administration.roles'
 import { Route as AuthenticatedAdministrationInvitationsRouteImport } from './routes/_authenticated/administration.invitations'
 import { Route as AuthenticatedAdministrationAuditRouteImport } from './routes/_authenticated/administration.audit'
@@ -193,6 +194,12 @@ const AuthenticatedAdministrationUsersRoute =
     path: '/users',
     getParentRoute: () => AuthenticatedAdministrationRoute,
   } as any)
+const AuthenticatedAdministrationSettingsRoute =
+  AuthenticatedAdministrationSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
 const AuthenticatedAdministrationRolesRoute =
   AuthenticatedAdministrationRolesRouteImport.update({
     id: '/roles',
@@ -240,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/administration/audit': typeof AuthenticatedAdministrationAuditRoute
   '/administration/invitations': typeof AuthenticatedAdministrationInvitationsRoute
   '/administration/roles': typeof AuthenticatedAdministrationRolesRoute
+  '/administration/settings': typeof AuthenticatedAdministrationSettingsRoute
   '/administration/users': typeof AuthenticatedAdministrationUsersRoute
   '/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/administration/': typeof AuthenticatedAdministrationIndexRoute
@@ -272,6 +280,7 @@ export interface FileRoutesByTo {
   '/administration/audit': typeof AuthenticatedAdministrationAuditRoute
   '/administration/invitations': typeof AuthenticatedAdministrationInvitationsRoute
   '/administration/roles': typeof AuthenticatedAdministrationRolesRoute
+  '/administration/settings': typeof AuthenticatedAdministrationSettingsRoute
   '/administration/users': typeof AuthenticatedAdministrationUsersRoute
   '/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/administration': typeof AuthenticatedAdministrationIndexRoute
@@ -307,6 +316,7 @@ export interface FileRoutesById {
   '/_authenticated/administration/audit': typeof AuthenticatedAdministrationAuditRoute
   '/_authenticated/administration/invitations': typeof AuthenticatedAdministrationInvitationsRoute
   '/_authenticated/administration/roles': typeof AuthenticatedAdministrationRolesRoute
+  '/_authenticated/administration/settings': typeof AuthenticatedAdministrationSettingsRoute
   '/_authenticated/administration/users': typeof AuthenticatedAdministrationUsersRoute
   '/_authenticated/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/_authenticated/administration/': typeof AuthenticatedAdministrationIndexRoute
@@ -342,6 +352,7 @@ export interface FileRouteTypes {
     | '/administration/audit'
     | '/administration/invitations'
     | '/administration/roles'
+    | '/administration/settings'
     | '/administration/users'
     | '/projects/$slug'
     | '/administration/'
@@ -374,6 +385,7 @@ export interface FileRouteTypes {
     | '/administration/audit'
     | '/administration/invitations'
     | '/administration/roles'
+    | '/administration/settings'
     | '/administration/users'
     | '/projects/$slug'
     | '/administration'
@@ -408,6 +420,7 @@ export interface FileRouteTypes {
     | '/_authenticated/administration/audit'
     | '/_authenticated/administration/invitations'
     | '/_authenticated/administration/roles'
+    | '/_authenticated/administration/settings'
     | '/_authenticated/administration/users'
     | '/_authenticated/projects/$slug'
     | '/_authenticated/administration/'
@@ -626,6 +639,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdministrationUsersRouteImport
       parentRoute: typeof AuthenticatedAdministrationRoute
     }
+    '/_authenticated/administration/settings': {
+      id: '/_authenticated/administration/settings'
+      path: '/settings'
+      fullPath: '/administration/settings'
+      preLoaderRoute: typeof AuthenticatedAdministrationSettingsRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
     '/_authenticated/administration/roles': {
       id: '/_authenticated/administration/roles'
       path: '/roles'
@@ -654,6 +674,7 @@ interface AuthenticatedAdministrationRouteChildren {
   AuthenticatedAdministrationAuditRoute: typeof AuthenticatedAdministrationAuditRoute
   AuthenticatedAdministrationInvitationsRoute: typeof AuthenticatedAdministrationInvitationsRoute
   AuthenticatedAdministrationRolesRoute: typeof AuthenticatedAdministrationRolesRoute
+  AuthenticatedAdministrationSettingsRoute: typeof AuthenticatedAdministrationSettingsRoute
   AuthenticatedAdministrationUsersRoute: typeof AuthenticatedAdministrationUsersRoute
   AuthenticatedAdministrationIndexRoute: typeof AuthenticatedAdministrationIndexRoute
 }
@@ -666,6 +687,8 @@ const AuthenticatedAdministrationRouteChildren: AuthenticatedAdministrationRoute
       AuthenticatedAdministrationInvitationsRoute,
     AuthenticatedAdministrationRolesRoute:
       AuthenticatedAdministrationRolesRoute,
+    AuthenticatedAdministrationSettingsRoute:
+      AuthenticatedAdministrationSettingsRoute,
     AuthenticatedAdministrationUsersRoute:
       AuthenticatedAdministrationUsersRoute,
     AuthenticatedAdministrationIndexRoute:

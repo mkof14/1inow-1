@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
-import { fetchPermissions, fetchRolePermissions, toggleRolePermission, ROLES, ROLE_LABELS, type AppRole } from "@/lib/admin-queries";
+import { Fragment, useMemo } from "react";
+import { fetchPermissions, fetchRolePermissions, toggleRolePermission, ROLES, ROLE_LABELS, type AppRole, type Permission } from "@/lib/admin-queries";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
@@ -29,7 +29,7 @@ function RolesPage() {
   });
 
   const grouped = useMemo(() => {
-    const map = new Map<string, typeof perms.data extends infer T ? (T extends Array<infer U> ? U[] : never) : never>();
+    const map = new Map<string, Permission[]>();
     (perms.data ?? []).forEach((p) => {
       const list = map.get(p.category) ?? [];
       list.push(p);
@@ -64,8 +64,8 @@ function RolesPage() {
             </thead>
             <tbody>
               {grouped.map(([cat, list]) => (
-                <>
-                  <tr key={`h-${cat}`} className="bg-muted/10">
+                <Fragment key={cat}>
+                  <tr className="bg-muted/10">
                     <td colSpan={ROLES.length + 1} className="px-4 py-1.5 text-xs uppercase tracking-wider font-medium text-muted-foreground">
                       {cat}
                     </td>
@@ -95,7 +95,7 @@ function RolesPage() {
                       })}
                     </tr>
                   ))}
-                </>
+                </Fragment>
               ))}
               {perms.isLoading && (
                 <tr><td colSpan={ROLES.length + 1} className="px-4 py-8 text-center text-muted-foreground">Loading…</td></tr>
