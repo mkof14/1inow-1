@@ -107,6 +107,7 @@ export const footerSections: NavSection[] = [
       { to: "/settings", label: "Settings", icon: GearMark },
       { to: "/inbox",    label: "Inbox",    icon: SignalWave },
       { to: "/favorites",label: "Favorites",icon: CompassMark },
+      { to: "/administration", label: "Admin Console", icon: ShieldLine, adminOnly: true },
     ],
   },
 ];
