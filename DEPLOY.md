@@ -52,7 +52,43 @@ Email/password sign-in via the backend works on Vercel without any extra
 setup. To turn the Google button back on (only when deploying on Lovable),
 set `VITE_ENABLE_GOOGLE_AUTH="true"` in that environment.
 
-## 4. Deploy
+## 4. Post-deploy check: email/password auth flow
+
+After the first deploy completes, run this checklist on the live Vercel URL.
+
+### 4.1 Sign up a test account
+1. Open the deployed URL in an **incognito/private** window (no existing session).
+2. Click **Create account**.
+3. Enter a real email address you control, set a password, and submit.
+4. Check your inbox for the confirmation email. Click the confirmation link.
+5. You should be redirected back to the app and land on the **main screen** (`/dashboard` or `/simplicity`).
+
+### 4.2 Verify the session
+1. Open browser DevTools → **Application** → **Local Storage** → your domain.
+2. Look for a key starting with `sb-<project-id>` (the Supabase session). It should contain `access_token`, `refresh_token`, and `expires_at`.
+3. Refresh the page. The session should persist and you should **stay logged in** (no redirect to `/auth`).
+
+### 4.3 Test protected routes
+1. While logged in, visit `/dashboard` directly by typing the URL.
+2. The page should load without errors.
+3. Visit `/auth` directly while logged in. Depending on the app logic, you may be redirected back to the main screen.
+
+### 4.4 Test sign-out and re-login
+1. Click **Sign out**.
+2. You should be redirected to `/auth`.
+3. Try visiting `/dashboard` — you should be redirected to `/auth` or see a login prompt.
+4. Log in with the same email and password.
+5. You should land on the main screen and the session should reappear in Local Storage.
+
+### 4.5 What if something fails?
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| "Invalid credentials" | Typo or unconfirmed email | Confirm email first; check password |
+| Redirect loops after login | `VITE_SUPABASE_*` env vars missing | Add all 6 env vars in Vercel → Project Settings → Environment Variables, then redeploy |
+| 401 on protected routes | Session not attached to server requests | Check that `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` are set (server-side vars) |
+| Blank page after refresh | SSR crash with missing env vars | Same as above; open browser console for the exact error |
+
+## 5. Deploy
 
 Vercel builds on every push to the default branch (Production) and on every PR (Preview). The first deploy is triggered automatically once you click **Deploy** in the Vercel import flow.
 
