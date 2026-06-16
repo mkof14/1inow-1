@@ -16,6 +16,7 @@ import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedThinkingRouteImport } from './routes/_authenticated/thinking'
 import { Route as AuthenticatedTeamMapRouteImport } from './routes/_authenticated/team-map'
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
+import { Route as AuthenticatedSimplicityRouteImport } from './routes/_authenticated/simplicity'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedPrinciplesRouteImport } from './routes/_authenticated/principles'
@@ -68,6 +69,11 @@ const AuthenticatedTeamMapRoute = AuthenticatedTeamMapRouteImport.update({
 const AuthenticatedTasksRoute = AuthenticatedTasksRouteImport.update({
   id: '/tasks',
   path: '/tasks',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSimplicityRoute = AuthenticatedSimplicityRouteImport.update({
+  id: '/simplicity',
+  path: '/simplicity',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -191,6 +197,7 @@ export interface FileRoutesByFullPath {
   '/principles': typeof AuthenticatedPrinciplesRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/simplicity': typeof AuthenticatedSimplicityRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/team-map': typeof AuthenticatedTeamMapRoute
   '/thinking': typeof AuthenticatedThinkingRoute
@@ -218,6 +225,7 @@ export interface FileRoutesByTo {
   '/principles': typeof AuthenticatedPrinciplesRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/simplicity': typeof AuthenticatedSimplicityRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/team-map': typeof AuthenticatedTeamMapRoute
   '/thinking': typeof AuthenticatedThinkingRoute
@@ -247,6 +255,7 @@ export interface FileRoutesById {
   '/_authenticated/principles': typeof AuthenticatedPrinciplesRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/simplicity': typeof AuthenticatedSimplicityRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/_authenticated/team-map': typeof AuthenticatedTeamMapRoute
   '/_authenticated/thinking': typeof AuthenticatedThinkingRoute
@@ -276,6 +285,7 @@ export interface FileRouteTypes {
     | '/principles'
     | '/reports'
     | '/settings'
+    | '/simplicity'
     | '/tasks'
     | '/team-map'
     | '/thinking'
@@ -303,6 +313,7 @@ export interface FileRouteTypes {
     | '/principles'
     | '/reports'
     | '/settings'
+    | '/simplicity'
     | '/tasks'
     | '/team-map'
     | '/thinking'
@@ -331,6 +342,7 @@ export interface FileRouteTypes {
     | '/_authenticated/principles'
     | '/_authenticated/reports'
     | '/_authenticated/settings'
+    | '/_authenticated/simplicity'
     | '/_authenticated/tasks'
     | '/_authenticated/team-map'
     | '/_authenticated/thinking'
@@ -395,6 +407,13 @@ declare module '@tanstack/react-router' {
       path: '/tasks'
       fullPath: '/tasks'
       preLoaderRoute: typeof AuthenticatedTasksRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/simplicity': {
+      id: '/_authenticated/simplicity'
+      path: '/simplicity'
+      fullPath: '/simplicity'
+      preLoaderRoute: typeof AuthenticatedSimplicityRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings': {
@@ -551,6 +570,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPrinciplesRoute: typeof AuthenticatedPrinciplesRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedSimplicityRoute: typeof AuthenticatedSimplicityRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedTeamMapRoute: typeof AuthenticatedTeamMapRoute
   AuthenticatedThinkingRoute: typeof AuthenticatedThinkingRoute
@@ -576,6 +596,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPrinciplesRoute: AuthenticatedPrinciplesRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedSimplicityRoute: AuthenticatedSimplicityRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedTeamMapRoute: AuthenticatedTeamMapRoute,
   AuthenticatedThinkingRoute: AuthenticatedThinkingRoute,
