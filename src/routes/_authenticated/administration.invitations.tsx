@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
   fetchInvitations, createInvitation, cancelInvitation, resendInvitation,
-  ROLES, ROLE_LABELS, type AppRole,
+  ROLES, ROLE_LABELS, type AppRole, logEmail,
 } from "@/lib/admin-queries";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -37,12 +37,30 @@ function InvitationsPage() {
   const invitations = useQuery({ queryKey: ["admin-invitations"], queryFn: fetchInvitations });
 
   const create = useMutation({
-    mutationFn: () => createInvitation({
-      email, full_name: fullName || undefined, role,
-      language, custom_message: message || undefined,
-    }),
+    mutationFn: async () => {
+      const inv = await createInvitation({
+        email, full_name: fullName || undefined, role,
+        language, custom_message: message || undefined,
+      });
+      await logEmail({
+        template_slug: "invitation",
+        language,
+        recipient_email: email,
+        module: "invitations",
+        variables: {
+          recipient_name: fullName || email,
+          inviter_name: "Administrator",
+          organization_name: "Digital Invest Compass",
+          role: ROLE_LABELS[role] ?? role,
+          accept_url: `${window.location.origin}/auth?invite=${(inv as any)?.token ?? ""}`,
+          expires_at: new Date(Date.now() + 14 * 86400_000).toLocaleDateString(),
+        },
+      });
+      return inv;
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-invitations"] });
+      qc.invalidateQueries({ queryKey: ["admin-email-logs"] });
       toast.success("Invitation created (email sending is disabled in dev)");
       setOpen(false); setEmail(""); setFullName(""); setMessage("");
     },

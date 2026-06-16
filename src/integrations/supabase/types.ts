@@ -1043,6 +1043,111 @@ export type Database = {
         }
         Relationships: []
       }
+      email_logs: {
+        Row: {
+          body_html: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          language: string | null
+          module: string | null
+          recipient_email: string
+          recipient_user_id: string | null
+          sent_at: string | null
+          status: string
+          subject: string | null
+          template_slug: string | null
+          triggered_by: string | null
+          variables: Json | null
+        }
+        Insert: {
+          body_html?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          language?: string | null
+          module?: string | null
+          recipient_email: string
+          recipient_user_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          template_slug?: string | null
+          triggered_by?: string | null
+          variables?: Json | null
+        }
+        Update: {
+          body_html?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          language?: string | null
+          module?: string | null
+          recipient_email?: string
+          recipient_user_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          template_slug?: string | null
+          triggered_by?: string | null
+          variables?: Json | null
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          body_html: string
+          body_text: string | null
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          language: string
+          name: string
+          slug: string
+          subject: string
+          updated_at: string
+          updated_by: string | null
+          variables: Json
+        }
+        Insert: {
+          body_html: string
+          body_text?: string | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          language?: string
+          name: string
+          slug: string
+          subject: string
+          updated_at?: string
+          updated_by?: string | null
+          variables?: Json
+        }
+        Update: {
+          body_html?: string
+          body_text?: string | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          language?: string
+          name?: string
+          slug?: string
+          subject?: string
+          updated_at?: string
+          updated_by?: string | null
+          variables?: Json
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string

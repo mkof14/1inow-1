@@ -30,6 +30,19 @@ export type SystemSetting = {
   description: string | null; updated_at: string;
 };
 
+export type EmailTemplate = {
+  id: string; slug: string; language: string; name: string; subject: string;
+  body_html: string; body_text: string | null; category: string;
+  variables: string[]; is_active: boolean; description: string | null;
+  created_at: string; updated_at: string;
+};
+export type EmailLog = {
+  id: string; template_slug: string | null; language: string | null;
+  recipient_email: string; subject: string | null; status: string;
+  error_message: string | null; module: string | null;
+  variables: Record<string, unknown>; created_at: string; sent_at: string | null;
+};
+
 export const ROLES = [
   "super_admin","admin","ceo","project_manager","team_lead",
   "employee","contractor","client","investor","guest",
@@ -139,6 +152,63 @@ export async function fetchSystemSettings(): Promise<SystemSetting[]> {
 
 export async function updateSystemSetting(key: string, value: unknown) {
   const { error } = await supabase.from("system_settings").update({ value } as any).eq("key", key);
+  if (error) throw error;
+}
+
+// ---------- Email templates ----------
+export async function fetchEmailTemplates(): Promise<EmailTemplate[]> {
+  const { data, error } = await supabase.from("email_templates" as any)
+    .select("*").order("category").order("slug").order("language");
+  if (error) throw error;
+  return (data ?? []) as unknown as EmailTemplate[];
+}
+
+export async function upsertEmailTemplate(t: Partial<EmailTemplate> & { slug: string; language: string; name: string; subject: string; body_html: string }) {
+  const { error } = await supabase.from("email_templates" as any)
+    .upsert(t as any, { onConflict: "slug,language" });
+  if (error) throw error;
+}
+
+export async function deleteEmailTemplate(id: string) {
+  const { error } = await supabase.from("email_templates" as any).delete().eq("id", id);
+  if (error) throw error;
+}
+
+export async function fetchEmailLogs(limit = 200): Promise<EmailLog[]> {
+  const { data, error } = await supabase.from("email_logs" as any)
+    .select("id,template_slug,language,recipient_email,subject,status,error_message,module,variables,created_at,sent_at")
+    .order("created_at", { ascending: false }).limit(limit);
+  if (error) throw error;
+  return (data ?? []) as unknown as EmailLog[];
+}
+
+/** Render {{var}} placeholders. */
+export function renderTemplate(tpl: string, vars: Record<string, unknown>): string {
+  return tpl.replace(/\{\{\s*([\w.]+)\s*\}\}/g, (_, k) =>
+    vars[k] != null ? String(vars[k]) : `{{${k}}}`);
+}
+
+/** Log a fake email send (no real delivery yet — UI/logs only). */
+export async function logEmail(input: {
+  template_slug: string; language?: string; recipient_email: string;
+  variables: Record<string, unknown>; module?: string;
+}) {
+  const { data: tpls } = await supabase.from("email_templates" as any)
+    .select("subject,body_html").eq("slug", input.template_slug)
+    .eq("language", input.language ?? "en").limit(1);
+  const tpl = (tpls?.[0] ?? {}) as { subject?: string; body_html?: string };
+  const subject = tpl.subject ? renderTemplate(tpl.subject, input.variables) : null;
+  const body_html = tpl.body_html ? renderTemplate(tpl.body_html, input.variables) : null;
+  const { error } = await supabase.from("email_logs" as any).insert({
+    template_slug: input.template_slug,
+    language: input.language ?? "en",
+    recipient_email: input.recipient_email,
+    subject, body_html,
+    status: "queued",
+    module: input.module ?? null,
+    variables: input.variables,
+    error_message: "Email delivery is disabled in development mode",
+  } as any);
   if (error) throw error;
 }
 
