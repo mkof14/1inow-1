@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Search, LayoutGrid, List, Calendar } from "lucide-react";
 import { ExecutionNode } from "@/components/icons/compass-icons";
+import { useSetPageContext } from "@/lib/ai-context";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/tasks")({ component: ExecutionPage });
@@ -18,6 +19,7 @@ const PRIORITY_BAR: Record<string, string> = {
 
 function ExecutionPage() {
   const tasks = useQuery({ queryKey: ["tasks"], queryFn: () => fetchTasks() });
+  useSetPageContext({ route: "/tasks", scope: "tasks", title: "Tasks" }, []);
   const qc = useQueryClient();
   const [view, setView] = useState<"board" | "list">("board");
   const [q, setQ] = useState("");
