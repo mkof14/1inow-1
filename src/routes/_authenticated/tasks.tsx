@@ -9,6 +9,7 @@ import { Search, LayoutGrid, List, Calendar } from "lucide-react";
 import { ExecutionNode } from "@/components/icons/compass-icons";
 import { useSetPageContext } from "@/lib/ai-context";
 import { toast } from "sonner";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/tasks")({ component: ExecutionPage });
 
@@ -18,6 +19,7 @@ const PRIORITY_BAR: Record<string, string> = {
 };
 
 function ExecutionPage() {
+  const t = useT();
   const tasks = useQuery({ queryKey: ["tasks"], queryFn: () => fetchTasks() });
   useSetPageContext({ route: "/tasks", scope: "tasks", title: "Tasks" }, []);
   const qc = useQueryClient();
@@ -49,8 +51,8 @@ function ExecutionPage() {
         <div className="flex items-center gap-4">
           <div className="text-accent"><ExecutionNode size={44} /></div>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight font-display">Execution</h1>
-            <p className="text-sm text-muted-foreground mt-1">Every task moving across every initiative.</p>
+            <h1 className="text-2xl font-semibold tracking-tight font-display">{t("page.tasks.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{t("page.tasks.subtitle")}</p>
           </div>
         </div>
         <div className="inline-flex rounded-lg border border-border p-0.5 bg-card">
@@ -68,7 +70,7 @@ function ExecutionPage() {
 
       <div className="relative max-w-md mb-5">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search execution…" className="pl-9 h-9" />
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("page.tasks.searchPh")} className="pl-9 h-9" />
       </div>
 
       {view === "board" && (
@@ -111,7 +113,7 @@ function ExecutionPage() {
                   </div>
                 ))}
                 {grouped[col].length === 0 && (
-                  <div className="text-[11px] text-muted-foreground/60 italic px-1 py-4 text-center">Drop here</div>
+                  <div className="text-[11px] text-muted-foreground/60 italic px-1 py-4 text-center">{t("page.tasks.dropHere")}</div>
                 )}
               </div>
             </div>
@@ -124,7 +126,7 @@ function ExecutionPage() {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 border-b border-border">
               <tr className="text-left">
-                {["Task","Project","Priority","Status"].map(h => (
+                {[t("tbl.task"), t("tbl.project"), t("tbl.priority"), t("tbl.status")].map(h => (
                   <th key={h} className="px-4 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{h}</th>
                 ))}
               </tr>
