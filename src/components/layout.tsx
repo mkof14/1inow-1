@@ -1,5 +1,15 @@
-import type { ReactNode, HTMLAttributes, ImgHTMLAttributes } from "react";
+import type { ReactNode, HTMLAttributes, ImgHTMLAttributes, ElementType } from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { AlertCircle, Inbox, Loader2 } from "lucide-react";
 
 /** Standard outer container for every page. Handles padding + max width + min-w-0. */
 export function PageContainer({
@@ -116,6 +126,10 @@ export function ResponsiveTable({ className, children }: { className?: string; c
   );
 }
 
+/** Alias kept for naming parity with the design system spec. */
+export const TableWrapper = ResponsiveTable;
+export const ContentGrid = ResponsiveGrid;
+
 /** Image frame preserves aspect ratio, never stretches, never overflows. */
 export function ImageFrame({
   src,
@@ -186,5 +200,224 @@ export function SidePanel({
     <aside className={cn("hidden shrink-0 border-l border-border bg-card xl:block", width, className)}>
       <div className="sticky top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto p-4">{children}</div>
     </aside>
+  );
+}
+
+/* -------------------------------------------------------------- */
+/* Typography scale — use these instead of ad-hoc text-* classes  */
+/* -------------------------------------------------------------- */
+
+type TextProps = HTMLAttributes<HTMLElement> & { as?: ElementType };
+
+export function PageTitle({ as: Tag = "h1", className, ...r }: TextProps) {
+  return <Tag {...r} className={cn("min-w-0 truncate text-xl font-semibold leading-tight tracking-tight sm:text-2xl", className)} />;
+}
+export function SectionTitle({ as: Tag = "h2", className, ...r }: TextProps) {
+  return <Tag {...r} className={cn("min-w-0 truncate text-base font-semibold leading-snug sm:text-lg", className)} />;
+}
+export function CardTitle({ as: Tag = "h3", className, ...r }: TextProps) {
+  return <Tag {...r} className={cn("min-w-0 truncate text-sm font-semibold leading-snug", className)} />;
+}
+export function Body({ as: Tag = "p", className, ...r }: TextProps) {
+  return <Tag {...r} className={cn("text-sm leading-relaxed text-foreground", className)} />;
+}
+export function Small({ as: Tag = "p", className, ...r }: TextProps) {
+  return <Tag {...r} className={cn("text-xs leading-relaxed text-muted-foreground", className)} />;
+}
+export function Label({ as: Tag = "span", className, ...r }: TextProps) {
+  return <Tag {...r} className={cn("text-xs font-medium uppercase tracking-wide text-muted-foreground", className)} />;
+}
+
+/* -------------------------------------------------------------- */
+/* DataCard — title + value + optional trend / icon / footer.     */
+/* -------------------------------------------------------------- */
+
+export function DataCard({
+  label,
+  value,
+  hint,
+  icon: Icon,
+  footer,
+  className,
+}: {
+  label: ReactNode;
+  value: ReactNode;
+  hint?: ReactNode;
+  icon?: ElementType;
+  footer?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <SafeCard className={cn("flex flex-col gap-2", className)}>
+      <div className="flex min-w-0 items-center justify-between gap-2">
+        <span className="truncate text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</span>
+        {Icon && <Icon className="size-4 shrink-0 text-muted-foreground" />}
+      </div>
+      <div className="min-w-0 truncate text-2xl font-semibold leading-tight">{value}</div>
+      {hint && <div className="line-clamp-2 text-xs text-muted-foreground">{hint}</div>}
+      {footer && <div className="mt-1 border-t border-border pt-2 text-xs">{footer}</div>}
+    </SafeCard>
+  );
+}
+
+/** Alias for the spec name. */
+export const Card = SafeCard;
+
+/* -------------------------------------------------------------- */
+/* ModalShell — a centered, viewport-safe modal with header /     */
+/* scrollable body / sticky footer.                                */
+/* -------------------------------------------------------------- */
+
+export function ModalShell({
+  open,
+  onOpenChange,
+  title,
+  description,
+  children,
+  footer,
+  size = "md",
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  title: ReactNode;
+  description?: ReactNode;
+  children: ReactNode;
+  footer?: ReactNode;
+  size?: "sm" | "md" | "lg";
+}) {
+  const max = size === "sm" ? "sm:max-w-md" : size === "lg" ? "sm:max-w-3xl" : "sm:max-w-xl";
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className={cn("flex max-h-[90vh] w-[calc(100vw-2rem)] flex-col gap-0 overflow-hidden p-0", max)}>
+        <DialogHeader className="border-b border-border p-5">
+          <DialogTitle className="truncate text-base font-semibold">{title}</DialogTitle>
+          {description && (
+            <DialogDescription className="line-clamp-3 text-sm text-muted-foreground">
+              {description}
+            </DialogDescription>
+          )}
+        </DialogHeader>
+        <div className="min-h-0 flex-1 overflow-y-auto p-5">{children}</div>
+        {footer && (
+          <DialogFooter className="sticky bottom-0 border-t border-border bg-card p-4">
+            {footer}
+          </DialogFooter>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* -------------------------------------------------------------- */
+/* State components: Empty / Loading / Error / Confirm            */
+/* -------------------------------------------------------------- */
+
+export function EmptyState({
+  icon: Icon = Inbox,
+  title,
+  description,
+  action,
+  className,
+}: {
+  icon?: ElementType;
+  title: ReactNode;
+  description?: ReactNode;
+  action?: { label: string; onClick: () => void };
+  className?: string;
+}) {
+  return (
+    <div className={cn("flex flex-col items-center justify-center px-6 py-16 text-center", className)}>
+      <div className="mb-4 grid size-12 place-items-center rounded-xl bg-muted text-muted-foreground">
+        <Icon className="size-6" />
+      </div>
+      <h3 className="text-base font-semibold text-foreground">{title}</h3>
+      {description && <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">{description}</p>}
+      {action && (
+        <Button className="mt-5" onClick={action.onClick}>{action.label}</Button>
+      )}
+    </div>
+  );
+}
+
+export function LoadingState({ label = "Loading…", className }: { label?: string; className?: string }) {
+  return (
+    <div className={cn("flex items-center justify-center gap-2 px-6 py-16 text-sm text-muted-foreground", className)}>
+      <Loader2 className="size-4 animate-spin" />
+      <span>{label}</span>
+    </div>
+  );
+}
+
+export function ErrorState({
+  title = "Something went wrong",
+  description,
+  retry,
+  className,
+}: {
+  title?: string;
+  description?: ReactNode;
+  retry?: () => void;
+  className?: string;
+}) {
+  return (
+    <div className={cn("flex flex-col items-center justify-center px-6 py-16 text-center", className)}>
+      <div className="mb-4 grid size-12 place-items-center rounded-xl bg-destructive/10 text-destructive">
+        <AlertCircle className="size-6" />
+      </div>
+      <h3 className="text-base font-semibold text-foreground">{title}</h3>
+      {description && <p className="mt-1.5 max-w-md text-sm text-muted-foreground">{description}</p>}
+      {retry && (
+        <Button variant="outline" className="mt-5" onClick={retry}>Try again</Button>
+      )}
+    </div>
+  );
+}
+
+export function ConfirmDialog({
+  open,
+  onOpenChange,
+  title,
+  description,
+  confirmLabel = "Confirm",
+  cancelLabel = "Cancel",
+  destructive = false,
+  onConfirm,
+  loading = false,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  title: ReactNode;
+  description?: ReactNode;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  destructive?: boolean;
+  onConfirm: () => void | Promise<void>;
+  loading?: boolean;
+}) {
+  return (
+    <ModalShell
+      open={open}
+      onOpenChange={onOpenChange}
+      title={title}
+      description={description}
+      size="sm"
+      footer={
+        <div className="flex w-full flex-wrap justify-end gap-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+            {cancelLabel}
+          </Button>
+          <Button
+            variant={destructive ? "destructive" : "default"}
+            onClick={onConfirm}
+            disabled={loading}
+          >
+            {loading && <Loader2 className="mr-2 size-4 animate-spin" />}
+            {confirmLabel}
+          </Button>
+        </div>
+      }
+    >
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </ModalShell>
   );
 }
