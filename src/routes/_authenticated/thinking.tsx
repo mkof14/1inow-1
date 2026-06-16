@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { think, recordThinking, getThinkingLog, type ThinkingResult } from "@/lib/thinking";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/thinking")({
   component: ThinkingPage,
@@ -24,6 +25,7 @@ const CONF_CHIP: Record<ThinkingResult["confidence"]["level"], string> = {
 };
 
 function ThinkingPage() {
+  const t = useT();
   const [prompt, setPrompt] = useState("");
   const [result, setResult] = useState<ThinkingResult | null>(null);
 
@@ -69,35 +71,35 @@ function ThinkingPage() {
   return (
     <PageContainer>
       <SectionHeader
-        title={<span className="inline-flex items-center gap-2"><ThinkingLoop size={22} /> Thinking Engine</span>}
-        description="Every request passes through 12 stages: understand, gather context, check rules, estimate confidence, plan — before any action is taken."
+        title={<span className="inline-flex items-center gap-2"><ThinkingLoop size={22} /> {t("thinking.title", "Thinking Engine")}</span>}
+        description={t("thinking.subtitle", "Every request passes through 12 stages: understand, gather context, check rules, estimate confidence, plan — before any action is taken.")}
       />
 
       <SafeCard className="mb-6">
-        <Label>Test a request</Label>
+        <Label>{t("thinking.testRequest", "Test a request")}</Label>
         <Textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder='e.g. "Prepare investor meeting for Project Atlas next Tuesday"'
+          placeholder={t("thinking.placeholder", 'e.g. "Prepare investor meeting for Project Atlas next Tuesday"')}
           className="mt-2 min-h-[88px]"
         />
         <div className="mt-3 flex items-center justify-between gap-3">
-          <Small>The engine never calls AI directly. It produces a plan first.</Small>
-          <Button onClick={run} disabled={!prompt.trim()}>Run pipeline</Button>
+          <Small>{t("thinking.note", "The engine never calls AI directly. It produces a plan first.")}</Small>
+          <Button onClick={run} disabled={!prompt.trim()}>{t("thinking.run", "Run pipeline")}</Button>
         </div>
       </SafeCard>
 
       {result ? <ResultView result={result} /> : (
         <EmptyState
           icon={ThinkingLoop}
-          title="No request analyzed yet"
-          description="Type something above and run the pipeline to see how the engine would respond."
+          title={t("thinking.empty.title", "No request analyzed yet")}
+          description={t("thinking.empty.desc", "Type something above and run the pipeline to see how the engine would respond.")}
         />
       )}
 
       {log.length > 1 && (
         <div className="mt-8">
-          <Label>Recent thinking log</Label>
+          <Label>{t("thinking.recentLog", "Recent thinking log")}</Label>
           <div className="mt-2 space-y-2">
             {log.slice(0, 8).map((e, i) => (
               <SafeCard key={i} className="!p-3">

@@ -19,19 +19,19 @@ export function Fab() {
   ];
 
   return (
-    <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2">
+    <div className="fixed bottom-3 right-3 z-20 flex flex-col items-end gap-2">
       {open && (
         <div className="flex flex-col items-end gap-2 mb-1 fade-rise">
           {actions.map((a) => (
             <button
               key={a.label}
               onClick={a.onClick}
-              className="group flex items-center gap-2.5 pl-3 pr-4 py-2 rounded-full bg-card border border-border shadow-sm hover:shadow-md hover:border-accent/50 transition-all"
+              className="group flex items-center gap-2 pl-2.5 pr-3.5 py-1.5 rounded-full bg-card border border-border shadow-sm hover:shadow-md hover:border-accent/50 transition-all"
             >
-              <span className="size-8 rounded-full bg-accent/10 text-accent grid place-items-center">
-                <a.icon className="size-4" />
+              <span className="size-7 rounded-full bg-accent/10 text-accent grid place-items-center">
+                <a.icon className="size-3.5" />
               </span>
-              <span className="text-sm font-medium">{a.label}</span>
+              <span className="text-xs font-medium">{a.label}</span>
             </button>
           ))}
         </div>
@@ -39,11 +39,11 @@ export function Fab() {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="Create new"
-        className={`size-14 rounded-full grid place-items-center text-primary-foreground shadow-lg hover:shadow-xl transition-all ${
+        className={`size-10 rounded-full grid place-items-center text-primary-foreground shadow-md hover:shadow-lg transition-all ${
           open ? "bg-foreground rotate-45" : "gradient-compass hover:scale-105"
         }`}
       >
-        {open ? <X className="size-5" /> : <Plus className="size-6" />}
+        {open ? <X className="size-4" /> : <Plus className="size-4" />}
       </button>
     </div>
   );
