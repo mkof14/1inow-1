@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchProjects, fetchTasks, fetchProfiles } from "@/lib/queries";
 import { fetchNotifications } from "@/lib/wave1";
 import { useAuth } from "@/hooks/use-auth";
-import { MessageSquare, ListChecks, Plus, ArrowRight, AlertCircle, Clock } from "lucide-react";
+import { MessageSquare, ListChecks, Plus, ArrowRight, Clock } from "lucide-react";
 import { CompassMark } from "@/components/icons/compass-mark";
 import { buildAttention } from "@/lib/brain";
 import { firstScreenGreeting } from "@/lib/simplicity";
@@ -34,7 +34,6 @@ function HomePage() {
     t.assignee_id === user?.id && t.status !== "done" && t.status !== "canceled"
   );
   const activeProjects = (projects.data ?? []).filter((p: any) => p.status === "active" || p.status === "in_progress");
-  const unread = (notifs.data ?? []).filter((n: any) => !n.read_at).length;
 
   const openTalk = () =>
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "j", metaKey: true }));
