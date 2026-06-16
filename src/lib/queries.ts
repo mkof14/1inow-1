@@ -59,3 +59,21 @@ export const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
 export const PRIORITY_LABEL: Record<string, string> = {
   critical: "Critical", high: "High", medium: "Medium", low: "Low",
 };
+
+// ---------- Decisions ----------
+export type DecisionStatus = "pending" | "approved" | "rejected" | "deferred" | "review";
+export type DecisionImpact = "low" | "medium" | "high" | "critical";
+
+export const DECISION_STATUS_LABEL: Record<DecisionStatus, string> = {
+  pending: "Pending", approved: "Approved", rejected: "Rejected",
+  deferred: "Deferred", review: "In Review",
+};
+
+export async function fetchDecisions() {
+  const { data, error } = await (supabase as any)
+    .from("decisions")
+    .select("*, projects(name,slug,color)")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
