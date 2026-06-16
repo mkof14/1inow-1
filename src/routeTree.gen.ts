@@ -38,6 +38,8 @@ import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdministrationIndexRouteImport } from './routes/_authenticated/administration.index'
 import { Route as AuthenticatedProjectsSlugRouteImport } from './routes/_authenticated/projects.$slug'
 import { Route as AuthenticatedAdministrationUsersRouteImport } from './routes/_authenticated/administration.users'
+import { Route as AuthenticatedAdministrationRolesRouteImport } from './routes/_authenticated/administration.roles'
+import { Route as AuthenticatedAdministrationInvitationsRouteImport } from './routes/_authenticated/administration.invitations'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -190,6 +192,18 @@ const AuthenticatedAdministrationUsersRoute =
     path: '/users',
     getParentRoute: () => AuthenticatedAdministrationRoute,
   } as any)
+const AuthenticatedAdministrationRolesRoute =
+  AuthenticatedAdministrationRolesRouteImport.update({
+    id: '/roles',
+    path: '/roles',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
+const AuthenticatedAdministrationInvitationsRoute =
+  AuthenticatedAdministrationInvitationsRouteImport.update({
+    id: '/invitations',
+    path: '/invitations',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -216,6 +230,8 @@ export interface FileRoutesByFullPath {
   '/team-map': typeof AuthenticatedTeamMapRoute
   '/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
+  '/administration/invitations': typeof AuthenticatedAdministrationInvitationsRoute
+  '/administration/roles': typeof AuthenticatedAdministrationRolesRoute
   '/administration/users': typeof AuthenticatedAdministrationUsersRoute
   '/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/administration/': typeof AuthenticatedAdministrationIndexRoute
@@ -245,6 +261,8 @@ export interface FileRoutesByTo {
   '/team-map': typeof AuthenticatedTeamMapRoute
   '/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
+  '/administration/invitations': typeof AuthenticatedAdministrationInvitationsRoute
+  '/administration/roles': typeof AuthenticatedAdministrationRolesRoute
   '/administration/users': typeof AuthenticatedAdministrationUsersRoute
   '/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/administration': typeof AuthenticatedAdministrationIndexRoute
@@ -277,6 +295,8 @@ export interface FileRoutesById {
   '/_authenticated/team-map': typeof AuthenticatedTeamMapRoute
   '/_authenticated/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
+  '/_authenticated/administration/invitations': typeof AuthenticatedAdministrationInvitationsRoute
+  '/_authenticated/administration/roles': typeof AuthenticatedAdministrationRolesRoute
   '/_authenticated/administration/users': typeof AuthenticatedAdministrationUsersRoute
   '/_authenticated/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/_authenticated/administration/': typeof AuthenticatedAdministrationIndexRoute
@@ -309,6 +329,8 @@ export interface FileRouteTypes {
     | '/team-map'
     | '/thinking'
     | '/api/chat'
+    | '/administration/invitations'
+    | '/administration/roles'
     | '/administration/users'
     | '/projects/$slug'
     | '/administration/'
@@ -338,6 +360,8 @@ export interface FileRouteTypes {
     | '/team-map'
     | '/thinking'
     | '/api/chat'
+    | '/administration/invitations'
+    | '/administration/roles'
     | '/administration/users'
     | '/projects/$slug'
     | '/administration'
@@ -369,6 +393,8 @@ export interface FileRouteTypes {
     | '/_authenticated/team-map'
     | '/_authenticated/thinking'
     | '/api/chat'
+    | '/_authenticated/administration/invitations'
+    | '/_authenticated/administration/roles'
     | '/_authenticated/administration/users'
     | '/_authenticated/projects/$slug'
     | '/_authenticated/administration/'
@@ -587,16 +613,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdministrationUsersRouteImport
       parentRoute: typeof AuthenticatedAdministrationRoute
     }
+    '/_authenticated/administration/roles': {
+      id: '/_authenticated/administration/roles'
+      path: '/roles'
+      fullPath: '/administration/roles'
+      preLoaderRoute: typeof AuthenticatedAdministrationRolesRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
+    '/_authenticated/administration/invitations': {
+      id: '/_authenticated/administration/invitations'
+      path: '/invitations'
+      fullPath: '/administration/invitations'
+      preLoaderRoute: typeof AuthenticatedAdministrationInvitationsRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
   }
 }
 
 interface AuthenticatedAdministrationRouteChildren {
+  AuthenticatedAdministrationInvitationsRoute: typeof AuthenticatedAdministrationInvitationsRoute
+  AuthenticatedAdministrationRolesRoute: typeof AuthenticatedAdministrationRolesRoute
   AuthenticatedAdministrationUsersRoute: typeof AuthenticatedAdministrationUsersRoute
   AuthenticatedAdministrationIndexRoute: typeof AuthenticatedAdministrationIndexRoute
 }
 
 const AuthenticatedAdministrationRouteChildren: AuthenticatedAdministrationRouteChildren =
   {
+    AuthenticatedAdministrationInvitationsRoute:
+      AuthenticatedAdministrationInvitationsRoute,
+    AuthenticatedAdministrationRolesRoute:
+      AuthenticatedAdministrationRolesRoute,
     AuthenticatedAdministrationUsersRoute:
       AuthenticatedAdministrationUsersRoute,
     AuthenticatedAdministrationIndexRoute:
@@ -673,3 +719,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
