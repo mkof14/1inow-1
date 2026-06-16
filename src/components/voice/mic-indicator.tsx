@@ -107,7 +107,14 @@ export function MicIndicator({
 
   useEffect(() => {
     if (autoStart) start();
-    return () => stop();
+    const onVisibility = () => {
+      if (document.hidden && streamRef.current) stop();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      stop();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
