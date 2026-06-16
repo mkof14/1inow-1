@@ -7,17 +7,11 @@ import { X, Maximize2, Minimize2, Mic, Send, ChevronRight, ChevronLeft, Loader2 
 import { CompassMark } from "@/components/icons/compass-mark";
 import { cn } from "@/lib/utils";
 import { useAiPageContext } from "@/lib/ai-context";
+import { useI18n } from "@/lib/i18n";
 
 type Mode = "docked" | "floating" | "collapsed";
 
-const SUGGESTIONS = [
-  "What needs my attention today?",
-  "Summarize this week",
-  "Who is waiting on me?",
-  "What's blocked right now?",
-];
-
-function makeTransport(getCtx: () => unknown) {
+function makeTransport(getCtx: () => unknown, getLang: () => string) {
   return new DefaultChatTransport({
     api: "/api/chat",
     fetch: async (url, init) => {
@@ -25,12 +19,14 @@ function makeTransport(getCtx: () => unknown) {
       const token = data.session?.access_token;
       const headers = new Headers(init?.headers);
       if (token) headers.set("Authorization", `Bearer ${token}`);
+      headers.set("x-user-language", getLang());
       // Inject page context into body
       let body = init?.body;
       try {
         if (typeof body === "string") {
           const parsed = JSON.parse(body);
           parsed.pageContext = getCtx();
+          parsed.lang = getLang();
           body = JSON.stringify(parsed);
           headers.set("content-type", "application/json");
         }
@@ -46,13 +42,23 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
   onModeChange: (m: Mode) => void;
   onClose: () => void;
 }) {
+  const { t, lang } = useI18n();
+  const langRef = useRef(lang);
+  langRef.current = lang;
   const [input, setInput] = useState("");
   const { context } = useAiPageContext();
   const ctxRef = useRef(context);
   ctxRef.current = context;
-  const [transport] = useState(() => makeTransport(() => ctxRef.current));
+  const [transport] = useState(() => makeTransport(() => ctxRef.current, () => langRef.current));
   const { messages, sendMessage, status } = useChat({ transport });
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const SUGGESTIONS = [
+    t("ai.chip.attention"),
+    t("ai.chip.week"),
+    t("ai.chip.waiting"),
+    t("ai.chip.blocked"),
+  ];
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -80,8 +86,8 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
             <CompassMark className="size-4" />
           </div>
           <div className="leading-tight">
-            <div className="text-sm font-medium">Compass AI</div>
-            <div className="text-[10px] text-muted-foreground">Always with you</div>
+            <div className="text-sm font-medium">{t("ai.title")}</div>
+            <div className="text-[10px] text-muted-foreground">{t("ai.subtitle")}</div>
           </div>
         </div>
         <div className="flex items-center gap-0.5">
@@ -98,9 +104,9 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
         {messages.length === 0 && (
           <div className="space-y-4">
             <div className="rounded-xl bg-muted/40 border border-border p-3 text-sm">
-              <div className="font-medium mb-1">Hi — I'm Compass.</div>
+              <div className="font-medium mb-1">{t("ai.welcome")}</div>
               <p className="text-muted-foreground text-[13px] leading-relaxed">
-                Ask anything. I see your projects, tasks, people and messages. Try one of these:
+                {t("ai.welcomeHint")}
               </p>
             </div>
             <div className="space-y-1.5">
@@ -118,7 +124,7 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
         ))}
         {status === "submitted" && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground px-1">
-            <Loader2 className="size-3 animate-spin" /> Thinking…
+            <Loader2 className="size-3 animate-spin" /> {t("common.thinking")}
           </div>
         )}
       </div>
@@ -134,12 +140,12 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(input); }
             }}
-            placeholder="Ask Compass…"
+            placeholder={t("ai.placeholder")}
             rows={2}
             className="w-full resize-none rounded-xl border border-border bg-background px-3 py-2 pr-20 text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
           />
           <div className="absolute right-2 bottom-2 flex items-center gap-1">
-            <Button type="button" variant="ghost" size="icon" className="size-7" title="Voice (coming soon)">
+            <Button type="button" variant="ghost" size="icon" className="size-7" title={t("ai.voice")}>
               <Mic className="size-3.5" />
             </Button>
             <Button type="submit" size="icon" className="size-7" disabled={loading || !input.trim()}>
@@ -148,7 +154,7 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
           </div>
         </div>
         <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-          <span>Enter to send · Shift+Enter for new line</span>
+          <span>{t("ai.hint")}</span>
           <kbd className="font-mono px-1.5 py-0.5 rounded bg-muted">⌘J</kbd>
         </div>
       </form>
@@ -172,11 +178,12 @@ function Bubble({ message }: { message: UIMessage }) {
 }
 
 export function AiSidebarToggle({ onClick }: { onClick: () => void }) {
+  const { t } = useI18n();
   return (
     <button
       onClick={onClick}
       className="hidden lg:flex fixed right-4 bottom-24 z-30 size-12 rounded-full gradient-compass text-primary-foreground shadow-xl items-center justify-center hover:scale-105 transition"
-      title="Open Compass AI (⌘J)"
+      title={t("ai.openTip")}
     >
       <CompassMark className="size-5" />
     </button>
@@ -186,11 +193,12 @@ export function AiSidebarToggle({ onClick }: { onClick: () => void }) {
 export { type Mode as AiSidebarMode };
 
 export function CollapsedRail({ onOpen }: { onOpen: () => void }) {
+  const { t } = useI18n();
   return (
     <button
       onClick={onOpen}
       className="hidden lg:flex sticky top-0 h-screen w-10 shrink-0 border-l border-border bg-card items-start justify-center pt-4 hover:bg-muted/40 transition"
-      title="Open Compass AI"
+      title={t("ai.openTip")}
     >
       <div className="flex flex-col items-center gap-3">
         <CompassMark className="size-4 text-accent" />
@@ -201,11 +209,12 @@ export function CollapsedRail({ onOpen }: { onOpen: () => void }) {
 }
 
 export function FloatingHandle({ onOpen }: { onOpen: () => void }) {
+  const { t } = useI18n();
   return (
     <button
       onClick={onOpen}
       className="fixed right-3 top-1/2 -translate-y-1/2 z-30 px-1.5 py-3 rounded-l-lg bg-card border border-r-0 border-border text-muted-foreground hover:text-accent"
-      title="Open Compass AI"
+      title={t("ai.openTip")}
     >
       <ChevronRight className="size-3 rotate-180" />
     </button>

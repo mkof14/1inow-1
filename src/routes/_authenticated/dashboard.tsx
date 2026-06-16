@@ -7,10 +7,12 @@ import { MessageSquare, ListChecks, Plus, ArrowRight, Clock } from "lucide-react
 import { CompassMark } from "@/components/icons/compass-mark";
 import { buildAttention } from "@/lib/brain";
 import { firstScreenGreeting } from "@/lib/simplicity";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({ component: HomePage });
 
 function HomePage() {
+  const t = useT();
   const { user } = useAuth();
   const navigate = useNavigate();
   const projects = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
@@ -27,7 +29,12 @@ function HomePage() {
     tasks: tasks.data ?? [],
     projects: projects.data ?? [],
   }).slice(0, 4);
-  const greet = firstScreenGreeting(name, attention.length);
+  const greet = firstScreenGreeting(name, attention.length, {
+    hello: t("greet.hello"),
+    calm: t("greet.calm"),
+    one: t("greet.attention.one"),
+    many: t("greet.attention.many"),
+  });
 
   // Secondary signals — kept compact, available below the fold.
   const myTasks = (tasks.data ?? []).filter((t: any) =>
@@ -46,7 +53,7 @@ function HomePage() {
           <div className="size-9 rounded-xl gradient-compass grid place-items-center text-primary-foreground shrink-0">
             <CompassMark className="size-4" />
           </div>
-          <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Today</span>
+          <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{t("dashboard.today")}</span>
         </div>
 
         <h1 className="text-3xl md:text-4xl font-display tracking-tight">
@@ -58,9 +65,9 @@ function HomePage() {
 
         {/* Three buttons. That's it. */}
         <div className="mt-6 flex flex-wrap gap-2">
-          <PrimaryAction icon={MessageSquare} label="Talk" onClick={openTalk} />
-          <SecondaryAction icon={ListChecks} label="Review" onClick={() => navigate({ to: "/tasks" })} />
-          <SecondaryAction icon={Plus} label="Create" onClick={() => navigate({ to: "/projects" })} />
+          <PrimaryAction icon={MessageSquare} label={t("dashboard.action.talk")} onClick={openTalk} />
+          <SecondaryAction icon={ListChecks} label={t("dashboard.action.review")} onClick={() => navigate({ to: "/tasks" })} />
+          <SecondaryAction icon={Plus} label={t("dashboard.action.create")} onClick={() => navigate({ to: "/projects" })} />
         </div>
 
         {/* Four attention items. No more. */}
@@ -88,15 +95,15 @@ function HomePage() {
       {/* Secondary — quietly available, never the main act */}
       <details className="group mb-6">
         <summary className="cursor-pointer list-none inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition">
-          <span>More from your workspace</span>
+          <span>{t("dashboard.more")}</span>
           <ArrowRight className="size-3 transition group-open:rotate-90" />
         </summary>
 
         <div className="mt-6 grid md:grid-cols-3 gap-6">
         {/* My projects */}
-        <Section title="My projects" to="/projects" className="md:col-span-2">
+        <Section title={t("dashboard.myProjects")} to="/projects" className="md:col-span-2">
           {activeProjects.length === 0 ? (
-            <Empty msg="No active projects yet." cta="Create one" onClick={() => navigate({ to: "/projects" })} />
+            <Empty msg={t("dashboard.myProjectsEmpty")} cta={t("dashboard.createOne")} onClick={() => navigate({ to: "/projects" })} />
           ) : (
             <div className="grid sm:grid-cols-2 gap-3">
               {activeProjects.slice(0, 4).map((p: any) => (
@@ -108,7 +115,7 @@ function HomePage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-sm truncate">{p.name}</div>
-                      <div className="text-[11px] text-muted-foreground">{p.priority} priority</div>
+                      <div className="text-[11px] text-muted-foreground">{t("dashboard.priority").replace("{p}", String(p.priority))}</div>
                     </div>
                   </div>
                   <div className="h-1 rounded-full bg-muted overflow-hidden">
@@ -122,9 +129,9 @@ function HomePage() {
         </Section>
 
         {/* My tasks */}
-        <Section title="My tasks" to="/tasks">
+        <Section title={t("dashboard.myTasks")} to="/tasks">
           {myTasks.length === 0 ? (
-            <Empty msg="Nothing on your plate today." />
+            <Empty msg={t("dashboard.myTasksEmpty")} />
           ) : (
             <div className="space-y-1.5">
               {myTasks.slice(0, 6).map((t: any) => (
@@ -134,7 +141,7 @@ function HomePage() {
                     <div className="text-sm leading-snug truncate">{t.title}</div>
                     <div className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
                       <Clock className="size-3" />
-                      {t.due_date ? new Date(t.due_date).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }) : "no date"}
+                      {t.due_date ? new Date(t.due_date).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }) : null}
                     </div>
                   </div>
                 </div>
@@ -144,9 +151,9 @@ function HomePage() {
         </Section>
 
         {/* Recent activity */}
-        <Section title="Recent activity" className="md:col-span-2">
+        <Section title={t("dashboard.activity")} className="md:col-span-2">
           {(notifs.data ?? []).length === 0 ? (
-            <Empty msg="No recent activity." />
+            <Empty msg={t("dashboard.activityEmpty")} />
           ) : (
             <div className="space-y-1">
               {(notifs.data ?? []).slice(0, 5).map((n: any) => (
@@ -166,9 +173,9 @@ function HomePage() {
         </Section>
 
         {/* Team */}
-        <Section title="Team updates" to="/people">
+        <Section title={t("dashboard.team")} to="/people">
           {(people.data ?? []).length === 0 ? (
-            <Empty msg="No teammates yet." cta="Invite people" onClick={() => navigate({ to: "/people" })} />
+            <Empty msg={t("dashboard.teamEmpty")} cta={t("dashboard.invite")} onClick={() => navigate({ to: "/people" })} />
           ) : (
             <div className="space-y-2">
               {(people.data ?? []).slice(0, 5).map((p: any) => (
@@ -183,7 +190,7 @@ function HomePage() {
                   </div>
                   <div className="flex-1 min-w-0 text-sm">
                     <div className="truncate font-medium">{p.full_name ?? p.email}</div>
-                    <div className="text-[11px] text-muted-foreground truncate">{p.position ?? "Member"}</div>
+                    <div className="text-[11px] text-muted-foreground truncate">{p.position ?? t("common.member")}</div>
                   </div>
                 </div>
               ))}

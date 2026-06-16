@@ -12,7 +12,15 @@ type PageContext = {
   ids?: Record<string, string | undefined>;
   notes?: string;
 };
-type ChatBody = { messages?: UIMessage[]; pageContext?: PageContext };
+type ChatBody = { messages?: UIMessage[]; pageContext?: PageContext; lang?: string };
+
+const LANG_NAMES: Record<string, string> = {
+  en: "English",
+  ru: "Russian",
+  uk: "Ukrainian",
+  es: "Spanish",
+  de: "German",
+};
 
 export const Route = createFileRoute("/api/chat")({
   server: {
@@ -21,8 +29,11 @@ export const Route = createFileRoute("/api/chat")({
         const key = process.env.LOVABLE_API_KEY;
         if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
 
-        const { messages, pageContext } = (await request.json()) as ChatBody;
+        const { messages, pageContext, lang: bodyLang } = (await request.json()) as ChatBody;
         if (!Array.isArray(messages)) return new Response("messages required", { status: 400 });
+
+        const lang = (bodyLang || request.headers.get("x-user-language") || "en").slice(0, 5).toLowerCase();
+        const langName = LANG_NAMES[lang] ?? LANG_NAMES[lang.slice(0, 2)] ?? "English";
 
         // Gather lightweight user context from Supabase (best-effort)
         let contextBlock = "";
@@ -70,6 +81,8 @@ export const Route = createFileRoute("/api/chat")({
           : "";
 
         const system = `You are Compass, the intelligence layer of Digital Invest Compass — a private decision and execution environment.
+
+LANGUAGE: Respond in ${langName} (locale "${lang}"). Match the user's language even if your context is in English. Localize numbers, dates and any UI-style phrases.
 
 ${principlesSystemPrompt()}
 

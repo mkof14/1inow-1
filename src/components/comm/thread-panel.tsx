@@ -7,10 +7,12 @@ import { MessageComposer } from "./message-composer";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useT } from "@/lib/i18n";
 
 export function ThreadPanel({
   channel, threadRootId, onClose,
 }: { channel: Channel; threadRootId: string; onClose: () => void }) {
+  const t = useT();
   const qc = useQueryClient();
   const { user } = useAuth();
 
@@ -56,7 +58,7 @@ export function ThreadPanel({
     <aside className="w-[380px] shrink-0 border-l border-border bg-card flex flex-col">
       <div className="h-14 px-4 flex items-center justify-between border-b border-border">
         <div>
-          <div className="text-sm font-semibold">Thread</div>
+          <div className="text-sm font-semibold">{t("comm.thread.title")}</div>
           <div className="text-xs text-muted-foreground">#{channel.name}</div>
         </div>
         <Button variant="ghost" size="icon" onClick={onClose}><X className="size-4" /></Button>
@@ -71,7 +73,7 @@ export function ThreadPanel({
           />
         )}
         <div className="border-t border-border my-2 mx-4 text-[11px] uppercase tracking-wider text-muted-foreground py-1.5">
-          {replies.data?.length ?? 0} replies
+          {t("comm.replies").replace("{n}", String(replies.data?.length ?? 0))}
         </div>
         {replies.data?.map((m) => (
           <MessageItem
@@ -84,7 +86,7 @@ export function ThreadPanel({
         ))}
       </div>
       <div className="p-3 border-t border-border">
-        <MessageComposer channelId={channel.id} threadRootId={threadRootId} placeholder="Reply in thread…" />
+        <MessageComposer channelId={channel.id} threadRootId={threadRootId} placeholder={t("comm.thread.placeholder")} />
       </div>
     </aside>
   );

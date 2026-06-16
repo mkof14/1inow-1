@@ -8,12 +8,14 @@ import { ThreadPanel } from "@/components/comm/thread-panel";
 import { EmptyState } from "@/components/empty-state";
 import { MessageSquare } from "lucide-react";
 import { useSetPageContext } from "@/lib/ai-context";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/communication")({
   component: Communication,
 });
 
 function Communication() {
+  const t = useT();
   const { data: channels = [] } = useQuery({ queryKey: ["channels"], queryFn: fetchChannels });
   const [activeId, setActiveId] = useState<string | null>(null);
   const [thread, setThread] = useState<string | null>(null);
@@ -40,7 +42,7 @@ function Communication() {
         <MessageStream channel={active} onOpenThread={(id) => setThread(id)} />
       ) : (
         <div className="flex-1 grid place-items-center">
-          <EmptyState icon={MessageSquare} title="No channel selected" description="Pick a channel on the left or create a new one to start the conversation." />
+          <EmptyState icon={MessageSquare} title={t("comm.noChannelTitle")} description={t("comm.noChannelDesc")} />
         </div>
       )}
       {active && thread && <ThreadPanel channel={active} threadRootId={thread} onClose={() => setThread(null)} />}

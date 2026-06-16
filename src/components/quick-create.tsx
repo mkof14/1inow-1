@@ -8,8 +8,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useT } from "@/lib/i18n";
 
 export function QuickCreate({ openSignal = 0 }: { openSignal?: number }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const lastSignal = useRef(0);
   useEffect(() => {
@@ -36,7 +38,7 @@ export function QuickCreate({ openSignal = 0 }: { openSignal?: number }) {
         });
         if (error) throw error;
         qc.invalidateQueries({ queryKey: ["tasks"] });
-        toast.success("Task created");
+        toast.success(t("quick.taskCreated"));
       } else if (tab === "project") {
         const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
         const { error } = await supabase.from("projects").insert({
@@ -44,14 +46,14 @@ export function QuickCreate({ openSignal = 0 }: { openSignal?: number }) {
         });
         if (error) throw error;
         qc.invalidateQueries({ queryKey: ["projects"] });
-        toast.success("Project created");
+        toast.success(t("quick.projectCreated"));
       } else {
-        toast.message("Notes module coming in Wave 3");
+        toast.message(t("quick.notesSoon"));
       }
       reset();
       setOpen(false);
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Failed to create";
+      const msg = e instanceof Error ? e.message : t("common.failed");
       toast.error(msg);
     }
   }
@@ -69,26 +71,26 @@ export function QuickCreate({ openSignal = 0 }: { openSignal?: number }) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Quick Create</DialogTitle>
+            <DialogTitle>{t("quick.title")}</DialogTitle>
           </DialogHeader>
           <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
             <TabsList className="grid grid-cols-3 w-full">
-              <TabsTrigger value="task"><CheckSquare className="size-3.5 mr-1.5" />Task</TabsTrigger>
-              <TabsTrigger value="project"><FolderKanban className="size-3.5 mr-1.5" />Project</TabsTrigger>
-              <TabsTrigger value="note"><StickyNote className="size-3.5 mr-1.5" />Note</TabsTrigger>
+              <TabsTrigger value="task"><CheckSquare className="size-3.5 mr-1.5" />{t("quick.tab.task")}</TabsTrigger>
+              <TabsTrigger value="project"><FolderKanban className="size-3.5 mr-1.5" />{t("quick.tab.project")}</TabsTrigger>
+              <TabsTrigger value="note"><StickyNote className="size-3.5 mr-1.5" />{t("quick.tab.note")}</TabsTrigger>
             </TabsList>
             <TabsContent value={tab} className="space-y-3 mt-4">
-              <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} autoFocus />
-              <Textarea placeholder="Description (optional)" value={desc} onChange={(e) => setDesc(e.target.value)} rows={3} />
+              <Input placeholder={t("quick.titlePlaceholder")} value={title} onChange={(e) => setTitle(e.target.value)} autoFocus />
+              <Textarea placeholder={t("quick.descPlaceholder")} value={desc} onChange={(e) => setDesc(e.target.value)} rows={3} />
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <FileText className="size-3" /> Documents
-                <Video className="size-3 ml-2" /> Meetings — coming soon
+                <FileText className="size-3" /> {t("quick.docs")}
+                <Video className="size-3 ml-2" /> {t("quick.meetings")}
               </div>
             </TabsContent>
           </Tabs>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={submit} disabled={!title.trim()}>Create</Button>
+            <Button variant="ghost" onClick={() => setOpen(false)}>{t("common.cancel")}</Button>
+            <Button onClick={submit} disabled={!title.trim()}>{t("quick.create")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
