@@ -161,12 +161,12 @@ function ProjectDetail() {
         </Dialog>
       </div>
 
-      <div className="mt-4 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="mt-4 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-6">
+        <div className="flex gap-4 overflow-x-auto pb-3 -mx-2 px-2 snap-x min-w-0">
           {columns.map((col) => {
           const colTasks = tasks.data?.filter((t: any) => t.status === col) ?? [];
           return (
-            <div key={col} className="rounded-xl bg-muted/40 p-3 min-h-[300px]">
+            <div key={col} className="snap-start shrink-0 w-[260px] rounded-xl bg-muted/40 p-3 min-h-[300px]">
               <div className="flex items-center justify-between px-2 mb-3">
                 <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   {TASK_STATUS_LABEL[col]}

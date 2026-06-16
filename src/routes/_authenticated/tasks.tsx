@@ -72,12 +72,12 @@ function ExecutionPage() {
       </div>
 
       {view === "board" && (
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="flex gap-3 overflow-x-auto pb-3 -mx-2 px-2 snap-x">
           {BOARD_COLS.map((col) => (
             <div key={col}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => { if (draggingId) { update.mutate({ id: draggingId, status: col }); setDraggingId(null); } }}
-              className="rounded-xl border border-border bg-card/50 p-3 min-h-[400px]">
+              className="snap-start shrink-0 w-[260px] rounded-xl border border-border bg-card/50 p-3 min-h-[400px]">
               <div className="flex items-center justify-between mb-3 px-1">
                 <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{TASK_STATUS_LABEL[col]}</span>
                 <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{grouped[col].length}</span>
