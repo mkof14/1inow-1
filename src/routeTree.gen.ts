@@ -35,7 +35,13 @@ import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAiRouteImport } from './routes/_authenticated/ai'
 import { Route as AuthenticatedAdministrationRouteImport } from './routes/_authenticated/administration'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects.index'
+import { Route as AuthenticatedAdministrationIndexRouteImport } from './routes/_authenticated/administration.index'
 import { Route as AuthenticatedProjectsSlugRouteImport } from './routes/_authenticated/projects.$slug'
+import { Route as AuthenticatedAdministrationUsersRouteImport } from './routes/_authenticated/administration.users'
+import { Route as AuthenticatedAdministrationSettingsRouteImport } from './routes/_authenticated/administration.settings'
+import { Route as AuthenticatedAdministrationRolesRouteImport } from './routes/_authenticated/administration.roles'
+import { Route as AuthenticatedAdministrationInvitationsRouteImport } from './routes/_authenticated/administration.invitations'
+import { Route as AuthenticatedAdministrationAuditRouteImport } from './routes/_authenticated/administration.audit'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -170,17 +176,53 @@ const AuthenticatedProjectsIndexRoute =
     path: '/projects/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdministrationIndexRoute =
+  AuthenticatedAdministrationIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
 const AuthenticatedProjectsSlugRoute =
   AuthenticatedProjectsSlugRouteImport.update({
     id: '/projects/$slug',
     path: '/projects/$slug',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdministrationUsersRoute =
+  AuthenticatedAdministrationUsersRouteImport.update({
+    id: '/users',
+    path: '/users',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
+const AuthenticatedAdministrationSettingsRoute =
+  AuthenticatedAdministrationSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
+const AuthenticatedAdministrationRolesRoute =
+  AuthenticatedAdministrationRolesRouteImport.update({
+    id: '/roles',
+    path: '/roles',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
+const AuthenticatedAdministrationInvitationsRoute =
+  AuthenticatedAdministrationInvitationsRouteImport.update({
+    id: '/invitations',
+    path: '/invitations',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
+const AuthenticatedAdministrationAuditRoute =
+  AuthenticatedAdministrationAuditRouteImport.update({
+    id: '/audit',
+    path: '/audit',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/administration': typeof AuthenticatedAdministrationRoute
+  '/administration': typeof AuthenticatedAdministrationRouteWithChildren
   '/ai': typeof AuthenticatedAiRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/brain': typeof AuthenticatedBrainRoute
@@ -202,13 +244,18 @@ export interface FileRoutesByFullPath {
   '/team-map': typeof AuthenticatedTeamMapRoute
   '/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
+  '/administration/audit': typeof AuthenticatedAdministrationAuditRoute
+  '/administration/invitations': typeof AuthenticatedAdministrationInvitationsRoute
+  '/administration/roles': typeof AuthenticatedAdministrationRolesRoute
+  '/administration/settings': typeof AuthenticatedAdministrationSettingsRoute
+  '/administration/users': typeof AuthenticatedAdministrationUsersRoute
   '/projects/$slug': typeof AuthenticatedProjectsSlugRoute
+  '/administration/': typeof AuthenticatedAdministrationIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/administration': typeof AuthenticatedAdministrationRoute
   '/ai': typeof AuthenticatedAiRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/brain': typeof AuthenticatedBrainRoute
@@ -230,7 +277,13 @@ export interface FileRoutesByTo {
   '/team-map': typeof AuthenticatedTeamMapRoute
   '/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
+  '/administration/audit': typeof AuthenticatedAdministrationAuditRoute
+  '/administration/invitations': typeof AuthenticatedAdministrationInvitationsRoute
+  '/administration/roles': typeof AuthenticatedAdministrationRolesRoute
+  '/administration/settings': typeof AuthenticatedAdministrationSettingsRoute
+  '/administration/users': typeof AuthenticatedAdministrationUsersRoute
   '/projects/$slug': typeof AuthenticatedProjectsSlugRoute
+  '/administration': typeof AuthenticatedAdministrationIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
 }
 export interface FileRoutesById {
@@ -238,7 +291,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_authenticated/administration': typeof AuthenticatedAdministrationRoute
+  '/_authenticated/administration': typeof AuthenticatedAdministrationRouteWithChildren
   '/_authenticated/ai': typeof AuthenticatedAiRoute
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
   '/_authenticated/brain': typeof AuthenticatedBrainRoute
@@ -260,7 +313,13 @@ export interface FileRoutesById {
   '/_authenticated/team-map': typeof AuthenticatedTeamMapRoute
   '/_authenticated/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
+  '/_authenticated/administration/audit': typeof AuthenticatedAdministrationAuditRoute
+  '/_authenticated/administration/invitations': typeof AuthenticatedAdministrationInvitationsRoute
+  '/_authenticated/administration/roles': typeof AuthenticatedAdministrationRolesRoute
+  '/_authenticated/administration/settings': typeof AuthenticatedAdministrationSettingsRoute
+  '/_authenticated/administration/users': typeof AuthenticatedAdministrationUsersRoute
   '/_authenticated/projects/$slug': typeof AuthenticatedProjectsSlugRoute
+  '/_authenticated/administration/': typeof AuthenticatedAdministrationIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
 }
 export interface FileRouteTypes {
@@ -290,13 +349,18 @@ export interface FileRouteTypes {
     | '/team-map'
     | '/thinking'
     | '/api/chat'
+    | '/administration/audit'
+    | '/administration/invitations'
+    | '/administration/roles'
+    | '/administration/settings'
+    | '/administration/users'
     | '/projects/$slug'
+    | '/administration/'
     | '/projects/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/administration'
     | '/ai'
     | '/approvals'
     | '/brain'
@@ -318,7 +382,13 @@ export interface FileRouteTypes {
     | '/team-map'
     | '/thinking'
     | '/api/chat'
+    | '/administration/audit'
+    | '/administration/invitations'
+    | '/administration/roles'
+    | '/administration/settings'
+    | '/administration/users'
     | '/projects/$slug'
+    | '/administration'
     | '/projects'
   id:
     | '__root__'
@@ -347,7 +417,13 @@ export interface FileRouteTypes {
     | '/_authenticated/team-map'
     | '/_authenticated/thinking'
     | '/api/chat'
+    | '/_authenticated/administration/audit'
+    | '/_authenticated/administration/invitations'
+    | '/_authenticated/administration/roles'
+    | '/_authenticated/administration/settings'
+    | '/_authenticated/administration/users'
     | '/_authenticated/projects/$slug'
+    | '/_authenticated/administration/'
     | '/_authenticated/projects/'
   fileRoutesById: FileRoutesById
 }
@@ -542,6 +618,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/administration/': {
+      id: '/_authenticated/administration/'
+      path: '/'
+      fullPath: '/administration/'
+      preLoaderRoute: typeof AuthenticatedAdministrationIndexRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
     '/_authenticated/projects/$slug': {
       id: '/_authenticated/projects/$slug'
       path: '/projects/$slug'
@@ -549,11 +632,76 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsSlugRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/administration/users': {
+      id: '/_authenticated/administration/users'
+      path: '/users'
+      fullPath: '/administration/users'
+      preLoaderRoute: typeof AuthenticatedAdministrationUsersRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
+    '/_authenticated/administration/settings': {
+      id: '/_authenticated/administration/settings'
+      path: '/settings'
+      fullPath: '/administration/settings'
+      preLoaderRoute: typeof AuthenticatedAdministrationSettingsRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
+    '/_authenticated/administration/roles': {
+      id: '/_authenticated/administration/roles'
+      path: '/roles'
+      fullPath: '/administration/roles'
+      preLoaderRoute: typeof AuthenticatedAdministrationRolesRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
+    '/_authenticated/administration/invitations': {
+      id: '/_authenticated/administration/invitations'
+      path: '/invitations'
+      fullPath: '/administration/invitations'
+      preLoaderRoute: typeof AuthenticatedAdministrationInvitationsRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
+    '/_authenticated/administration/audit': {
+      id: '/_authenticated/administration/audit'
+      path: '/audit'
+      fullPath: '/administration/audit'
+      preLoaderRoute: typeof AuthenticatedAdministrationAuditRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
   }
 }
 
+interface AuthenticatedAdministrationRouteChildren {
+  AuthenticatedAdministrationAuditRoute: typeof AuthenticatedAdministrationAuditRoute
+  AuthenticatedAdministrationInvitationsRoute: typeof AuthenticatedAdministrationInvitationsRoute
+  AuthenticatedAdministrationRolesRoute: typeof AuthenticatedAdministrationRolesRoute
+  AuthenticatedAdministrationSettingsRoute: typeof AuthenticatedAdministrationSettingsRoute
+  AuthenticatedAdministrationUsersRoute: typeof AuthenticatedAdministrationUsersRoute
+  AuthenticatedAdministrationIndexRoute: typeof AuthenticatedAdministrationIndexRoute
+}
+
+const AuthenticatedAdministrationRouteChildren: AuthenticatedAdministrationRouteChildren =
+  {
+    AuthenticatedAdministrationAuditRoute:
+      AuthenticatedAdministrationAuditRoute,
+    AuthenticatedAdministrationInvitationsRoute:
+      AuthenticatedAdministrationInvitationsRoute,
+    AuthenticatedAdministrationRolesRoute:
+      AuthenticatedAdministrationRolesRoute,
+    AuthenticatedAdministrationSettingsRoute:
+      AuthenticatedAdministrationSettingsRoute,
+    AuthenticatedAdministrationUsersRoute:
+      AuthenticatedAdministrationUsersRoute,
+    AuthenticatedAdministrationIndexRoute:
+      AuthenticatedAdministrationIndexRoute,
+  }
+
+const AuthenticatedAdministrationRouteWithChildren =
+  AuthenticatedAdministrationRoute._addFileChildren(
+    AuthenticatedAdministrationRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAdministrationRoute: typeof AuthenticatedAdministrationRoute
+  AuthenticatedAdministrationRoute: typeof AuthenticatedAdministrationRouteWithChildren
   AuthenticatedAiRoute: typeof AuthenticatedAiRoute
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
   AuthenticatedBrainRoute: typeof AuthenticatedBrainRoute
@@ -579,7 +727,8 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAdministrationRoute: AuthenticatedAdministrationRoute,
+  AuthenticatedAdministrationRoute:
+    AuthenticatedAdministrationRouteWithChildren,
   AuthenticatedAiRoute: AuthenticatedAiRoute,
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
   AuthenticatedBrainRoute: AuthenticatedBrainRoute,
