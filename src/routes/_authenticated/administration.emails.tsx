@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FileText, Plus, Pencil, Trash2, Eye } from "lucide-react";
 import { toast } from "sonner";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/administration/emails")({
   component: EmailTemplatesPage,
@@ -41,6 +42,7 @@ const EMPTY: Editable = {
 };
 
 function EmailTemplatesPage() {
+  const t = useT();
   const qc = useQueryClient();
   const templates = useQuery({ queryKey: ["admin-email-templates"], queryFn: fetchEmailTemplates });
 
@@ -84,19 +86,17 @@ function EmailTemplatesPage() {
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Email Templates</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Manage transactional and notification email templates. Use <code>{"{{variable}}"}</code> placeholders.
-          </p>
+          <h1 className="text-2xl font-semibold">{t("page.emails.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("page.emails.subtitle")}</p>
         </div>
         <Button onClick={() => setEditor({ ...EMPTY })}>
-          <Plus className="size-4 mr-1.5" /> New template
+          <Plus className="size-4 mr-1.5" /> {t("page.emails.new")}
         </Button>
       </div>
 
-      {templates.isLoading && <Card className="p-8 text-center text-muted-foreground">Loading…</Card>}
+      {templates.isLoading && <Card className="p-8 text-center text-muted-foreground">{t("common.loading")}</Card>}
       {!templates.isLoading && (templates.data?.length ?? 0) === 0 && (
-        <Card className="p-8 text-center text-muted-foreground">No templates yet.</Card>
+        <Card className="p-8 text-center text-muted-foreground">{t("page.emails.empty")}</Card>
       )}
 
       {[...grouped.entries()].map(([cat, list]) => (
@@ -109,12 +109,12 @@ function EmailTemplatesPage() {
             <table className="w-full text-sm">
               <thead className="bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground">
                 <tr>
-                  <th className="text-left px-4 py-2.5 font-medium">Name</th>
-                  <th className="text-left px-4 py-2.5 font-medium">Slug</th>
-                  <th className="text-left px-4 py-2.5 font-medium">Lang</th>
-                  <th className="text-left px-4 py-2.5 font-medium">Subject</th>
-                  <th className="text-left px-4 py-2.5 font-medium">Active</th>
-                  <th className="text-right px-4 py-2.5 font-medium">Actions</th>
+                  <th className="text-left px-4 py-2.5 font-medium">{t("tbl.name")}</th>
+                  <th className="text-left px-4 py-2.5 font-medium">{t("tbl.slug")}</th>
+                  <th className="text-left px-4 py-2.5 font-medium">{t("tbl.lang")}</th>
+                  <th className="text-left px-4 py-2.5 font-medium">{t("tbl.subject")}</th>
+                  <th className="text-left px-4 py-2.5 font-medium">{t("tbl.active")}</th>
+                  <th className="text-right px-4 py-2.5 font-medium">{t("tbl.actions")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -146,7 +146,7 @@ function EmailTemplatesPage() {
       {/* Editor */}
       <Dialog open={!!editor} onOpenChange={(o) => !o && setEditor(null)}>
         <DialogContent className="max-w-3xl">
-          <DialogHeader><DialogTitle>{editor?.id ? "Edit template" : "New template"}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editor?.id ? t("page.emails.editTitle") : t("page.emails.newTitle")}</DialogTitle></DialogHeader>
           {editor && (
             <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
               <div className="grid grid-cols-2 gap-3">
