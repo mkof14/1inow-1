@@ -1,29 +1,29 @@
 import { type ReactNode, useState } from "react";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { navGroups } from "@/lib/nav-config";
+import { primaryNav, moreNav } from "@/lib/nav-config";
 import { useAuth } from "@/hooks/use-auth";
-import { Search, Bell, LogOut, Moon, Sun } from "lucide-react";
+import { Search, Bell, LogOut, Moon, Sun, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useQuery } from "@tanstack/react-query";
-import { fetchFavorites, fetchRecent, fetchNotifications } from "@/lib/wave1";
+import { fetchNotifications } from "@/lib/wave1";
 import { QuickCreate } from "@/components/quick-create";
 import { CommandBar } from "@/components/command-bar";
 import { useShortcuts } from "@/hooks/use-shortcuts";
 import { Badge } from "@/components/ui/badge";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useT } from "@/lib/i18n";
-import {
-  CompassLogo, CompassMark, DirectionArrow, GearMark, HelpMark,
-} from "@/components/icons/compass-icons";
+import { CompassLogo } from "@/components/icons/compass-icons";
+import { Fab } from "@/components/fab";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth() as any;
   const navigate = useNavigate();
   const t = useT();
   const [dark, setDark] = useState(false);
@@ -32,8 +32,6 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   useShortcuts(() => setCmdOpen(true), () => setQuickOpen((n) => n + 1));
 
-  const { data: favorites = [] } = useQuery({ queryKey: ["favorites"], queryFn: fetchFavorites, enabled: !!user });
-  const { data: recent = [] } = useQuery({ queryKey: ["recent"], queryFn: () => fetchRecent(5), enabled: !!user });
   const { data: notifs = [] } = useQuery({ queryKey: ["notifications"], queryFn: fetchNotifications, enabled: !!user });
   const unread = notifs.filter((n) => !n.read_at).length;
 
@@ -46,111 +44,83 @@ export function AppShell({ children }: { children: ReactNode }) {
   const initials = (user?.user_metadata?.full_name || user?.email || "U")
     .split(/\s|@/)[0].slice(0, 2).toUpperCase();
 
+  const visibleMore = moreNav.filter((m) => !m.adminOnly || isAdmin);
+  const moreActive = visibleMore.some((m) => pathname.startsWith(m.to));
+
+  const navItem = (item: typeof primaryNav[number]) => {
+    const active = pathname === item.to || pathname.startsWith(item.to + "/");
+    const Icon = item.icon;
+    return (
+      <Link
+        key={item.to}
+        to={item.to}
+        className={cn(
+          "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
+          active
+            ? "bg-accent/10 text-foreground font-medium"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+        )}
+      >
+        <Icon className={cn("size-4 shrink-0", active && "text-accent")} />
+        <span className="flex-1">{t(`nav.${item.label}`, item.label)}</span>
+        {item.to === "/communication" && unread > 0 && (
+          <Badge variant="secondary" className="h-4 min-w-4 px-1 text-[10px]">{unread}</Badge>
+        )}
+      </Link>
+    );
+  };
+
   return (
     <div className="flex min-h-screen w-full bg-background text-foreground">
-      {/* Sidebar */}
       <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar sticky top-0 h-screen">
-        <div className="px-5 py-5 flex items-center gap-2.5">
+        <Link to="/dashboard" className="px-5 py-5 flex items-center gap-2.5 hover:opacity-80 transition-opacity">
           <span className="text-primary"><CompassLogo size={28} /></span>
           <div className="leading-tight">
             <div className="font-display text-base text-sidebar-foreground">Digital Invest</div>
             <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Compass</div>
           </div>
-        </div>
+        </Link>
 
-        <nav className="flex-1 overflow-y-auto px-2.5 pb-4 space-y-3">
-          {navGroups.map((group) => (
-            <div key={group.label}>
-              <div className="px-3 pt-3 pb-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
-                {t(`nav.${group.label}`, group.label)}
-              </div>
-              <div className="space-y-0.5">
-                {group.items.map((item) => {
-                  const active = pathname === item.to || pathname.startsWith(item.to + "/");
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.to}
-                      to={item.to}
-                      className={cn(
-                        "group relative flex items-center gap-2.5 rounded-md px-3 py-1.5 text-[13px] transition-all",
-                        active
-                          ? "nav-rail-active font-medium"
-                          : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground",
-                      )}
-                    >
-                      <Icon className={cn("size-4 transition-colors", active && "text-accent")} />
-                      <span className="flex-1">{t(`nav.${item.label}`, item.label)}</span>
-                      {item.to === "/inbox" && unread > 0 && (
-                        <Badge variant="secondary" className="h-4 min-w-4 px-1 text-[10px]">{unread}</Badge>
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+        <nav className="flex-1 overflow-y-auto px-2.5 pb-4 space-y-0.5 pt-2">
+          {primaryNav.map(navItem)}
 
-          {favorites.length > 0 && (
-            <div>
-              <div className="px-3 pt-3 pb-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">{t("nav.Favorites_section", "Favorites")}</div>
-              <div className="space-y-0.5">
-                {favorites.slice(0, 6).map((f) => (
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                className={cn(
+                  "w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
+                  moreActive
+                    ? "bg-accent/10 text-foreground font-medium"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                <MoreHorizontal className={cn("size-4", moreActive && "text-accent")} />
+                <span className="flex-1 text-left">{t("nav.More", "More")}</span>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent side="right" align="start" className="w-56 p-1.5">
+              {visibleMore.map((m) => {
+                const Icon = m.icon;
+                return (
                   <Link
-                    key={f.id}
-                    to={f.entity_type === "project" ? "/projects" : "/tasks"}
-                    className="flex items-center gap-2.5 rounded-md px-3 py-1.5 text-[13px] text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                    key={m.to}
+                    to={m.to}
+                    className="flex items-center gap-3 rounded-md px-2.5 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                   >
-                    <CompassMark className="size-3.5 text-accent" />
-                    <span className="truncate">{f.label ?? f.entity_type}</span>
+                    <Icon className="size-4" />
+                    <span>{t(`nav.${m.label}`, m.label)}</span>
                   </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {recent.length > 0 && (
-            <div>
-              <div className="px-3 pt-3 pb-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">{t("nav.Recent", "Recent")}</div>
-              <div className="space-y-0.5">
-                {recent.slice(0, 5).map((r) => (
-                  <Link
-                    key={r.id}
-                    to={r.entity_type === "project" ? "/projects" : "/tasks"}
-                    className="flex items-center gap-2.5 rounded-md px-3 py-1.5 text-[13px] text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                  >
-                    <DirectionArrow className="size-3.5" />
-                    <span className="truncate">{r.label ?? r.entity_type}</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
+                );
+              })}
+            </PopoverContent>
+          </Popover>
         </nav>
 
-        {/* Bottom block: language + settings + help */}
-        <div className="border-t border-sidebar-border px-2.5 py-2.5 space-y-0.5">
-          <Link
-            to="/settings"
-            className="flex items-center gap-2.5 rounded-md px-3 py-1.5 text-[13px] text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
-          >
-            <GearMark className="size-4" />
-            <span className="flex-1">{t("nav.Settings", "Settings")}</span>
-          </Link>
-          <button
-            type="button"
-            onClick={() => setCmdOpen(true)}
-            className="w-full flex items-center gap-2.5 rounded-md px-3 py-1.5 text-[13px] text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
-          >
-            <HelpMark className="size-4" />
-            <span className="flex-1 text-left">{t("nav.Help", "Help")}</span>
-            <kbd className="text-[9px] font-mono text-muted-foreground">⌘K</kbd>
-          </button>
-          <div className="px-2 pt-1.5"><LanguageSwitcher compact /></div>
+        <div className="border-t border-sidebar-border px-2.5 py-2.5">
+          <LanguageSwitcher compact />
         </div>
       </aside>
 
-      {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-14 border-b border-border bg-background/70 backdrop-blur-md flex items-center justify-between px-4 md:px-6 sticky top-0 z-10">
           <div className="flex items-center gap-2 max-w-md flex-1">
@@ -162,10 +132,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                 data-global-search
                 className="w-full text-left bg-muted/50 border border-transparent hover:border-border rounded-md pl-8 pr-12 py-1.5 text-[13px] text-muted-foreground transition-colors"
               >
-                {t("search.placeholder")}
+                {t("search.placeholder", "Search everything")}
               </button>
-              <input type="hidden" />
-              <kbd className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-mono bg-background px-1.5 py-0.5 rounded border border-border text-muted-foreground">⌘K</kbd>
+              <kbd className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-mono bg-background px-1.5 py-0.5 rounded border border-border text-muted-foreground">/</kbd>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -174,7 +143,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Button>
             <Button variant="ghost" size="icon" className="relative" onClick={() => navigate({ to: "/inbox" })}>
               <Bell className="size-4" />
-              {unread > 0 && <span className="absolute top-2 right-2 size-1.5 rounded-full bg-accent signal-pulse" />}
+              {unread > 0 && <span className="absolute top-2 right-2 size-1.5 rounded-full bg-accent" />}
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -190,16 +159,13 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate({ to: "/settings" })}>
-                  {t("common.settings")}
+                  {t("common.settings", "Settings")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={async () => {
-                    await signOut();
-                    navigate({ to: "/auth" });
-                  }}
+                  onClick={async () => { await signOut(); navigate({ to: "/auth" }); }}
                   className="text-destructive"
                 >
-                  <LogOut className="size-4 mr-2" /> {t("common.signOut")}
+                  <LogOut className="size-4 mr-2" /> {t("common.signOut", "Sign out")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -209,6 +175,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main className="flex-1 overflow-auto">{children}</main>
         <QuickCreate openSignal={quickOpen} />
         <CommandBar open={cmdOpen} onOpenChange={setCmdOpen} />
+        <Fab />
       </div>
     </div>
   );

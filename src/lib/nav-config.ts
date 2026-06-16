@@ -1,56 +1,29 @@
 import {
   CompassMark, PortfolioCard, ExecutionNode, SignalWave, TimelinePulse,
   PeopleOrbit, KnowledgeLens, VaultMark, DecisionDiamond, IntelligenceBars,
-  AdvisorRing, ShieldLine, WorkMark, InboxRoute,
+  ShieldLine, GearMark,
 } from "@/components/icons/compass-icons";
 import type { ComponentType, SVGProps } from "react";
 
 export type NavIcon = ComponentType<SVGProps<SVGSVGElement> & { size?: number | string }>;
+export type NavItem = { to: string; label: string; icon: NavIcon; adminOnly?: boolean };
 
-export type NavGroup = {
-  label: string;
-  items: { to: string; label: string; icon: NavIcon }[];
-};
+/** Primary nav — max 6 items + "More" */
+export const primaryNav: NavItem[] = [
+  { to: "/dashboard",     label: "Home",     icon: CompassMark },
+  { to: "/projects",      label: "Projects", icon: PortfolioCard },
+  { to: "/tasks",         label: "Tasks",    icon: ExecutionNode },
+  { to: "/people",        label: "People",   icon: PeopleOrbit },
+  { to: "/communication", label: "Messages", icon: SignalWave },
+  { to: "/files",         label: "Files",    icon: VaultMark },
+];
 
-/**
- * Sidebar groups. Labels are i18n keys ("nav.<Label>").
- * Routes that do not yet exist will be added in later waves; for now the link
- * resolves to the legacy path so navigation never dead-ends.
- */
-export const navGroups: NavGroup[] = [
-  {
-    label: "Personal",
-    items: [
-      { to: "/my-work", label: "My Work", icon: WorkMark },
-      { to: "/inbox", label: "Inbox", icon: InboxRoute },
-      { to: "/favorites", label: "Favorites", icon: CompassMark },
-    ],
-  },
-  {
-    label: "Command",
-    items: [
-      { to: "/dashboard", label: "Command View", icon: CompassMark },
-      { to: "/projects", label: "Portfolio", icon: PortfolioCard },
-      { to: "/tasks", label: "Execution", icon: ExecutionNode },
-      { to: "/communication", label: "Signals", icon: SignalWave },
-      { to: "/calendar", label: "Timeline", icon: TimelinePulse },
-    ],
-  },
-  {
-    label: "People & Knowledge",
-    items: [
-      { to: "/people", label: "People", icon: PeopleOrbit },
-      { to: "/documents", label: "Knowledge", icon: KnowledgeLens },
-      { to: "/files", label: "Vault", icon: VaultMark },
-    ],
-  },
-  {
-    label: "Direction",
-    items: [
-      { to: "/approvals", label: "Decisions", icon: DecisionDiamond },
-      { to: "/reports", label: "Intelligence", icon: IntelligenceBars },
-      { to: "/ai", label: "Advisor", icon: AdvisorRing },
-      { to: "/administration", label: "Control", icon: ShieldLine },
-    ],
-  },
+/** "More" — collapsed by default */
+export const moreNav: NavItem[] = [
+  { to: "/calendar",       label: "Calendar",  icon: TimelinePulse },
+  { to: "/reports",        label: "Reports",   icon: IntelligenceBars },
+  { to: "/approvals",      label: "Decisions", icon: DecisionDiamond },
+  { to: "/documents",      label: "Knowledge", icon: KnowledgeLens },
+  { to: "/settings",       label: "Settings",  icon: GearMark },
+  { to: "/administration", label: "Admin",     icon: ShieldLine, adminOnly: true },
 ];
