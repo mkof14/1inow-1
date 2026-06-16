@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { CompassMark } from "@/components/icons/compass-icons";
+import { useT } from "@/lib/i18n";
 
 /**
  * Clean empty-state shell for routes whose deeper functionality is not yet
@@ -19,6 +20,7 @@ export function ComingSoon({
   icon?: ReactNode;
   actions?: ReactNode;
 }) {
+  const t = useT();
   return (
     <div className="mx-auto w-full max-w-3xl min-w-0 px-4 py-12 sm:px-6 md:py-20 fade-rise">
       <div className="flex flex-col items-center text-center">
@@ -35,7 +37,7 @@ export function ComingSoon({
           {description}
         </p>
         <p className="mt-6 text-[11px] uppercase tracking-[0.18em] text-muted-foreground/60">
-          Nothing here yet
+          {t("empty.nothing", "Nothing here yet")}
         </p>
         {actions && <div className="mt-6">{actions}</div>}
       </div>

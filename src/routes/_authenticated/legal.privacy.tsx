@@ -1,16 +1,22 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { EmptyState, PageContainer, SectionHeader } from "@/components/layout";
 import { Shield } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/legal/privacy")({
-  component: () => (
+  component: PrivacyPage,
+});
+
+function PrivacyPage() {
+  const t = useT();
+  return (
     <PageContainer size="narrow">
-      <SectionHeader title="Privacy Policy" description="How we collect, store and process your data." />
+      <SectionHeader title={t("page.privacy.title")} description={t("page.privacy.subtitle")} />
       <EmptyState
         icon={Shield}
-        title="Policy not published yet"
-        description="The privacy policy will appear here once finalised by Legal."
+        title={t("page.privacy.emptyTitle")}
+        description={t("page.privacy.emptyDesc")}
       />
     </PageContainer>
-  ),
-});
+  );
+}
