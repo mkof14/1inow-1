@@ -40,6 +40,7 @@ import { Route as AuthenticatedProjectsSlugRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdministrationUsersRouteImport } from './routes/_authenticated/administration.users'
 import { Route as AuthenticatedAdministrationRolesRouteImport } from './routes/_authenticated/administration.roles'
 import { Route as AuthenticatedAdministrationInvitationsRouteImport } from './routes/_authenticated/administration.invitations'
+import { Route as AuthenticatedAdministrationAuditRouteImport } from './routes/_authenticated/administration.audit'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -204,6 +205,12 @@ const AuthenticatedAdministrationInvitationsRoute =
     path: '/invitations',
     getParentRoute: () => AuthenticatedAdministrationRoute,
   } as any)
+const AuthenticatedAdministrationAuditRoute =
+  AuthenticatedAdministrationAuditRouteImport.update({
+    id: '/audit',
+    path: '/audit',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -230,6 +237,7 @@ export interface FileRoutesByFullPath {
   '/team-map': typeof AuthenticatedTeamMapRoute
   '/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
+  '/administration/audit': typeof AuthenticatedAdministrationAuditRoute
   '/administration/invitations': typeof AuthenticatedAdministrationInvitationsRoute
   '/administration/roles': typeof AuthenticatedAdministrationRolesRoute
   '/administration/users': typeof AuthenticatedAdministrationUsersRoute
@@ -261,6 +269,7 @@ export interface FileRoutesByTo {
   '/team-map': typeof AuthenticatedTeamMapRoute
   '/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
+  '/administration/audit': typeof AuthenticatedAdministrationAuditRoute
   '/administration/invitations': typeof AuthenticatedAdministrationInvitationsRoute
   '/administration/roles': typeof AuthenticatedAdministrationRolesRoute
   '/administration/users': typeof AuthenticatedAdministrationUsersRoute
@@ -295,6 +304,7 @@ export interface FileRoutesById {
   '/_authenticated/team-map': typeof AuthenticatedTeamMapRoute
   '/_authenticated/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
+  '/_authenticated/administration/audit': typeof AuthenticatedAdministrationAuditRoute
   '/_authenticated/administration/invitations': typeof AuthenticatedAdministrationInvitationsRoute
   '/_authenticated/administration/roles': typeof AuthenticatedAdministrationRolesRoute
   '/_authenticated/administration/users': typeof AuthenticatedAdministrationUsersRoute
@@ -329,6 +339,7 @@ export interface FileRouteTypes {
     | '/team-map'
     | '/thinking'
     | '/api/chat'
+    | '/administration/audit'
     | '/administration/invitations'
     | '/administration/roles'
     | '/administration/users'
@@ -360,6 +371,7 @@ export interface FileRouteTypes {
     | '/team-map'
     | '/thinking'
     | '/api/chat'
+    | '/administration/audit'
     | '/administration/invitations'
     | '/administration/roles'
     | '/administration/users'
@@ -393,6 +405,7 @@ export interface FileRouteTypes {
     | '/_authenticated/team-map'
     | '/_authenticated/thinking'
     | '/api/chat'
+    | '/_authenticated/administration/audit'
     | '/_authenticated/administration/invitations'
     | '/_authenticated/administration/roles'
     | '/_authenticated/administration/users'
@@ -627,10 +640,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdministrationInvitationsRouteImport
       parentRoute: typeof AuthenticatedAdministrationRoute
     }
+    '/_authenticated/administration/audit': {
+      id: '/_authenticated/administration/audit'
+      path: '/audit'
+      fullPath: '/administration/audit'
+      preLoaderRoute: typeof AuthenticatedAdministrationAuditRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
   }
 }
 
 interface AuthenticatedAdministrationRouteChildren {
+  AuthenticatedAdministrationAuditRoute: typeof AuthenticatedAdministrationAuditRoute
   AuthenticatedAdministrationInvitationsRoute: typeof AuthenticatedAdministrationInvitationsRoute
   AuthenticatedAdministrationRolesRoute: typeof AuthenticatedAdministrationRolesRoute
   AuthenticatedAdministrationUsersRoute: typeof AuthenticatedAdministrationUsersRoute
@@ -639,6 +660,8 @@ interface AuthenticatedAdministrationRouteChildren {
 
 const AuthenticatedAdministrationRouteChildren: AuthenticatedAdministrationRouteChildren =
   {
+    AuthenticatedAdministrationAuditRoute:
+      AuthenticatedAdministrationAuditRoute,
     AuthenticatedAdministrationInvitationsRoute:
       AuthenticatedAdministrationInvitationsRoute,
     AuthenticatedAdministrationRolesRoute:
