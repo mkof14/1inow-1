@@ -32,17 +32,23 @@ export const Route = createFileRoute("/api/chat")({
             const { data: u } = await sb.auth.getUser();
             const userId = u.user?.id;
             if (userId) {
-              const [projects, tasks, notifs] = await Promise.all([
+              const [projects, tasks, notifs, memories, rules, prefs] = await Promise.all([
                 sb.from("projects").select("name,status,priority,progress,slug").limit(20),
                 sb.from("tasks").select("title,status,due_date,priority").eq("assignee_id", userId).neq("status", "done").limit(30),
                 sb.from("notifications").select("title,body,created_at,read_at").eq("user_id", userId).is("read_at", null).limit(10),
+                sb.from("ai_memories").select("type,key,value,confidence,zone").eq("status","active").limit(50),
+                sb.from("ai_rules").select("rule,scope").eq("active", true).limit(30),
+                sb.from("assistant_preferences").select("mode,strictness,proactive_level").eq("user_id", userId).maybeSingle(),
               ]);
               const name = (u.user?.user_metadata as { full_name?: string } | null)?.full_name ?? u.user?.email;
               contextBlock = [
                 `Current user: ${name}`,
+                `Assistant mode: ${prefs.data?.mode ?? "calm"} (strictness ${prefs.data?.strictness ?? 2}/4)`,
                 `Active projects (${projects.data?.length ?? 0}): ${(projects.data ?? []).map((p) => `${p.name} [${p.status}, ${p.priority}, ${p.progress}%]`).join("; ") || "none"}`,
                 `Open tasks for user (${tasks.data?.length ?? 0}): ${(tasks.data ?? []).slice(0, 15).map((t) => `${t.title}${t.due_date ? ` (due ${t.due_date})` : ""}`).join("; ") || "none"}`,
                 `Unread notifications (${notifs.data?.length ?? 0}): ${(notifs.data ?? []).slice(0, 5).map((n) => n.title).join("; ") || "none"}`,
+                `User rules (${rules.data?.length ?? 0}): ${(rules.data ?? []).map((r) => `• ${r.rule}`).join(" ") || "none"}`,
+                `Verified memories (${memories.data?.length ?? 0}): ${(memories.data ?? []).slice(0, 25).map((m) => `[${m.type}/${m.confidence}] ${m.key}: ${m.value}`).join(" | ") || "none"}`,
               ].join("\n");
             }
           }
@@ -50,14 +56,27 @@ export const Route = createFileRoute("/api/chat")({
           console.error("ai context fetch failed", e);
         }
 
-        const system = `You are Compass, an AI companion embedded inside Digital Invest Compass — a premium decision and execution environment for projects, people, decisions, and knowledge.
+        const system = `You are Compass, the intelligence layer of Digital Invest Compass — a private decision and execution environment.
 
-Behave like an intelligent partner, not a form. Be concise, warm, and decisive. Use short sentences. Surface what matters next, what is blocked, who is waiting. Offer concrete next actions when relevant. Use markdown lightly (bold, lists) when it helps scanning.
+TRUTH-FIRST RULES (non-negotiable):
+1. Never invent facts, people, documents, numbers, deadlines, or summaries.
+2. If information is missing, uncertain, outdated, or unclear, say so explicitly. Use phrases like:
+   • "I do not know yet."
+   • "I need more information."
+   • "This is an assumption."
+   • "This is based only on available data."
+   • "Would you like to confirm this?"
+3. Always separate FACT from ASSUMPTION. Cite the source (task, document, memory, message) when possible. If no source exists, say "No source found."
+4. Never pretend an action is done. For create/move/delegate/schedule/send, describe the action and ask for one-tap confirmation.
 
-If the user asks to create, move, delegate, or schedule something, describe the action you would take and ask for one-tap confirmation — do not pretend it is done.
+CONFIDENCE: End substantive answers with a single line: \`Confidence: High|Medium|Low — <short reason>\`. If Low and the user requested an important action, ask a clarifying question first instead of acting.
+
+CORRECTIONS: When the user corrects you, acknowledge it, restate the new fact precisely, and offer to save it as a memory.
+
+STYLE: Concise, warm, decisive. Short sentences. Light markdown (bold, lists) when it aids scanning. No filler praise. No corporate tone.
 
 Live context for this user:
-${contextBlock || "(no context available)"}`;
+${contextBlock || "(no context available — say so before answering anything specific)"}`;
 
         const gateway = createLovableAiGatewayProvider(key);
         const result = streamText({

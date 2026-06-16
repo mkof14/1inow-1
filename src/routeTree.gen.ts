@@ -19,6 +19,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedPeopleRouteImport } from './routes/_authenticated/people'
 import { Route as AuthenticatedMyWorkRouteImport } from './routes/_authenticated/my-work'
+import { Route as AuthenticatedIntelligenceRouteImport } from './routes/_authenticated/intelligence'
 import { Route as AuthenticatedInboxRouteImport } from './routes/_authenticated/inbox'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
 import { Route as AuthenticatedFavoritesRouteImport } from './routes/_authenticated/favorites'
@@ -81,6 +82,12 @@ const AuthenticatedMyWorkRoute = AuthenticatedMyWorkRouteImport.update({
   path: '/my-work',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedIntelligenceRoute =
+  AuthenticatedIntelligenceRouteImport.update({
+    id: '/intelligence',
+    path: '/intelligence',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInboxRoute = AuthenticatedInboxRouteImport.update({
   id: '/inbox',
   path: '/inbox',
@@ -159,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/favorites': typeof AuthenticatedFavoritesRoute
   '/files': typeof AuthenticatedFilesRoute
   '/inbox': typeof AuthenticatedInboxRoute
+  '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/my-work': typeof AuthenticatedMyWorkRoute
   '/people': typeof AuthenticatedPeopleRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -182,6 +190,7 @@ export interface FileRoutesByTo {
   '/favorites': typeof AuthenticatedFavoritesRoute
   '/files': typeof AuthenticatedFilesRoute
   '/inbox': typeof AuthenticatedInboxRoute
+  '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/my-work': typeof AuthenticatedMyWorkRoute
   '/people': typeof AuthenticatedPeopleRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -207,6 +216,7 @@ export interface FileRoutesById {
   '/_authenticated/favorites': typeof AuthenticatedFavoritesRoute
   '/_authenticated/files': typeof AuthenticatedFilesRoute
   '/_authenticated/inbox': typeof AuthenticatedInboxRoute
+  '/_authenticated/intelligence': typeof AuthenticatedIntelligenceRoute
   '/_authenticated/my-work': typeof AuthenticatedMyWorkRoute
   '/_authenticated/people': typeof AuthenticatedPeopleRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
@@ -232,6 +242,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/files'
     | '/inbox'
+    | '/intelligence'
     | '/my-work'
     | '/people'
     | '/reports'
@@ -255,6 +266,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/files'
     | '/inbox'
+    | '/intelligence'
     | '/my-work'
     | '/people'
     | '/reports'
@@ -279,6 +291,7 @@ export interface FileRouteTypes {
     | '/_authenticated/favorites'
     | '/_authenticated/files'
     | '/_authenticated/inbox'
+    | '/_authenticated/intelligence'
     | '/_authenticated/my-work'
     | '/_authenticated/people'
     | '/_authenticated/reports'
@@ -367,6 +380,13 @@ declare module '@tanstack/react-router' {
       path: '/my-work'
       fullPath: '/my-work'
       preLoaderRoute: typeof AuthenticatedMyWorkRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/intelligence': {
+      id: '/_authenticated/intelligence'
+      path: '/intelligence'
+      fullPath: '/intelligence'
+      preLoaderRoute: typeof AuthenticatedIntelligenceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/inbox': {
@@ -467,6 +487,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFavoritesRoute: typeof AuthenticatedFavoritesRoute
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
   AuthenticatedInboxRoute: typeof AuthenticatedInboxRoute
+  AuthenticatedIntelligenceRoute: typeof AuthenticatedIntelligenceRoute
   AuthenticatedMyWorkRoute: typeof AuthenticatedMyWorkRoute
   AuthenticatedPeopleRoute: typeof AuthenticatedPeopleRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
@@ -488,6 +509,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFavoritesRoute: AuthenticatedFavoritesRoute,
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
   AuthenticatedInboxRoute: AuthenticatedInboxRoute,
+  AuthenticatedIntelligenceRoute: AuthenticatedIntelligenceRoute,
   AuthenticatedMyWorkRoute: AuthenticatedMyWorkRoute,
   AuthenticatedPeopleRoute: AuthenticatedPeopleRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
