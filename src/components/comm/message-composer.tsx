@@ -16,6 +16,7 @@ export function MessageComposer({ channelId, threadRootId = null, placeholder }:
   const [body, setBody] = useState("");
   const [type, setType] = useState<MessageType>("normal");
   const qc = useQueryClient();
+  const { lang } = useI18n();
 
   const send = useMutation({
     mutationFn: () => sendMessage({ channel_id: channelId, body, message_type: type, thread_root_id: threadRootId, original_language: lang }),
