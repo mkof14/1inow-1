@@ -96,7 +96,16 @@ export async function fetchSettings() {
   return created;
 }
 
-export async function saveSettings(patch: Record<string, unknown>) {
+type SettingsPatch = Partial<{
+  language: string;
+  timezone: string;
+  theme: string;
+  default_project_view: string;
+  notifications: Record<string, unknown>;
+  working_hours: Record<string, unknown>;
+}>;
+
+export async function saveSettings(patch: SettingsPatch) {
   const user = (await supabase.auth.getUser()).data.user;
   if (!user) throw new Error("Not signed in");
   const { error } = await supabase.from("user_settings").update(patch).eq("user_id", user.id);
