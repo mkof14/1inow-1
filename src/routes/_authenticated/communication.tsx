@@ -7,6 +7,7 @@ import { MessageStream } from "@/components/comm/message-stream";
 import { ThreadPanel } from "@/components/comm/thread-panel";
 import { EmptyState } from "@/components/empty-state";
 import { MessageSquare } from "lucide-react";
+import { useSetPageContext } from "@/lib/ai-context";
 
 export const Route = createFileRoute("/_authenticated/communication")({
   component: Communication,
@@ -22,6 +23,15 @@ function Communication() {
   }, [channels, activeId]);
 
   const active: Channel | undefined = channels.find((c) => c.id === activeId);
+  useSetPageContext(
+    {
+      route: "/communication",
+      scope: "channel",
+      title: active?.name,
+      ids: { channelId: active?.id, threadId: thread ?? undefined },
+    },
+    [active?.id, thread],
+  );
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden">
