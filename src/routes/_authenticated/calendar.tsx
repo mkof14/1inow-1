@@ -70,13 +70,13 @@ function TimelinePage() {
 
       {/* Week grid */}
       <div className="pb-4">
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3 lg:gap-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-7 xl:gap-3 2xl:gap-4">
           {days.map((d) => {
             const key = d.toDateString();
             const items = byDay[key] ?? [];
             const isToday = key === today;
             return (
-              <div key={key} className={`rounded-2xl border min-h-[220px] p-3 sm:p-4 transition-all duration-300 ${
+              <div key={key} className={`rounded-2xl border min-h-[220px] p-3 2xl:p-4 transition-all duration-300 ${
                 isToday ? "border-accent bg-accent/10 shadow-lg shadow-accent/10" : "border-border bg-card hover:border-accent/30 hover:shadow-md"
               }`}>
                 <div className="flex items-start justify-between gap-2 mb-3 sm:mb-4">
@@ -87,7 +87,7 @@ function TimelinePage() {
                 </div>
                 <div className="space-y-2">
                   {items.map((t: any) => (
-                    <div key={t.id} className="group text-xs px-3 py-2.5 rounded-xl border border-border/80 bg-background/85 hover:border-accent/50 hover:bg-accent/5 hover:shadow-sm transition-all duration-200 cursor-pointer">
+                    <div key={t.id} className="group text-xs px-2.5 py-2.5 2xl:px-3 rounded-xl border border-border/80 bg-background/85 hover:border-accent/50 hover:bg-accent/5 hover:shadow-sm transition-all duration-200 cursor-pointer">
                       <div className="font-semibold leading-snug line-clamp-2 break-words">{t.title}</div>
                       {t.projects && (
                         <Link to="/projects/$slug" params={{ slug: t.projects.slug }}
