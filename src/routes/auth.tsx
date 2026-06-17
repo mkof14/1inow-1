@@ -125,7 +125,10 @@ function AuthPage() {
         <div aria-hidden className="absolute -bottom-40 -right-40 size-[28rem] rounded-full border border-accent/20" />
         <div aria-hidden className="absolute -bottom-32 -right-32 size-96 rounded-full border border-accent/15" />
         <div aria-hidden className="absolute -bottom-24 -right-24 size-72 rounded-full border border-accent/10" />
-        <div aria-hidden className="absolute top-1/3 right-12 text-accent/20 compass-spin"><BrandLogo size={220} /></div>
+        <div aria-hidden className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-5 opacity-20 pointer-events-none">
+          <BrandLogo size={160} />
+          <span className="font-display text-3xl tracking-tight text-accent">1inow</span>
+        </div>
       </div>
 
       <div className="flex items-center justify-center p-6 md:p-12">
