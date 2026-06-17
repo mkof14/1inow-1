@@ -9,7 +9,9 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "deploy": "bash scripts/deploy-vercel.sh",
+    "deploy:prod": "bash scripts/deploy-vercel.sh --prod"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.50",
