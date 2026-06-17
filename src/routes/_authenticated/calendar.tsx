@@ -68,32 +68,32 @@ function TimelinePage() {
         </div>
       </div>
 
-      {/* Week grid — horizontal scroll when narrow */}
-      <div className="overflow-x-auto -mx-4 sm:-mx-6 md:-mx-8 px-4 sm:px-6 md:px-8 pb-4">
-        <div className="grid grid-cols-7 gap-3 min-w-[900px]">
+      {/* Week grid */}
+      <div className="pb-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-7 xl:gap-3 2xl:gap-4">
           {days.map((d) => {
             const key = d.toDateString();
             const items = byDay[key] ?? [];
             const isToday = key === today;
             return (
-              <div key={key} className={`rounded-2xl border min-h-[200px] lg:min-h-[300px] p-3 sm:p-4 transition-all duration-300 ${
-                isToday ? "border-accent bg-accent/[0.06] shadow-[inset_0_0_20px_rgba(0,0,0,0.02)]" : "border-border bg-card hover:border-accent/20"
+              <div key={key} className={`rounded-2xl border min-h-[220px] p-3 2xl:p-4 transition-all duration-300 ${
+                isToday ? "border-accent bg-accent/10 shadow-lg shadow-accent/10" : "border-border bg-card hover:border-accent/30 hover:shadow-md"
               }`}>
-                <div className="flex items-baseline justify-between mb-3 sm:mb-4">
-                  <span className={`text-[10px] sm:text-xs uppercase tracking-widest font-medium ${isToday ? "text-accent" : "text-muted-foreground"}`}>
+                <div className="flex items-start justify-between gap-2 mb-3 sm:mb-4">
+                  <span className={`min-w-0 rounded-full px-2 py-1 text-[10px] sm:text-xs uppercase tracking-widest font-medium ${isToday ? "bg-accent/15 text-accent" : "bg-muted/60 text-muted-foreground"}`}>
                     {d.toLocaleDateString(undefined, { weekday: "short" })}
                   </span>
-                  <span className={`text-xl sm:text-2xl font-display font-semibold ${isToday ? "text-accent" : ""}`}>{d.getDate()}</span>
+                  <span className={`shrink-0 text-xl sm:text-2xl font-display font-semibold ${isToday ? "text-accent" : ""}`}>{d.getDate()}</span>
                 </div>
                 <div className="space-y-2">
                   {items.map((t: any) => (
-                    <div key={t.id} className="group text-xs px-2.5 py-2 rounded-xl border border-border/80 bg-background/80 hover:border-accent/40 hover:shadow-[0_2px_12px_-4px_rgba(0,0,0,0.08)] transition-all duration-200 cursor-pointer">
-                      <div className="font-semibold leading-snug line-clamp-2">{t.title}</div>
+                    <div key={t.id} className="group text-xs px-2.5 py-2.5 2xl:px-3 rounded-xl border border-border/80 bg-background/85 hover:border-accent/50 hover:bg-accent/5 hover:shadow-sm transition-all duration-200 cursor-pointer">
+                      <div className="font-semibold leading-snug line-clamp-2 break-words">{t.title}</div>
                       {t.projects && (
                         <Link to="/projects/$slug" params={{ slug: t.projects.slug }}
-                          className="text-[11px] text-muted-foreground hover:text-accent inline-flex items-center gap-1.5 mt-1.5 transition-colors">
-                          <span className="size-1.5 rounded-full shrink-0" style={{ background: t.projects.color ?? "#0a2540" }} />
-                          <span className="truncate max-w-[100px]">{t.projects.name}</span>
+                          className="min-w-0 text-[11px] text-muted-foreground hover:text-accent inline-flex items-center gap-1.5 mt-1.5 transition-colors max-w-full">
+                          <span className="size-1.5 rounded-full shrink-0 bg-accent" style={t.projects.color ? { backgroundColor: t.projects.color } : undefined} />
+                          <span className="truncate">{t.projects.name}</span>
                         </Link>
                       )}
                     </div>
