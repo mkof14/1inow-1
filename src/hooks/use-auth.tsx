@@ -31,9 +31,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const uid = session?.user?.id;
     if (!uid) { setIsAdmin(false); return; }
-    supabase.rpc("has_role", { _user_id: uid, _role: "admin" as any })
-      .then(({ data }) => setIsAdmin(Boolean(data)))
-      .catch(() => setIsAdmin(false));
+    (async () => {
+      try {
+        const { data } = await supabase.rpc("has_role", { _user_id: uid, _role: "admin" as any });
+        setIsAdmin(Boolean(data));
+      } catch { setIsAdmin(false); }
+    })();
   }, [session?.user?.id]);
 
   const value: AuthContextValue = {
