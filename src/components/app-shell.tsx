@@ -141,7 +141,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Button
               variant="outline"
               className={cn(
-                "h-9 shrink-0 gap-2 rounded-lg px-2.5 text-xs font-medium sm:px-3",
+                "relative h-9 shrink-0 gap-2 rounded-lg px-2.5 text-xs font-medium sm:px-3",
                 aiOpen && "border-accent/50 bg-accent/10 text-accent",
               )}
               onClick={() => setAiOpen((v) => !v)}
