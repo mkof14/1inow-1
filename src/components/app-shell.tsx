@@ -17,7 +17,7 @@ import { useShortcuts } from "@/hooks/use-shortcuts";
 import { Badge } from "@/components/ui/badge";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useT } from "@/lib/i18n";
-import { BrandLogo } from "@/components/icons/compass-icons";
+import { BrandLogo, BrandWordmark } from "@/components/icons/compass-icons";
 import { BrandMark } from "@/components/icons/compass-mark";
 import { AiSidebar, type AiSidebarMode } from "@/components/ai-sidebar";
 
@@ -90,11 +90,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen w-full bg-background text-foreground">
       <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar sticky top-0 h-screen">
-        <Link to="/dashboard" className="px-5 py-5 flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-          <span className="text-primary"><BrandLogo size={28} /></span>
+        <Link to="/dashboard" className="px-5 py-5 flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <BrandLogo size={32} />
           <div className="leading-tight">
-            <div className="font-display text-base text-gradient-accent">1inow</div>
-            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">1inow.com</div>
+            <BrandWordmark size={20} />
+            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mt-1">1inow.com</div>
           </div>
         </Link>
 
@@ -243,7 +243,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
             <div className="border-t border-border">
               <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
-                <span>© {new Date().getFullYear()} 1inow</span>
+                <div className="flex items-center gap-2">
+                  <BrandLogo size={20} />
+                  <BrandWordmark size={14} />
+                  <span className="ml-2">© {new Date().getFullYear()} · 1inow.com</span>
+                </div>
                 <span>v1.0</span>
               </div>
             </div>
