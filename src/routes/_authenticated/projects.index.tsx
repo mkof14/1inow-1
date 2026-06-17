@@ -175,10 +175,10 @@ function ProjectsPage() {
                   }`} />
                 </div>
                 <span className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full transition-colors duration-300 ${
-                  p.status === "active" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" :
-                  p.status === "planning" ? "bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20" :
-                  p.status === "on_hold" ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" :
-                  p.status === "completed" ? "bg-primary/10 text-primary border border-primary/20" :
+                  p.status === "active" || p.status === "in_progress" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" :
+                  p.status === "planning" || p.status === "idea" ? "bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20" :
+                  p.status === "paused" ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" :
+                  p.status === "completed" || p.status === "review" ? "bg-primary/10 text-primary border border-primary/20" :
                   "bg-muted text-muted-foreground border border-border"
                 }`}>
                   {PROJECT_STATUS_LABEL[p.status as keyof typeof PROJECT_STATUS_LABEL]}
