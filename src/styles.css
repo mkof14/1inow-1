@@ -327,8 +327,6 @@ img[width][height] {
 @utility shimmer-border {
   position: relative;
   isolation: isolate;
-}
-@utility shimmer-border {
   &::before {
     content: "";
     position: absolute;
