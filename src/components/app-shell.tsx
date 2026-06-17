@@ -2,7 +2,7 @@ import { type ReactNode, useState, useEffect } from "react";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { navSections, footerSections, type NavItem } from "@/lib/nav-config";
 import { useAuth } from "@/hooks/use-auth";
-import { Search, Bell, LogOut, Moon, Sun, Plus } from "lucide-react";
+import { Search, Bell, LogOut, Moon, Sun, Plus, Twitter, Linkedin, Github, Youtube } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
