@@ -94,7 +94,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <span className="text-primary"><BrandLogo size={28} /></span>
           <div className="leading-tight">
             <div className="font-display text-base text-gradient-accent">1inow</div>
-            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">1inow</div>
+            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">1inow.com</div>
           </div>
         </Link>
 

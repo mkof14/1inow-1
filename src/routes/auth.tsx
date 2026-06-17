@@ -90,7 +90,7 @@ function AuthPage() {
           <BrandLogo size={36} className="text-accent" />
           <div className="leading-tight">
             <div className="font-display text-lg">1inow</div>
-            <div className="text-[10px] uppercase tracking-[0.22em] text-primary-foreground/60">1inow</div>
+            <div className="text-[10px] uppercase tracking-[0.22em] text-primary-foreground/60">1inow.com</div>
           </div>
         </div>
         <div className="space-y-5 max-w-md relative">
@@ -121,7 +121,7 @@ function AuthPage() {
             <BrandLogo size={32} className="text-accent" />
             <div className="leading-tight">
               <div className="font-display text-base">1inow</div>
-              <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">1inow</div>
+              <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">1inow.com</div>
             </div>
           </div>
           <div>
