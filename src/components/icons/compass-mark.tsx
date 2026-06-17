@@ -7,7 +7,7 @@ type Props = React.SVGProps<SVGSVGElement> & { className?: string };
  * intelligence layer. Replaces generic "AI sparkle" icons.
  * A compass rose with a needle pointing north-east (forward progress).
  */
-export function CompassMark({ className, ...props }: Props) {
+export function BrandMark({ className, ...props }: Props) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -39,4 +39,4 @@ export function CompassMark({ className, ...props }: Props) {
   );
 }
 
-export default CompassMark;
+export default BrandMark;

@@ -19,7 +19,7 @@ function base({ size = 16, className, ...rest }: IconProps) {
 }
 
 /* Compass mark — N pointer in a ring. Used for Command View + Favorites. */
-export function CompassMark(p: IconProps) {
+export function BrandMark(p: IconProps) {
   return (
     <svg {...base(p)}>
       <circle cx="12" cy="12" r="9" />
@@ -203,7 +203,7 @@ export function HelpMark(p: IconProps) {
 }
 
 /* Compact wordmark logo */
-export function CompassLogo({ size = 28, className, ...rest }: IconProps) {
+export function BrandLogo({ size = 28, className, ...rest }: IconProps) {
   return (
     <svg
       width={size}
