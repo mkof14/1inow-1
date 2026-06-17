@@ -48,7 +48,7 @@ function HomePage() {
   return (
     <div className="p-6 md:p-10 max-w-[920px] mx-auto">
       {/* First screen — calm, single focus */}
-      <div className="mb-10">
+      <div className="mb-10 surface-aurora shimmer-border rounded-3xl border border-border p-6 md:p-8 ring-accent-soft">
         <div className="flex items-center gap-3 mb-6">
           <div className="size-9 rounded-xl gradient-compass grid place-items-center text-primary-foreground shrink-0">
             <CompassMark className="size-4" />
@@ -56,7 +56,7 @@ function HomePage() {
           <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{t("dashboard.today")}</span>
         </div>
 
-        <h1 className="text-3xl md:text-4xl font-display tracking-tight">
+        <h1 className="text-3xl md:text-4xl font-display tracking-tight text-gradient-accent">
           {greet.headline}
         </h1>
         <p className="mt-2 text-base text-muted-foreground max-w-xl">
@@ -72,7 +72,7 @@ function HomePage() {
 
         {/* Four attention items. No more. */}
         {attention.length > 0 && (
-          <ul className="mt-8 divide-y divide-border rounded-2xl border border-border bg-card overflow-hidden">
+          <ul className="mt-8 divide-y divide-border rounded-2xl border border-border bg-card/80 backdrop-blur shimmer-border overflow-hidden">
             {attention.map((a) => (
               <li key={a.id}>
                 <Link
@@ -205,7 +205,7 @@ function HomePage() {
 
 function Section({ title, to, children, className = "" }: { title: string; to?: any; children: any; className?: string }) {
   return (
-    <div className={`rounded-2xl border border-border bg-card/40 p-5 ${className}`}>
+    <div className={`relative rounded-2xl border border-border surface-aurora shimmer-border p-5 ${className}`}>
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
         {to && (
