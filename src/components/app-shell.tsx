@@ -2,7 +2,7 @@ import { type ReactNode, useState, useEffect } from "react";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { navSections, footerSections, type NavItem } from "@/lib/nav-config";
 import { useAuth } from "@/hooks/use-auth";
-import { Search, Bell, LogOut, Moon, Sun } from "lucide-react";
+import { Search, Bell, LogOut, Moon, Sun, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +19,6 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { useT } from "@/lib/i18n";
 import { CompassLogo } from "@/components/icons/compass-icons";
 import { CompassMark } from "@/components/icons/compass-mark";
-import { Fab } from "@/components/fab";
 import { AiSidebar, type AiSidebarMode } from "@/components/ai-sidebar";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -31,7 +30,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [cmdOpen, setCmdOpen] = useState(false);
   const [quickOpen, setQuickOpen] = useState(0);
   const [aiOpen, setAiOpen] = useState(false);
-  const [aiMode, setAiMode] = useState<AiSidebarMode>("docked");
+  const [aiMode, setAiMode] = useState<AiSidebarMode>("floating");
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -86,7 +85,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     );
   };
 
-  const visibleFooterSections = footerSections.filter((s) => !s.adminOnly || isAdmin);
+  const visibleFooterSections = footerSections;
 
   return (
     <div className="flex min-h-screen w-full bg-background text-foreground">
@@ -129,15 +128,28 @@ export function AppShell({ children }: { children: ReactNode }) {
               <kbd className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-mono bg-background px-1.5 py-0.5 rounded border border-border text-muted-foreground">/</kbd>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className={cn("relative", aiOpen && "bg-accent/10 text-accent")}
+              className="size-9 shrink-0 rounded-lg"
+              onClick={() => setQuickOpen((n) => n + 1)}
+              title={t("common.create", "Create")}
+            >
+              <Plus className="size-4" />
+            </Button>
+            <Button
+              variant="outline"
+              className={cn(
+                "relative h-9 shrink-0 gap-2 rounded-lg px-2.5 text-xs font-medium sm:px-3",
+                aiOpen && "border-accent/50 bg-accent/10 text-accent",
+              )}
               onClick={() => setAiOpen((v) => !v)}
               title={t("ai.openTip", "Compass AI")}
             >
               <CompassMark className="size-4" />
+              <span className="hidden sm:inline">Compass AI</span>
+              <span className="sm:hidden">AI</span>
               {aiOpen && <span className="absolute top-2 right-2 size-1.5 rounded-full bg-accent" />}
             </Button>
             <LanguageSwitcher />
@@ -209,7 +221,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
         <QuickCreate openSignal={quickOpen} />
         <CommandBar open={cmdOpen} onOpenChange={setCmdOpen} />
-        <Fab aiOpen={aiOpen} aiMode={aiMode} />
       </div>
 
       {aiMode !== "floating" && aiOpen && (
