@@ -240,15 +240,14 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
         </div>
         <div className="flex items-center gap-0.5">
           {messages.length > 0 && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-7 text-muted-foreground hover:text-foreground"
+            <button
+              type="button"
               onClick={clearHistory}
+              className="text-[10px] font-medium px-2 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
               title={t("ai.clear", "Clear conversation")}
             >
-              <span className="text-[10px] font-medium">Clear</span>
-            </Button>
+              {t("ai.clear", "Clear")}
+            </button>
           )}
           <Button
             variant="ghost"
