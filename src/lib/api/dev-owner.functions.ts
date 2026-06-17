@@ -6,8 +6,9 @@ const OWNER_EMAIL = "dnainform@gmail.com";
  * Dev-only: issues a magic-link sign-in for the workspace owner.
  * Hard-coded to a single email. Ensures the user exists and has super_admin.
  */
-export const devOwnerMagicLink = createServerFn({ method: "POST" }).handler(
-  async () => {
+export const devOwnerMagicLink = createServerFn({ method: "POST" })
+  .inputValidator((data: { origin?: string }) => data)
+  .handler(async ({ data }) => {
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
@@ -43,10 +44,7 @@ export const devOwnerMagicLink = createServerFn({ method: "POST" }).handler(
       );
 
     // 3. Issue a magic link
-    const origin =
-      process.env.SITE_URL ??
-      process.env.PUBLIC_SITE_URL ??
-      "";
+    const origin = data?.origin ?? "";
     const { data: link, error: linkErr } =
       await supabaseAdmin.auth.admin.generateLink({
         type: "magiclink",
@@ -57,5 +55,4 @@ export const devOwnerMagicLink = createServerFn({ method: "POST" }).handler(
     const actionLink = link.properties?.action_link;
     if (!actionLink) throw new Error("No action link returned");
     return { actionLink };
-  },
-);
+  });
