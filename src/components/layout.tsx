@@ -56,7 +56,7 @@ export function SectionHeader({
       )}
     >
       <div className="min-w-0">
-        <h1 className="truncate text-xl font-semibold tracking-tight sm:text-2xl">{title}</h1>
+        <h1 className="truncate text-xl font-semibold tracking-tight sm:text-2xl text-gradient-accent">{title}</h1>
         {description && (
           <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{description}</p>
         )}
@@ -248,12 +248,12 @@ export function DataCard({
   className?: string;
 }) {
   return (
-    <SafeCard className={cn("flex flex-col gap-2", className)}>
+    <SafeCard className={cn("relative flex flex-col gap-2 surface-aurora shimmer-border ring-accent-soft", className)}>
       <div className="flex min-w-0 items-center justify-between gap-2">
         <span className="truncate text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</span>
         {Icon && <Icon className="size-4 shrink-0 text-muted-foreground" />}
       </div>
-      <div className="min-w-0 truncate text-2xl font-semibold leading-tight">{value}</div>
+      <div className="min-w-0 truncate text-2xl font-semibold leading-tight text-gradient-accent">{value}</div>
       {hint && <div className="line-clamp-2 text-xs text-muted-foreground">{hint}</div>}
       {footer && <div className="mt-1 border-t border-border pt-2 text-xs">{footer}</div>}
     </SafeCard>
