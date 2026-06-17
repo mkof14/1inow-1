@@ -39,7 +39,9 @@ export const Route = createFileRoute("/api/chat")({
         // Gather lightweight user context from Supabase (best-effort)
         let contextBlock = "";
         let userId: string | null = null;
-        let authedClient: ReturnType<typeof createClient> | null = null;
+        // Use `any` for the transient authed client; the generic shape from createClient
+        // differs from the typed Database client and we only need .from() here.
+        let authedClient: any = null;
         try {
           const auth = request.headers.get("authorization") ?? "";
           const token = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7) : "";
