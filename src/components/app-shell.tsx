@@ -30,7 +30,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [dark, setDark] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [quickOpen, setQuickOpen] = useState(0);
-  const [aiOpen, setAiOpen] = useState(true);
+  const [aiOpen, setAiOpen] = useState(false);
   const [aiMode, setAiMode] = useState<AiSidebarMode>("docked");
 
   useEffect(() => {
