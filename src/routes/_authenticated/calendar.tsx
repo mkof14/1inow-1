@@ -47,16 +47,16 @@ function TimelinePage() {
         <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <div className="text-accent shrink-0"><TimelinePulse size={36} /></div>
           <div className="min-w-0">
-            <h1 className="text-2xl font-semibold tracking-tight font-display">{t("page.calendar.title")}</h1>
+            <h1 className="truncate text-xl sm:text-2xl font-semibold tracking-tight font-display">{t("page.calendar.title")}</h1>
             <p className="text-sm text-muted-foreground mt-1 line-clamp-2 sm:truncate">{t("page.calendar.subtitle")}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           <button onClick={() => { const d = new Date(anchor); d.setDate(d.getDate() - 7); setAnchor(d); }}
             className="size-9 rounded-lg border border-border bg-card hover:bg-muted grid place-items-center transition-colors shrink-0">
             <ChevronLeft className="size-4" />
           </button>
-          <div className="text-sm font-medium font-display min-w-[120px] text-center">{monthLabel}</div>
+          <div className="text-sm font-medium font-display min-w-[100px] sm:min-w-[120px] text-center">{monthLabel}</div>
           <button onClick={() => { const d = new Date(anchor); d.setDate(d.getDate() + 7); setAnchor(d); }}
             className="size-9 rounded-lg border border-border bg-card hover:bg-muted grid place-items-center transition-colors shrink-0">
             <ChevronRight className="size-4" />
