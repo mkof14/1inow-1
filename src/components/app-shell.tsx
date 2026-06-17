@@ -72,11 +72,11 @@ export function AppShell({ children }: { children: ReactNode }) {
         className={cn(
           "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
           active
-            ? "bg-accent/10 text-foreground font-medium"
-            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+            ? "bg-accent/20 text-foreground font-semibold shadow-sm"
+            : "text-muted-foreground hover:bg-accent/15 hover:text-foreground hover:translate-x-0.5",
         )}
       >
-        <Icon className={cn("size-4 shrink-0", active && "text-accent")} />
+        <Icon className={cn("size-4 shrink-0 transition-colors group-hover:text-accent", active && "text-accent")} />
         <span className="flex-1 truncate">{t(`nav.${item.label}`, item.label)}</span>
         {item.to === "/communication" && unread > 0 && (
           <Badge variant="secondary" className="h-4 min-w-4 px-1 text-[10px]">{unread}</Badge>
