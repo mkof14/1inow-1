@@ -24,28 +24,28 @@ function PeoplePage() {
   });
 
   return (
-    <div className="p-6 md:p-8 max-w-[1500px] mx-auto">
-      <div className="flex items-start justify-between mb-6 gap-4">
-        <div className="flex items-center gap-4">
-          <div className="text-accent"><PeopleOrbit size={44} /></div>
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight font-display">{t("page.people.title")}</h1>
-            <p className="text-sm text-muted-foreground mt-1">{t("page.people.subtitle")}</p>
+    <div className="p-4 sm:p-6 md:p-8 max-w-[1500px] mx-auto">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] sm:flex sm:items-start sm:justify-between mb-6 gap-3 sm:gap-4">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+          <div className="text-accent shrink-0"><PeopleOrbit size={44} /></div>
+          <div className="min-w-0">
+            <h1 className="truncate text-xl sm:text-2xl font-semibold tracking-tight font-display">{t("page.people.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{t("page.people.subtitle")}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Link to="/team-map" className="h-8 px-3 inline-flex items-center gap-1.5 rounded-md border border-border bg-card hover:bg-muted text-xs font-medium">
-            <Globe className="size-3.5" /> {t("page.people.teamMap")}
+        <div className="col-span-2 flex flex-wrap items-center gap-2 sm:col-auto">
+          <Link to="/team-map" className="h-8 px-3 inline-flex items-center gap-1.5 rounded-md border border-border bg-card hover:bg-muted text-xs font-medium shrink-0">
+            <Globe className="size-3.5 shrink-0" /> <span className="truncate">{t("page.people.teamMap")}</span>
           </Link>
-          <div className="inline-flex rounded-lg border border-border p-0.5 bg-card">
+          <div className="inline-flex rounded-lg border border-border p-0.5 bg-card shrink-0">
             {[
               { id: "grid", icon: LayoutGrid, label: "Grid" },
               { id: "table", icon: List, label: "Table" },
             ].map((v) => (
               <button key={v.id} onClick={() => setView(v.id as any)}
-                className={`px-2.5 h-7 rounded-md text-xs font-medium inline-flex items-center gap-1.5 transition ${
+                className={`px-2.5 h-7 rounded-md text-xs font-medium inline-flex items-center gap-1.5 transition shrink-0 ${
                   view === v.id ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}><v.icon className="size-3.5" />{v.label}</button>
+                }`}><v.icon className="size-3.5 shrink-0" /><span className="hidden xs:inline sm:inline">{v.label}</span></button>
             ))}
           </div>
         </div>
