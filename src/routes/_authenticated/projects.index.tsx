@@ -185,29 +185,29 @@ function ProjectsPage() {
                 setSelectedId(isSelected ? null : p.id);
               }
             }}
-            className={`group relative rounded-2xl border bg-card p-5 surface-aurora shimmer-border ring-accent-soft transition-all duration-300 ease-out hover:scale-[1.02] hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_12px_40px_-16px_color-mix(in_oklab,var(--accent)_35%,transparent)] active:scale-[0.99] active:duration-150 fade-rise cursor-pointer ${
+            className={`group relative rounded-2xl border bg-card p-5 surface-aurora shimmer-border ring-accent-soft transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.02] hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_12px_40px_-16px_color-mix(in_oklab,var(--accent)_35%,transparent)] active:scale-[0.99] active:duration-150 fade-rise cursor-pointer ${
               isSelected
-                ? "border-accent ring-2 ring-accent/40 shadow-[0_18px_50px_-18px_color-mix(in_oklab,var(--accent)_55%,transparent)] -translate-y-0.5"
+                ? "border-accent ring-[3px] ring-accent/30 shadow-[0_18px_50px_-18px_color-mix(in_oklab,var(--accent)_55%,transparent)] -translate-y-0.5"
                 : "border-border"
             }`}
             style={{ animationDelay: `${idx * 40}ms` }}
           >
             {/* Left color accent strip */}
             <div
-              className={`absolute left-0 rounded-full transition-all duration-300 ${
-                isSelected ? "top-2 bottom-2 w-[5px] opacity-100 shadow-[0_0_12px_color-mix(in_oklab,var(--accent)_60%,transparent)]" : "top-4 bottom-4 w-[3px] opacity-60 group-hover:opacity-100 group-hover:top-3 group-hover:bottom-3"
+              className={`absolute left-0 rounded-full transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+                isSelected ? "top-2 bottom-2 w-[5px] opacity-100 shadow-[0_0_16px_color-mix(in_oklab,var(--accent)_70%,transparent)]" : "top-4 bottom-4 w-[3px] opacity-60 group-hover:opacity-100 group-hover:top-3 group-hover:bottom-3"
               }`}
               style={{ background: p.color ?? "#0a2540" }}
             />
             <div className="block relative z-10">
-              <div className={`flex items-start justify-between mb-4 pl-2 -mx-2 px-2 py-1 rounded-lg transition-colors ${isSelected ? "bg-accent/5" : ""}`}>
+              <div className={`flex items-start justify-between mb-4 pl-2 -mx-2 px-2 py-1 rounded-xl transition-all duration-500 ease-out ${isSelected ? "bg-accent/[0.07] shadow-[inset_0_0_20px_color-mix(in_oklab,var(--accent)_8%,transparent)]" : "bg-transparent"}`}>
                 <div className="relative size-12 rounded-xl grid place-items-center text-white font-semibold shadow-md transition-transform duration-300 group-hover:scale-110 group-hover:shadow-lg" style={{ background: p.color ?? "#0a2540" }}>
                   {p.name.slice(0, 2).toUpperCase()}
                   <span className={`absolute -bottom-1 -right-1 size-3.5 rounded-full border-2 border-card transition-transform duration-300 group-hover:scale-125 ${
                     p.priority === "critical" ? "bg-rose-500 signal-pulse" : p.priority === "high" ? "bg-amber-500" : "bg-emerald-500"
                   }`} />
                 </div>
-                <span className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full transition-colors duration-300 ${
+                <span className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full transition-all duration-500 ${
                   p.status === "active" || p.status === "in_progress" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" :
                   p.status === "planning" || p.status === "idea" ? "bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20" :
                   p.status === "paused" ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" :
@@ -217,9 +217,9 @@ function ProjectsPage() {
                   {PROJECT_STATUS_LABEL[p.status as keyof typeof PROJECT_STATUS_LABEL]}
                 </span>
               </div>
-              <h3 className={`font-semibold tracking-tight pl-2 transition-colors duration-200 ${isSelected ? "text-accent" : "group-hover:text-accent"}`}>{p.name}</h3>
+              <h3 className={`font-semibold tracking-tight pl-2 transition-colors duration-300 ${isSelected ? "text-accent drop-shadow-[0_0_8px_color-mix(in_oklab,var(--accent)_35%,transparent)]" : "group-hover:text-accent"}`}>{p.name}</h3>
               <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2 min-h-[2rem] pl-2">{p.description ?? t("page.projects.noDescription")}</p>
-              <div className={`mt-5 pl-2 -mx-2 px-2 py-2 rounded-lg transition-colors ${isSelected ? "bg-accent/5 ring-1 ring-accent/20" : ""}`}>
+              <div className={`mt-5 pl-2 -mx-2 px-2 py-2 rounded-xl transition-all duration-500 ease-out ${isSelected ? "bg-accent/[0.07] ring-1 ring-accent/25 shadow-[inset_0_0_24px_color-mix(in_oklab,var(--accent)_10%,transparent)]" : "bg-transparent ring-0"}`}>
                 <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
                   <span className="inline-flex items-center gap-1.5">
                     <span className={`size-1.5 rounded-full ${
@@ -227,12 +227,12 @@ function ProjectsPage() {
                     }`} />
                     {t("page.projects.priority").replace("{p}", p.priority)}
                   </span>
-                  <span className={`font-mono font-medium ${isSelected ? "text-accent" : "text-foreground"}`}>{p.progress}%</span>
+                  <span className={`font-mono font-medium transition-colors duration-300 ${isSelected ? "text-accent" : "text-foreground"}`}>{p.progress}%</span>
                 </div>
-                <div className={`rounded-full bg-muted/60 overflow-hidden transition-all duration-300 ${isSelected ? "h-2.5" : "h-2"}`}>
+                <div className={`rounded-full bg-muted/60 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isSelected ? "h-2.5 ring-1 ring-accent/20 shadow-[0_0_12px_color-mix(in_oklab,var(--accent)_25%,transparent)]" : "h-2"}`}>
                   <div
-                    className={`h-full rounded-full bg-gradient-to-r transition-all duration-700 ease-out ${
-                      isSelected ? "from-accent via-accent to-primary shadow-[0_0_10px_color-mix(in_oklab,var(--accent)_55%,transparent)]" : "from-accent to-primary/70 group-hover:from-accent group-hover:to-accent/80"
+                    className={`h-full rounded-full bg-gradient-to-r transition-all duration-1000 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+                      isSelected ? "from-accent via-primary/80 to-accent shadow-[0_0_14px_color-mix(in_oklab,var(--accent)_50%,transparent)]" : "from-accent to-primary/70 group-hover:from-accent group-hover:to-accent/80"
                     }`}
                     style={{ width: `${p.progress}%` }}
                   />
@@ -241,16 +241,16 @@ function ProjectsPage() {
             </div>
             <div
               onClick={(e) => e.stopPropagation()}
-              className={`mt-4 pt-4 border-t border-border/60 flex items-center justify-between transition-opacity duration-300 pl-2 ${
-                isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+              className={`mt-4 pt-4 border-t border-border/60 flex items-center justify-between transition-all duration-500 ease-out pl-2 ${
+                isSelected ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0"
               }`}
             >
               <Link
                 to="/projects/$slug"
                 params={{ slug: p.slug }}
-                className={`text-xs font-semibold inline-flex items-center gap-1 transition-all px-2.5 py-1 rounded-md ${
+                className={`text-xs font-semibold inline-flex items-center gap-1 transition-all duration-300 px-2.5 py-1 rounded-md ${
                   isSelected
-                    ? "bg-accent text-accent-foreground hover:bg-accent/90 shadow-sm"
+                    ? "bg-accent text-accent-foreground hover:bg-accent/90 shadow-[0_0_14px_color-mix(in_oklab,var(--accent)_40%,transparent)]"
                     : "text-accent hover:text-accent-foreground"
                 }`}
               >
@@ -258,7 +258,7 @@ function ProjectsPage() {
               </Link>
               <button
                 onClick={() => { if (confirm(t("page.projects.archiveConfirm"))) archive.mutate(p.id); }}
-                className={`text-xs inline-flex items-center gap-1 transition-colors ${
+                className={`text-xs inline-flex items-center gap-1 transition-colors duration-300 ${
                   isSelected ? "text-foreground hover:text-destructive" : "text-muted-foreground hover:text-destructive"
                 }`}
               >
