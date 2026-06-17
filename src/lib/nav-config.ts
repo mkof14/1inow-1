@@ -62,6 +62,7 @@ export const navSections: NavSection[] = [
       { to: "/documents",  label: "Knowledge", icon: KnowledgeLens },
       { to: "/principles", label: "Principles", icon: ShieldLine },
       { to: "/simplicity", label: "Simplicity", icon: ShieldLine },
+      { to: "/settings",   label: "Settings",  icon: GearMark },
     ],
   },
 ];
@@ -71,7 +72,6 @@ export const footerSections: NavSection[] = [
   {
     id: "admin",
     label: "Administration",
-    adminOnly: true,
     items: [
       { to: "/administration",              label: "Overview",     icon: ShieldLine },
       { to: "/administration/users",        label: "Users",        icon: ShieldLine },
