@@ -51,7 +51,43 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
   const ctxRef = useRef(context);
   ctxRef.current = context;
   const [transport] = useState(() => makeTransport(() => ctxRef.current, () => langRef.current));
-  const { messages, sendMessage, status } = useChat({ transport });
+
+  // Restore chat history (kept for 7 days in this browser).
+  const HISTORY_KEY = "1inow:ai:history:v1";
+  const HISTORY_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+  const initialMessages: UIMessage[] = (() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = window.localStorage.getItem(HISTORY_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw) as { savedAt?: number; messages?: UIMessage[] };
+      if (!parsed?.savedAt || Date.now() - parsed.savedAt > HISTORY_TTL_MS) {
+        window.localStorage.removeItem(HISTORY_KEY);
+        return [];
+      }
+      return Array.isArray(parsed.messages) ? parsed.messages : [];
+    } catch { return []; }
+  })();
+
+  const { messages, sendMessage, status, setMessages } = useChat({ transport, messages: initialMessages });
+
+  // Persist on change, debounced to next tick.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (status === "streaming" || status === "submitted") return;
+    try {
+      window.localStorage.setItem(
+        HISTORY_KEY,
+        JSON.stringify({ savedAt: Date.now(), messages }),
+      );
+    } catch {}
+  }, [messages, status]);
+
+  const clearHistory = useCallback(() => {
+    try { window.localStorage.removeItem(HISTORY_KEY); } catch {}
+    setMessages([]);
+    spokenIdsRef.current = new Set();
+  }, [setMessages]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Voice IO state
@@ -139,7 +175,7 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
         const res = await fetch("/api/tts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text, voice: "alloy", lang: langRef.current }),
+          body: JSON.stringify({ text, voice: "marin", lang: langRef.current }),
         });
         if (!res.ok || !res.body || cancelled) return;
         const blob = await res.blob();
@@ -203,6 +239,17 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
           </div>
         </div>
         <div className="flex items-center gap-0.5">
+          {messages.length > 0 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7 text-muted-foreground hover:text-foreground"
+              onClick={clearHistory}
+              title={t("ai.clear", "Clear conversation")}
+            >
+              <span className="text-[10px] font-medium">Clear</span>
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
