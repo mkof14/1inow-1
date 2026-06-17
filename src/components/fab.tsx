@@ -20,11 +20,14 @@ export function Fab({ aiOpen, aiMode }: { aiOpen?: boolean; aiMode?: string }) {
   ];
 
   const isDockedOpen = aiOpen && aiMode === "docked";
+  const isFloatingOpen = aiOpen && aiMode === "floating";
 
   return (
     <div className={cn(
-      "fixed bottom-5 z-20 flex flex-col items-end gap-2",
-      isDockedOpen ? "lg:right-[400px] right-5" : "right-5"
+      "fixed bottom-6 z-20 flex flex-col items-end gap-2 transition-[right,bottom] duration-300",
+      isDockedOpen && "right-5 lg:right-[410px]",
+      isFloatingOpen && "right-5 lg:right-[456px]",
+      !isDockedOpen && !isFloatingOpen && "right-5"
     )}>
       {open && (
         <div className="flex flex-col items-end gap-2 mb-1 fade-rise">
