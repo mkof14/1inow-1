@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { convertToModelMessages, streamText, type UIMessage } from "ai";
+import { convertToModelMessages, streamText, tool, stepCountIs, type UIMessage } from "ai";
+import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { principlesSystemPrompt } from "@/lib/principles";
@@ -37,6 +38,8 @@ export const Route = createFileRoute("/api/chat")({
 
         // Gather lightweight user context from Supabase (best-effort)
         let contextBlock = "";
+        let userId: string | null = null;
+        let authedClient: ReturnType<typeof createClient> | null = null;
         try {
           const auth = request.headers.get("authorization") ?? "";
           const token = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7) : "";
@@ -49,8 +52,9 @@ export const Route = createFileRoute("/api/chat")({
                 auth: { persistSession: false, autoRefreshToken: false },
               },
             );
+            authedClient = sb;
             const { data: u } = await sb.auth.getUser();
-            const userId = u.user?.id;
+            userId = u.user?.id ?? null;
             if (userId) {
               const [projects, tasks, notifs, memories, rules, prefs] = await Promise.all([
                 sb.from("projects").select("name,status,priority,progress,slug").limit(20),
@@ -82,7 +86,9 @@ export const Route = createFileRoute("/api/chat")({
 
         const system = `You are 1inow, the intelligence layer of 1inow — a private decision and execution environment.
 
-LANGUAGE: Respond in ${langName} (locale "${lang}"). Match the user's language even if your context is in English. Localize numbers, dates and any UI-style phrases.
+LANGUAGE (critical): Auto-detect the language of the user's latest message and reply in THAT language with a natural, human, conversational tone. The UI locale is "${lang}" (${langName}) — use it as a fallback when the message is too short to detect. Match the user's register (formal/informal), localize numbers, dates, and idioms, and never mix languages in one reply unless the user did.
+
+SELF-LEARNING: When the user reveals a stable preference, fact, decision, correction, writing/communication style, deadline, priority, risk, or workflow rule that should persist across sessions, call the \`save_memory\` tool to store it. Be selective — never save trivia, transient context, or anything the user did not assert. Acknowledge the save briefly in the reply.
 
 ${principlesSystemPrompt()}
 
@@ -109,10 +115,56 @@ Live context for this user:
 ${contextBlock || "(no context available — say so before answering anything specific)"}${pageBlock}`;
 
         const gateway = createLovableAiGatewayProvider(key);
+
+        const MEMORY_TYPES = [
+          "user_preference","project_fact","people_fact","company_fact","decision",
+          "pattern","correction","workflow","writing_style","communication_style",
+          "priority","deadline","risk","personal",
+        ] as const;
+
+        const tools = userId && authedClient
+          ? {
+              save_memory: tool({
+                description:
+                  "Persist a durable learning about the user (preference, fact, decision, correction, style, priority, deadline, risk, workflow) so 1inow improves over time. Only call when the user explicitly asserts something stable.",
+                inputSchema: z.object({
+                  type: z.enum(MEMORY_TYPES),
+                  key: z.string().min(1).max(120),
+                  value: z.string().min(1).max(800),
+                  confidence: z.enum(["high", "medium", "low"]).default("medium"),
+                  zone: z.enum(["business","personal","family","health","finance","legal"]).default("business"),
+                  source_text: z.string().max(800).optional(),
+                }),
+                execute: async (input) => {
+                  try {
+                    const { error } = await authedClient!
+                      .from("ai_memories")
+                      .insert({
+                        user_id: userId!,
+                        type: input.type,
+                        key: input.key,
+                        value: input.value,
+                        confidence: input.confidence,
+                        zone: input.zone,
+                        source_text: input.source_text ?? null,
+                        status: "active",
+                      });
+                    if (error) return { saved: false, error: error.message };
+                    return { saved: true };
+                  } catch (e) {
+                    return { saved: false, error: e instanceof Error ? e.message : "unknown" };
+                  }
+                },
+              }),
+            }
+          : undefined;
+
         const result = streamText({
           model: gateway("google/gemini-3-flash-preview"),
           system,
           messages: await convertToModelMessages(messages),
+          tools,
+          stopWhen: stepCountIs(50),
         });
 
         return result.toUIMessageStreamResponse({ originalMessages: messages });

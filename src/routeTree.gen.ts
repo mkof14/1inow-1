@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedThinkingRouteImport } from './routes/_authenticated/thinking'
 import { Route as AuthenticatedTeamMapRouteImport } from './routes/_authenticated/team-map'
@@ -62,6 +63,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTtsRoute = ApiTtsRouteImport.update({
+  id: '/api/tts',
+  path: '/api/tts',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -291,6 +297,7 @@ export interface FileRoutesByFullPath {
   '/team-map': typeof AuthenticatedTeamMapRoute
   '/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/tts': typeof ApiTtsRoute
   '/administration/audit': typeof AuthenticatedAdministrationAuditRoute
   '/administration/email-logs': typeof AuthenticatedAdministrationEmailLogsRoute
   '/administration/emails': typeof AuthenticatedAdministrationEmailsRoute
@@ -331,6 +338,7 @@ export interface FileRoutesByTo {
   '/team-map': typeof AuthenticatedTeamMapRoute
   '/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/tts': typeof ApiTtsRoute
   '/administration/audit': typeof AuthenticatedAdministrationAuditRoute
   '/administration/email-logs': typeof AuthenticatedAdministrationEmailLogsRoute
   '/administration/emails': typeof AuthenticatedAdministrationEmailsRoute
@@ -374,6 +382,7 @@ export interface FileRoutesById {
   '/_authenticated/team-map': typeof AuthenticatedTeamMapRoute
   '/_authenticated/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/tts': typeof ApiTtsRoute
   '/_authenticated/administration/audit': typeof AuthenticatedAdministrationAuditRoute
   '/_authenticated/administration/email-logs': typeof AuthenticatedAdministrationEmailLogsRoute
   '/_authenticated/administration/emails': typeof AuthenticatedAdministrationEmailsRoute
@@ -417,6 +426,7 @@ export interface FileRouteTypes {
     | '/team-map'
     | '/thinking'
     | '/api/chat'
+    | '/api/tts'
     | '/administration/audit'
     | '/administration/email-logs'
     | '/administration/emails'
@@ -457,6 +467,7 @@ export interface FileRouteTypes {
     | '/team-map'
     | '/thinking'
     | '/api/chat'
+    | '/api/tts'
     | '/administration/audit'
     | '/administration/email-logs'
     | '/administration/emails'
@@ -499,6 +510,7 @@ export interface FileRouteTypes {
     | '/_authenticated/team-map'
     | '/_authenticated/thinking'
     | '/api/chat'
+    | '/api/tts'
     | '/_authenticated/administration/audit'
     | '/_authenticated/administration/email-logs'
     | '/_authenticated/administration/emails'
@@ -521,6 +533,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiTtsRoute: typeof ApiTtsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -544,6 +557,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/tts': {
+      id: '/api/tts'
+      path: '/api/tts'
+      fullPath: '/api/tts'
+      preLoaderRoute: typeof ApiTtsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -916,6 +936,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiTtsRoute: ApiTtsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
