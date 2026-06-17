@@ -61,7 +61,7 @@ function TimelinePage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
         {days.map((d) => {
           const key = d.toDateString();
           const items = byDay[key] ?? [];
