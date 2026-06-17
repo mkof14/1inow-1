@@ -1,5 +1,5 @@
 import {
-  1inowMark, PortfolioCard, ExecutionNode, SignalWave, TimelinePulse,
+  BrandMark, PortfolioCard, ExecutionNode, SignalWave, TimelinePulse,
   PeopleOrbit, KnowledgeLens, VaultMark, DecisionDiamond, IntelligenceBars,
   ShieldLine, GearMark,
 } from "@/components/icons/compass-icons";
@@ -13,7 +13,7 @@ export type NavSection = { id: string; label: string; items: NavItem[]; adminOnl
 
 /** Primary nav — max 6 items + "More" */
 export const primaryNav: NavItem[] = [
-  { to: "/dashboard",     label: "Home",     icon: 1inowMark },
+  { to: "/dashboard",     label: "Home",     icon: BrandMark },
   { to: "/projects",      label: "Projects", icon: PortfolioCard },
   { to: "/tasks",         label: "Tasks",    icon: ExecutionNode },
   { to: "/people",        label: "People",   icon: PeopleOrbit },
@@ -106,7 +106,7 @@ export const footerSections: NavSection[] = [
     items: [
       { to: "/settings", label: "Settings", icon: GearMark },
       { to: "/inbox",    label: "Inbox",    icon: SignalWave },
-      { to: "/favorites",label: "Favorites",icon: 1inowMark },
+      { to: "/favorites",label: "Favorites",icon: BrandMark },
       { to: "/administration", label: "Admin Console", icon: ShieldLine, adminOnly: true },
     ],
   },

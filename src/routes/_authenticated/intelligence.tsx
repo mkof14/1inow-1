@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Brain, Bot, Workflow, Shield, ClipboardList, MessageSquareWarning, Database, Lock, History, Settings2, Trash2, Bell } from "lucide-react";
-import { 1inowMark } from "@/components/icons/compass-mark";
+import { BrandMark } from "@/components/icons/compass-mark";
 
 export const Route = createFileRoute("/_authenticated/intelligence")({
   component: IntelligencePage,
@@ -52,7 +52,7 @@ function IntelligencePage() {
           </p>
         </div>
         <div className="hidden md:flex items-center gap-2 rounded-xl border bg-card px-3 py-2 text-xs text-muted-foreground">
-          <1inowMark className="h-3.5 w-3.5" /> No invented facts. Confidence is shown on every answer.
+          <BrandMark className="h-3.5 w-3.5" /> No invented facts. Confidence is shown on every answer.
         </div>
       </header>
 
