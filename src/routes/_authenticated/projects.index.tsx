@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { fetchProjects, PROJECT_STATUSES, PROJECT_STATUS_LABEL } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -30,6 +30,21 @@ function ProjectsPage() {
   const [view, setView] = useState<"grid" | "table" | "risk">("grid");
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("projects:selectedId");
+      if (saved) setSelectedId(saved);
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try {
+      if (selectedId) localStorage.setItem("projects:selectedId", selectedId);
+      else localStorage.removeItem("projects:selectedId");
+    } catch {}
+  }, [selectedId]);
 
   const create = useMutation({
     mutationFn: async () => {
@@ -155,19 +170,37 @@ function ProjectsPage() {
 
       {view === "grid" && (
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {filtered.map((p, idx) => (
+        {filtered.map((p, idx) => {
+          const isSelected = selectedId === p.id;
+          return (
           <div
             key={p.id}
-            className="group relative rounded-2xl border border-border bg-card p-5 surface-aurora shimmer-border ring-accent-soft transition-all duration-300 ease-out hover:scale-[1.02] hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_12px_40px_-16px_color-mix(in_oklab,var(--accent)_35%,transparent)] active:scale-[0.99] active:duration-150 fade-rise"
+            role="button"
+            tabIndex={0}
+            aria-pressed={isSelected}
+            onClick={() => setSelectedId(isSelected ? null : p.id)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setSelectedId(isSelected ? null : p.id);
+              }
+            }}
+            className={`group relative rounded-2xl border bg-card p-5 surface-aurora shimmer-border ring-accent-soft transition-all duration-300 ease-out hover:scale-[1.02] hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_12px_40px_-16px_color-mix(in_oklab,var(--accent)_35%,transparent)] active:scale-[0.99] active:duration-150 fade-rise cursor-pointer ${
+              isSelected
+                ? "border-accent ring-2 ring-accent/40 shadow-[0_18px_50px_-18px_color-mix(in_oklab,var(--accent)_55%,transparent)] -translate-y-0.5"
+                : "border-border"
+            }`}
             style={{ animationDelay: `${idx * 40}ms` }}
           >
             {/* Left color accent strip */}
             <div
-              className="absolute left-0 top-4 bottom-4 w-[3px] rounded-full opacity-60 group-hover:opacity-100 group-hover:top-3 group-hover:bottom-3 transition-all duration-300"
+              className={`absolute left-0 rounded-full transition-all duration-300 ${
+                isSelected ? "top-2 bottom-2 w-[5px] opacity-100 shadow-[0_0_12px_color-mix(in_oklab,var(--accent)_60%,transparent)]" : "top-4 bottom-4 w-[3px] opacity-60 group-hover:opacity-100 group-hover:top-3 group-hover:bottom-3"
+              }`}
               style={{ background: p.color ?? "#0a2540" }}
             />
-            <Link to="/projects/$slug" params={{ slug: p.slug }} className="block relative z-10">
-              <div className="flex items-start justify-between mb-4 pl-2">
+            <div className="block relative z-10">
+              <div className={`flex items-start justify-between mb-4 pl-2 -mx-2 px-2 py-1 rounded-lg transition-colors ${isSelected ? "bg-accent/5" : ""}`}>
                 <div className="relative size-12 rounded-xl grid place-items-center text-white font-semibold shadow-md transition-transform duration-300 group-hover:scale-110 group-hover:shadow-lg" style={{ background: p.color ?? "#0a2540" }}>
                   {p.name.slice(0, 2).toUpperCase()}
                   <span className={`absolute -bottom-1 -right-1 size-3.5 rounded-full border-2 border-card transition-transform duration-300 group-hover:scale-125 ${
@@ -184,9 +217,9 @@ function ProjectsPage() {
                   {PROJECT_STATUS_LABEL[p.status as keyof typeof PROJECT_STATUS_LABEL]}
                 </span>
               </div>
-              <h3 className="font-semibold tracking-tight pl-2 group-hover:text-accent transition-colors duration-200">{p.name}</h3>
+              <h3 className={`font-semibold tracking-tight pl-2 transition-colors duration-200 ${isSelected ? "text-accent" : "group-hover:text-accent"}`}>{p.name}</h3>
               <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2 min-h-[2rem] pl-2">{p.description ?? t("page.projects.noDescription")}</p>
-              <div className="mt-5 pl-2">
+              <div className={`mt-5 pl-2 -mx-2 px-2 py-2 rounded-lg transition-colors ${isSelected ? "bg-accent/5 ring-1 ring-accent/20" : ""}`}>
                 <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
                   <span className="inline-flex items-center gap-1.5">
                     <span className={`size-1.5 rounded-full ${
@@ -194,29 +227,47 @@ function ProjectsPage() {
                     }`} />
                     {t("page.projects.priority").replace("{p}", p.priority)}
                   </span>
-                  <span className="font-mono text-foreground font-medium">{p.progress}%</span>
+                  <span className={`font-mono font-medium ${isSelected ? "text-accent" : "text-foreground"}`}>{p.progress}%</span>
                 </div>
-                <div className="h-2 rounded-full bg-muted/60 overflow-hidden">
+                <div className={`rounded-full bg-muted/60 overflow-hidden transition-all duration-300 ${isSelected ? "h-2.5" : "h-2"}`}>
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-accent to-primary/70 transition-all duration-700 ease-out group-hover:from-accent group-hover:to-accent/80"
+                    className={`h-full rounded-full bg-gradient-to-r transition-all duration-700 ease-out ${
+                      isSelected ? "from-accent via-accent to-primary shadow-[0_0_10px_color-mix(in_oklab,var(--accent)_55%,transparent)]" : "from-accent to-primary/70 group-hover:from-accent group-hover:to-accent/80"
+                    }`}
                     style={{ width: `${p.progress}%` }}
                   />
                 </div>
               </div>
-            </Link>
-            <div className="mt-4 pt-4 border-t border-border/60 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300 pl-2">
-              <Link to="/projects/$slug" params={{ slug: p.slug }} className="text-xs font-medium text-accent hover:text-accent-foreground inline-flex items-center gap-1 transition-colors">
+            </div>
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className={`mt-4 pt-4 border-t border-border/60 flex items-center justify-between transition-opacity duration-300 pl-2 ${
+                isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+              }`}
+            >
+              <Link
+                to="/projects/$slug"
+                params={{ slug: p.slug }}
+                className={`text-xs font-semibold inline-flex items-center gap-1 transition-all px-2.5 py-1 rounded-md ${
+                  isSelected
+                    ? "bg-accent text-accent-foreground hover:bg-accent/90 shadow-sm"
+                    : "text-accent hover:text-accent-foreground"
+                }`}
+              >
                 {t("btn.open")} <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
               </Link>
               <button
                 onClick={() => { if (confirm(t("page.projects.archiveConfirm"))) archive.mutate(p.id); }}
-                className="text-xs text-muted-foreground hover:text-destructive inline-flex items-center gap-1 transition-colors"
+                className={`text-xs inline-flex items-center gap-1 transition-colors ${
+                  isSelected ? "text-foreground hover:text-destructive" : "text-muted-foreground hover:text-destructive"
+                }`}
               >
                 <Trash2 className="size-3" /> {t("btn.archive")}
               </button>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
       )}
 
