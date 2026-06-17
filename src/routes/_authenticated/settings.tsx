@@ -109,7 +109,7 @@ function SettingsPage() {
       <div className="space-y-8">
         <Section title={`🌐 ${t("common.language")} & ${t("common.timezone")}`}>
           <Field label={t("settings.preferredLanguage")}>
-            <Select value={pf.preferred_language} onValueChange={(v) => setPf({ ...pf, preferred_language: v })}>
+            <Select value={pf.preferred_language} onValueChange={(v) => { setPf({ ...pf, preferred_language: v }); setLang(v); }}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 {Object.keys(dictionaries).map((c) => (
@@ -199,7 +199,11 @@ function SettingsPage() {
             <Input value={form.timezone} onChange={(e) => setForm({ ...form, timezone: e.target.value })} />
           </Field>
           <Field label="Theme">
-            <Select value={form.theme} onValueChange={(v) => setForm({ ...form, theme: v })}>
+            <Select value={form.theme} onValueChange={(v) => {
+              setForm({ ...form, theme: v });
+              const isDark = v === "dark" || (v === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+              document.documentElement.classList.toggle("dark", isDark);
+            }}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="light">Light</SelectItem>
