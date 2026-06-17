@@ -3,38 +3,26 @@ import { cn } from "@/lib/utils";
 type Props = React.SVGProps<SVGSVGElement> & { className?: string };
 
 /**
- * CompassMark — custom brand icon for the Digital Invest Compass
- * intelligence layer. Replaces generic "AI sparkle" icons.
- * A compass rose with a needle pointing north-east (forward progress).
+ * BrandMark — 1inow logo mark. A stylised "1" with a sage-green dot
+ * representing the present moment ("now"). Inherits color from
+ * currentColor for the numeral and uses the --accent token for the dot.
  */
 export function BrandMark({ className, ...props }: Props) {
   return (
     <svg
       viewBox="0 0 24 24"
       fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
       aria-hidden="true"
       className={cn("size-4", className)}
       {...props}
     >
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 3v2M12 19v2M3 12h2M19 12h2" />
+      {/* Stylised "1" — a vertical stem with a short serif at the top-left */}
       <path
-        d="M12 12 L15.5 8.5 L13 12 L15.5 15.5 Z"
+        d="M8.5 7.5 L12.5 5 L12.5 19 L15 19 L10 19 Z"
         fill="currentColor"
-        stroke="none"
-        opacity="0.9"
       />
-      <path
-        d="M12 12 L8.5 15.5 L11 12 L8.5 8.5 Z"
-        fill="currentColor"
-        stroke="none"
-        opacity="0.4"
-      />
-      <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+      {/* "now" dot — sage green from accent token */}
+      <circle cx="15" cy="6.5" r="2" fill="var(--accent)" />
     </svg>
   );
 }

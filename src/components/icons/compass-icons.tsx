@@ -202,7 +202,7 @@ export function HelpMark(p: IconProps) {
   );
 }
 
-/* Compact wordmark logo */
+/* 1inow logomark — stylised "1" with a green "now" dot, on a soft rounded square. */
 export function BrandLogo({ size = 28, className, ...rest }: IconProps) {
   return (
     <svg
@@ -213,10 +213,45 @@ export function BrandLogo({ size = 28, className, ...rest }: IconProps) {
       className={cn(className)}
       {...rest}
     >
-      <circle cx="16" cy="16" r="14" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="16" cy="16" r="8" stroke="currentColor" strokeWidth="1" opacity=".4" />
-      <path d="M16 5l3.4 10.6L16 27l-3.4-11.4z" fill="currentColor" fillOpacity=".25" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
-      <circle cx="16" cy="16" r="1.6" fill="currentColor" />
+      <rect x="1" y="1" width="30" height="30" rx="7" fill="var(--primary)" />
+      {/* Stylised "1" in cream */}
+      <path
+        d="M11 10 L17 6.5 L17 25 L20 25 L13 25 Z"
+        fill="var(--primary-foreground)"
+      />
+      {/* Sage green dot — the "now" */}
+      <circle cx="20" cy="8" r="2.6" fill="var(--accent)" />
     </svg>
+  );
+}
+
+/* 1inow wordmark — full "1inow" lockup as SVG-free HTML usage helper. */
+export function BrandWordmark({
+  className,
+  size = 18,
+}: {
+  className?: string;
+  size?: number;
+}) {
+  return (
+    <span
+      className={cn("inline-flex items-baseline font-semibold tracking-tight", className)}
+      style={{ fontSize: size, lineHeight: 1 }}
+    >
+      <span className="relative text-accent" style={{ marginRight: 1 }}>
+        1
+        <span
+          aria-hidden
+          className="absolute rounded-full bg-accent"
+          style={{
+            width: size * 0.22,
+            height: size * 0.22,
+            top: -size * 0.08,
+            right: -size * 0.18,
+          }}
+        />
+      </span>
+      <span className="text-foreground">inow</span>
+    </span>
   );
 }
