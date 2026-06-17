@@ -93,7 +93,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Link to="/dashboard" className="px-5 py-5 flex items-center gap-2.5 hover:opacity-80 transition-opacity">
           <span className="text-primary"><CompassLogo size={28} /></span>
           <div className="leading-tight">
-            <div className="font-display text-base text-sidebar-foreground">Digital Invest</div>
+            <div className="font-display text-base text-gradient-accent">Digital Invest</div>
             <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Compass</div>
           </div>
         </Link>
