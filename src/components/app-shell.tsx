@@ -98,6 +98,36 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </Link>
 
+        <div className="px-3 pb-2 space-y-2">
+          <button
+            type="button"
+            onClick={() => setAiOpen((v) => !v)}
+            className={cn(
+              "w-full flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-all border",
+              aiOpen
+                ? "gradient-compass text-primary-foreground border-transparent shadow-md"
+                : "border-accent/30 bg-accent/5 text-foreground hover:bg-accent/10",
+            )}
+            title={t("ai.openTip", "Compass AI")}
+          >
+            <CompassMark className="size-4 shrink-0" />
+            <span className="flex-1 text-left">Compass AI</span>
+            <kbd className={cn(
+              "text-[10px] font-mono px-1.5 py-0.5 rounded border",
+              aiOpen ? "border-primary-foreground/30 text-primary-foreground/80" : "border-border text-muted-foreground",
+            )}>⌘J</kbd>
+          </button>
+          <button
+            type="button"
+            onClick={() => setQuickOpen((n) => n + 1)}
+            className="w-full flex items-center gap-2.5 rounded-lg border border-dashed border-border bg-background px-3 py-2 text-sm text-muted-foreground hover:border-accent/50 hover:text-foreground transition-colors"
+            title={t("common.create", "Create")}
+          >
+            <Plus className="size-4 shrink-0" />
+            <span className="flex-1 text-left">{t("common.create", "Create")}</span>
+          </button>
+        </div>
+
         <nav className="flex-1 overflow-y-auto px-2.5 pb-4 pt-2">
           {navSections.map((section, idx) => (
             <div key={section.id} className={cn(idx > 0 && "mt-4")}>
