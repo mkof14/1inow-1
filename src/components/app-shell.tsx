@@ -17,7 +17,7 @@ import { useShortcuts } from "@/hooks/use-shortcuts";
 import { Badge } from "@/components/ui/badge";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useT } from "@/lib/i18n";
-import { BrandLogo, BrandWordmark } from "@/components/icons/compass-icons";
+import { BrandWordmark } from "@/components/icons/compass-icons";
 import { BrandMark } from "@/components/icons/compass-mark";
 import { AiSidebar, type AiSidebarMode } from "@/components/ai-sidebar";
 
@@ -85,17 +85,14 @@ export function AppShell({ children }: { children: ReactNode }) {
     );
   };
 
-  const visibleFooterSections = footerSections;
+  const visibleFooterSections = [...navSections, ...footerSections];
 
   return (
     <div className="flex min-h-screen w-full bg-background text-foreground">
       <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar sticky top-0 h-screen">
-        <Link to="/dashboard" className="px-5 py-6 flex items-center gap-3 hover:opacity-90 transition-opacity">
-          <BrandLogo size={48} />
-          <div className="leading-tight">
-            <BrandWordmark size={26} />
-            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mt-1.5">1inow.com</div>
-          </div>
+        <Link to="/dashboard" className="px-5 py-6 flex flex-col gap-1 hover:opacity-90 transition-opacity">
+          <BrandWordmark size={28} />
+          <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">1inow.com</div>
         </Link>
 
         <div className="px-3 pb-2 space-y-2">
@@ -221,11 +218,10 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="min-w-0 w-full flex-1">{children}</div>
         <footer className="mt-16 border-t border-border">
           <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
-            <div className="flex items-center gap-2 mb-8">
-              <BrandLogo size={20} />
-              <BrandWordmark size={16} />
+            <div className="mb-8">
+              <BrandWordmark size={20} />
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
               {visibleFooterSections.map((section) => (
                 <div key={section.id} className="min-w-0">
                   <div className="text-[13px] font-semibold text-foreground mb-3">
