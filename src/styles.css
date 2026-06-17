@@ -64,7 +64,7 @@
 :root {
   --radius: 0.75rem;
   /* 1inow — cream + deep navy graphite + sage green */
-  --background: oklch(0.975 0.012 90);          /* cream */
+  --background: oklch(0.965 0.022 90);          /* richer cream */
   --foreground: oklch(0.22 0.02 230);           /* graphite navy */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.22 0.02 230);
@@ -74,7 +74,7 @@
   --primary-foreground: oklch(0.97 0.012 90);
   --secondary: oklch(0.94 0.012 150);
   --secondary-foreground: oklch(0.2 0.025 220);
-  --muted: oklch(0.95 0.008 150);
+  --muted: oklch(0.93 0.018 150);
   --muted-foreground: oklch(0.5 0.015 230);
   --accent: oklch(0.74 0.07 155);               /* sage green */
   --accent-foreground: oklch(0.18 0.025 220);
@@ -88,7 +88,7 @@
   --chart-3: oklch(0.62 0.13 175);
   --chart-4: oklch(0.7 0.14 70);
   --chart-5: oklch(0.6 0.19 27);
-  --sidebar: oklch(0.97 0.012 90);
+  --sidebar: oklch(0.955 0.024 95);
   --sidebar-foreground: oklch(0.26 0.02 230);
   --sidebar-primary: oklch(0.2 0.025 220);
   --sidebar-primary-foreground: oklch(0.99 0 0);
