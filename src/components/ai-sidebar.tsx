@@ -61,6 +61,7 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
   const [speakerOn, setSpeakerOn] = useState(true);
   const recogRef = useRef<any>(null);
   const spokenIdsRef = useRef<Set<string>>(new Set());
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const stopMic = useCallback(() => {
     try { recogRef.current?.stop?.(); } catch {}
@@ -115,14 +116,14 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
     return () => {
       try { recogRef.current?.stop?.(); } catch {}
       micStream?.getTracks().forEach((t) => t.stop());
-      try { window.speechSynthesis?.cancel(); } catch {}
+      try { audioRef.current?.pause(); } catch {}
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Speak new assistant messages when speaker is on
+  // Speak new assistant messages with a human voice via /api/tts.
   useEffect(() => {
-    if (!speakerOn || typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    if (!speakerOn) return;
     const last = messages[messages.length - 1];
     if (!last || last.role !== "assistant") return;
     if (status === "streaming" || status === "submitted") return;
@@ -130,19 +131,36 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
     const text = last.parts.map((p) => (p.type === "text" ? p.text : "")).join("").trim();
     if (!text) return;
     spokenIdsRef.current.add(last.id);
-    try {
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = langRef.current || "en-US";
-      u.rate = 1;
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(u);
-    } catch {}
+
+    let cancelled = false;
+    let blobUrl: string | null = null;
+    (async () => {
+      try {
+        const res = await fetch("/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, voice: "alloy", lang: langRef.current }),
+        });
+        if (!res.ok || !res.body || cancelled) return;
+        const blob = await res.blob();
+        if (cancelled) return;
+        blobUrl = URL.createObjectURL(blob);
+        try { audioRef.current?.pause(); } catch {}
+        const a = new Audio(blobUrl);
+        audioRef.current = a;
+        a.play().catch(() => {});
+      } catch {}
+    })();
+    return () => {
+      cancelled = true;
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+    };
   }, [messages, status, speakerOn]);
 
   const toggleSpeaker = () => {
     setSpeakerOn((v) => {
       const next = !v;
-      if (!next) { try { window.speechSynthesis?.cancel(); } catch {} }
+      if (!next) { try { audioRef.current?.pause(); } catch {} }
       return next;
     });
   };
@@ -222,8 +240,12 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
             </div>
           </div>
         )}
-        {messages.map((m: UIMessage) => (
-          <Bubble key={m.id} message={m} />
+        {messages.map((m: UIMessage, idx) => (
+          <Bubble
+            key={m.id}
+            message={m}
+            streaming={idx === messages.length - 1 && (status === "streaming" || status === "submitted")}
+          />
         ))}
         {status === "submitted" && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground px-1">
@@ -286,16 +308,46 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
   );
 }
 
-function Bubble({ message }: { message: UIMessage }) {
+function Bubble({ message, streaming }: { message: UIMessage; streaming?: boolean }) {
   const isUser = message.role === "user";
-  const text = message.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
+  const full = message.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
+
+  // Typewriter effect for assistant messages.
+  const [shown, setShown] = useState(isUser ? full.length : 0);
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (isUser) { setShown(full.length); return; }
+    let cancelled = false;
+    const tick = () => {
+      if (cancelled) return;
+      setShown((s) => {
+        if (s >= full.length) return s;
+        const speed = streaming ? 4 : 8;
+        return Math.min(full.length, s + speed);
+      });
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      cancelled = true;
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [full, streaming, isUser]);
+
+  const display = isUser ? full : full.slice(0, shown);
+  const showCaret = !isUser && (streaming || shown < full.length);
+
   return (
     <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
       <div className={cn(
         "max-w-[90%] rounded-2xl px-3 py-2 text-[13px] leading-relaxed whitespace-pre-wrap",
         isUser ? "bg-primary text-primary-foreground" : "bg-muted/60 text-foreground border border-border"
       )}>
-        {text}
+        {display}
+        {showCaret && (
+          <span className="inline-block w-[2px] h-[1em] align-[-2px] ml-0.5 bg-foreground/70 animate-pulse" />
+        )}
       </div>
     </div>
   );
