@@ -19,7 +19,7 @@ export function Fab() {
   ];
 
   return (
-    <div className="fixed bottom-3 right-3 z-20 flex flex-col items-end gap-2">
+    <div className="fixed bottom-5 right-5 z-20 flex flex-col items-end gap-2">
       {open && (
         <div className="flex flex-col items-end gap-2 mb-1 fade-rise">
           {actions.map((a) => (

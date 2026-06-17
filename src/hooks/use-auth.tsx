@@ -6,6 +6,7 @@ interface AuthContextValue {
   session: Session | null;
   user: User | null;
   loading: boolean;
+  isAdmin: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -14,6 +15,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
@@ -26,10 +28,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const uid = session?.user?.id;
+    if (!uid) { setIsAdmin(false); return; }
+    (async () => {
+      try {
+        const { data } = await supabase.rpc("has_role", { _user_id: uid, _role: "admin" as any });
+        setIsAdmin(Boolean(data));
+      } catch { setIsAdmin(false); }
+    })();
+  }, [session?.user?.id]);
+
   const value: AuthContextValue = {
     session,
     user: session?.user ?? null,
     loading,
+    isAdmin,
     signOut: async () => {
       await supabase.auth.signOut();
     },

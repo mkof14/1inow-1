@@ -41,16 +41,16 @@ function TimelinePage() {
   const monthLabel = anchor.toLocaleDateString(undefined, { month: "long", year: "numeric" });
 
   return (
-    <div className="p-6 md:p-8 max-w-[1500px] mx-auto">
-      <div className="flex items-start justify-between mb-6 gap-4">
-        <div className="flex items-center gap-4">
-          <div className="text-accent"><TimelinePulse size={44} /></div>
-          <div>
+    <div className="p-4 sm:p-6 md:p-8 max-w-[1500px] mx-auto">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] sm:flex sm:items-start sm:justify-between mb-6 gap-4">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+          <div className="text-accent shrink-0"><TimelinePulse size={36} /></div>
+          <div className="min-w-0">
             <h1 className="text-2xl font-semibold tracking-tight font-display">{t("page.calendar.title")}</h1>
-            <p className="text-sm text-muted-foreground mt-1">{t("page.calendar.subtitle")}</p>
+            <p className="text-sm text-muted-foreground mt-1 truncate">{t("page.calendar.subtitle")}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="col-span-2 flex items-center gap-2 sm:col-span-1">
           <button onClick={() => { const d = new Date(anchor); d.setDate(d.getDate() - 7); setAnchor(d); }}
             className="size-8 rounded-md border border-border bg-card hover:bg-muted grid place-items-center"><ChevronLeft className="size-4" /></button>
           <div className="text-sm font-medium font-display min-w-[140px] text-center">{monthLabel}</div>
@@ -61,13 +61,13 @@ function TimelinePage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
         {days.map((d) => {
           const key = d.toDateString();
           const items = byDay[key] ?? [];
           const isToday = key === today;
           return (
-            <div key={key} className={`rounded-xl border min-h-[280px] p-3 transition ${
+            <div key={key} className={`rounded-xl border min-h-[180px] lg:min-h-[260px] p-3 transition ${
               isToday ? "border-accent bg-accent/5" : "border-border bg-card"
             }`}>
               <div className="flex items-baseline justify-between mb-3">
