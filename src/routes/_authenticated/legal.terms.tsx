@@ -12,11 +12,11 @@ type Pack = { title: string; subtitle: string; updated: string; sections: Sectio
 const CONTENT: Record<string, Pack> = {
   en: {
     title: "Terms of Service",
-    subtitle: "The agreement between you and Digital Invest Compass.",
+    subtitle: "The agreement between you and 1inow.",
     updated: "Effective: June 2026",
     sections: [
       { h: "1. Acceptance", p: "By creating an account or using the service you agree to these terms and the Privacy Policy." },
-      { h: "2. Use of the service", p: "You may use Compass only for lawful business purposes. You will not attempt to reverse-engineer, abuse the AI, exfiltrate other tenants' data, or disrupt the platform." },
+      { h: "2. Use of the service", p: "You may use 1inow only for lawful business purposes. You will not attempt to reverse-engineer, abuse the AI, exfiltrate other tenants' data, or disrupt the platform." },
       { h: "3. Accounts", p: "You are responsible for safeguarding credentials and for activity on your account. Notify us immediately of any unauthorised access." },
       { h: "4. Your content", p: "You retain all rights to data you upload. You grant us a limited licence to host and process it to provide the service." },
       { h: "5. AI outputs", p: "AI responses are generated from your data and may contain errors. You are responsible for reviewing outputs before relying on them for material decisions." },
@@ -28,7 +28,7 @@ const CONTENT: Record<string, Pack> = {
   },
   ru: {
     title: "Условия использования",
-    subtitle: "Договор между вами и Digital Invest Compass.",
+    subtitle: "Договор между вами и 1inow.",
     updated: "Действуют с: июнь 2026",
     sections: [
       { h: "1. Принятие", p: "Создавая аккаунт или используя сервис, вы соглашаетесь с этими условиями и Политикой конфиденциальности." },
@@ -44,7 +44,7 @@ const CONTENT: Record<string, Pack> = {
   },
   uk: {
     title: "Умови використання",
-    subtitle: "Угода між вами та Digital Invest Compass.",
+    subtitle: "Угода між вами та 1inow.",
     updated: "Чинні з: червень 2026",
     sections: [
       { h: "1. Прийняття", p: "Створюючи акаунт або користуючись сервісом, ви погоджуєтесь з цими умовами та Політикою конфіденційності." },
@@ -60,7 +60,7 @@ const CONTENT: Record<string, Pack> = {
   },
   es: {
     title: "Términos del servicio",
-    subtitle: "Acuerdo entre tú y Digital Invest Compass.",
+    subtitle: "Acuerdo entre tú y 1inow.",
     updated: "Vigentes desde: junio de 2026",
     sections: [
       { h: "1. Aceptación", p: "Al crear una cuenta o usar el servicio aceptas estos términos y la Política de Privacidad." },
@@ -76,7 +76,7 @@ const CONTENT: Record<string, Pack> = {
   },
   de: {
     title: "Nutzungsbedingungen",
-    subtitle: "Vereinbarung zwischen dir und Digital Invest Compass.",
+    subtitle: "Vereinbarung zwischen dir und 1inow.",
     updated: "Gültig ab: Juni 2026",
     sections: [
       { h: "1. Annahme", p: "Mit Kontoerstellung oder Nutzung akzeptierst du diese Bedingungen und die Datenschutzerklärung." },

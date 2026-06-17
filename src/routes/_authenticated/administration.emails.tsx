@@ -258,7 +258,7 @@ function EmailTemplatesPage() {
 function sampleVars(keys: string[] | undefined): Record<string, string> {
   const samples: Record<string, string> = {
     recipient_name: "Jane Doe", inviter_name: "Admin",
-    organization_name: "Digital Invest Compass", role: "Employee",
+    organization_name: "1inow", role: "Employee",
     accept_url: "https://app.example.com/accept",
     reset_url: "https://app.example.com/reset",
     app_url: "https://app.example.com",

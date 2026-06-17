@@ -4,7 +4,7 @@ import { fetchProjects, fetchTasks, fetchProfiles } from "@/lib/queries";
 import { fetchNotifications } from "@/lib/wave1";
 import { useAuth } from "@/hooks/use-auth";
 import { MessageSquare, ListChecks, Plus, ArrowRight, Clock } from "lucide-react";
-import { CompassMark } from "@/components/icons/compass-mark";
+import { 1inowMark } from "@/components/icons/compass-mark";
 import { buildAttention } from "@/lib/brain";
 import { firstScreenGreeting } from "@/lib/simplicity";
 import { useT } from "@/lib/i18n";
@@ -51,7 +51,7 @@ function HomePage() {
       <div className="mb-10 surface-aurora shimmer-border rounded-3xl border border-border p-6 md:p-8 ring-accent-soft">
         <div className="flex items-center gap-3 mb-6">
           <div className="size-9 rounded-xl gradient-compass grid place-items-center text-primary-foreground shrink-0">
-            <CompassMark className="size-4" />
+            <1inowMark className="size-4" />
           </div>
           <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{t("dashboard.today")}</span>
         </div>

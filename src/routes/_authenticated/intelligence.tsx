@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Brain, Bot, Workflow, Shield, ClipboardList, MessageSquareWarning, Database, Lock, History, Settings2, Trash2, Bell } from "lucide-react";
-import { CompassMark } from "@/components/icons/compass-mark";
+import { 1inowMark } from "@/components/icons/compass-mark";
 
 export const Route = createFileRoute("/_authenticated/intelligence")({
   component: IntelligencePage,
@@ -45,14 +45,14 @@ function IntelligencePage() {
     <div className="mx-auto max-w-6xl px-6 py-8">
       <header className="mb-8 flex items-start justify-between gap-6">
         <div>
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">Compass</p>
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">1inow</p>
           <h1 className="text-3xl font-semibold tracking-tight">Intelligence</h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
             Truth-first AI grounded in your verified data. What it knows, what it asks, what it does — all under your control.
           </p>
         </div>
         <div className="hidden md:flex items-center gap-2 rounded-xl border bg-card px-3 py-2 text-xs text-muted-foreground">
-          <CompassMark className="h-3.5 w-3.5" /> No invented facts. Confidence is shown on every answer.
+          <1inowMark className="h-3.5 w-3.5" /> No invented facts. Confidence is shown on every answer.
         </div>
       </header>
 
@@ -131,10 +131,10 @@ function MemoryPanel() {
   return (
     <div className="grid gap-6 md:grid-cols-[1fr_320px]">
       <Card className="p-5">
-        <h3 className="text-sm font-medium">What Compass remembers ({data.length})</h3>
+        <h3 className="text-sm font-medium">What 1inow remembers ({data.length})</h3>
         <p className="mt-1 text-xs text-muted-foreground">Every memory has a source, confidence and zone. Edit, pause or remove anything.</p>
         <div className="mt-4 space-y-2">
-          {data.length === 0 && <EmptyHint label="No memories yet. Add one on the right, or correct Compass in chat and accept the save." />}
+          {data.length === 0 && <EmptyHint label="No memories yet. Add one on the right, or correct 1inow in chat and accept the save." />}
           {data.map((m) => (
             <div key={m.id} className="group rounded-lg border bg-card p-3">
               <div className="flex items-start justify-between gap-3">
@@ -162,7 +162,7 @@ function MemoryPanel() {
       </Card>
 
       <Card className="p-5 h-fit">
-        <h3 className="text-sm font-medium">Teach Compass</h3>
+        <h3 className="text-sm font-medium">Teach 1inow</h3>
         <div className="mt-3 space-y-3 text-sm">
           <div>
             <Label className="text-xs">Type</Label>
@@ -290,7 +290,7 @@ function WorkflowsPanel() {
     <div className="grid gap-6 md:grid-cols-[1fr_320px]">
       <Card className="p-5">
         <h3 className="text-sm font-medium">Learned workflows</h3>
-        <p className="mt-1 text-xs text-muted-foreground">Reusable procedures Compass can run on request.</p>
+        <p className="mt-1 text-xs text-muted-foreground">Reusable procedures 1inow can run on request.</p>
         <div className="mt-4 space-y-2">
           {data.length === 0 && <EmptyHint label="No workflows yet. Examples: Investor follow-up, Project launch, Contract review." />}
           {data.map((w) => (
@@ -344,7 +344,7 @@ function RulesPanel() {
   });
   return (
     <Card className="p-5">
-      <h3 className="text-sm font-medium">Your rules for Compass</h3>
+      <h3 className="text-sm font-medium">Your rules for 1inow</h3>
       <p className="mt-1 text-xs text-muted-foreground">Plain-language instructions. E.g. "Never send messages on weekends." "Always ask before scheduling with investors."</p>
       <div className="mt-4 flex gap-2">
         <Input value={rule} onChange={(e) => setRule(e.target.value)} placeholder="Add a rule…" onKeyDown={(e) => { if (e.key === "Enter" && rule.trim()) add.mutate(); }} />
@@ -387,10 +387,10 @@ function QuestionsPanel() {
 
   return (
     <Card className="p-5">
-      <h3 className="text-sm font-medium">Open questions from Compass</h3>
-      <p className="mt-1 text-xs text-muted-foreground">Compass asks only when context is missing or risk is high.</p>
+      <h3 className="text-sm font-medium">Open questions from 1inow</h3>
+      <p className="mt-1 text-xs text-muted-foreground">1inow asks only when context is missing or risk is high.</p>
       <div className="mt-4 space-y-2">
-        {data.length === 0 && <EmptyHint label="No open questions. Compass will surface clarifications here when needed." />}
+        {data.length === 0 && <EmptyHint label="No open questions. 1inow will surface clarifications here when needed." />}
         {data.map((q) => (
           <QuestionRow key={q.id} q={q} onAnswer={(ans) => answer.mutate({ id: q.id, ans })} onDismiss={() => dismiss.mutate(q.id)} />
         ))}
@@ -431,7 +431,7 @@ function QualityPanel() {
   return (
     <Card className="p-5">
       <h3 className="text-sm font-medium">Data quality</h3>
-      <p className="mt-1 text-xs text-muted-foreground">Duplicates, missing owners, stale documents, conflicts. Compass scans continuously.</p>
+      <p className="mt-1 text-xs text-muted-foreground">Duplicates, missing owners, stale documents, conflicts. 1inow scans continuously.</p>
       <div className="mt-4 space-y-2">
         {data.length === 0 && <EmptyHint label="All clear. Nothing to clean up right now." />}
         {data.map((i) => (
@@ -474,7 +474,7 @@ function PrivacyPanel() {
   return (
     <Card className="p-5">
       <h3 className="text-sm font-medium">Privacy zones</h3>
-      <p className="mt-1 text-xs text-muted-foreground">Keep zones separated. Compass cannot mix them unless you allow it.</p>
+      <p className="mt-1 text-xs text-muted-foreground">Keep zones separated. 1inow cannot mix them unless you allow it.</p>
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
         {ZONES.map((z) => {
           const row = data.find((d) => d.zone === z);
@@ -511,7 +511,7 @@ function AuditPanel() {
     <div className="grid gap-6 md:grid-cols-2">
       <Card className="p-5">
         <h3 className="text-sm font-medium">AI actions ({actions.length})</h3>
-        <p className="mt-1 text-xs text-muted-foreground">Every action Compass takes is logged.</p>
+        <p className="mt-1 text-xs text-muted-foreground">Every action 1inow takes is logged.</p>
         <div className="mt-4 space-y-2">
           {actions.length === 0 && <EmptyHint label="No actions yet." />}
           {actions.map((a) => (
@@ -524,7 +524,7 @@ function AuditPanel() {
       </Card>
       <Card className="p-5">
         <h3 className="text-sm font-medium">Confidence log ({confs.length})</h3>
-        <p className="mt-1 text-xs text-muted-foreground">Recent answers and how sure Compass was.</p>
+        <p className="mt-1 text-xs text-muted-foreground">Recent answers and how sure 1inow was.</p>
         <div className="mt-4 space-y-2">
           {confs.length === 0 && <EmptyHint label="No entries yet." />}
           {confs.map((c) => (
@@ -558,7 +558,7 @@ function PrefsPanel() {
   return (
     <Card className="p-5">
       <h3 className="text-sm font-medium">Assistant mode & noise</h3>
-      <p className="mt-1 text-xs text-muted-foreground">Tune the personality, strictness and reach of Compass.</p>
+      <p className="mt-1 text-xs text-muted-foreground">Tune the personality, strictness and reach of 1inow.</p>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div>
           <Label className="text-xs">Mode</Label>
@@ -573,7 +573,7 @@ function PrefsPanel() {
         <div className="flex items-center justify-between rounded-lg border p-3 sm:col-span-2">
           <div>
             <div className="text-sm font-medium">Memory enabled</div>
-            <div className="text-xs text-muted-foreground">Compass remembers verified facts you save or accept.</div>
+            <div className="text-xs text-muted-foreground">1inow remembers verified facts you save or accept.</div>
           </div>
           <Switch checked={data?.memory_enabled ?? true} onCheckedChange={(v) => save.mutate({ memory_enabled: v })} />
         </div>
@@ -650,9 +650,9 @@ function RemindersPanel() {
     <div className="grid gap-6 md:grid-cols-[1fr_320px]">
       <Card className="p-5">
         <h3 className="text-sm font-medium">Reminders ({data.length})</h3>
-        <p className="mt-1 text-xs text-muted-foreground">Compass will surface these at the right moment. Snooze or dismiss anything.</p>
+        <p className="mt-1 text-xs text-muted-foreground">1inow will surface these at the right moment. Snooze or dismiss anything.</p>
         <div className="mt-4 space-y-2">
-          {data.length === 0 && <EmptyHint label="No reminders yet. Add one on the right or ask Compass to set one in chat." />}
+          {data.length === 0 && <EmptyHint label="No reminders yet. Add one on the right or ask 1inow to set one in chat." />}
           {data.map((r) => (
             <div key={r.id} className="group rounded-lg border bg-card p-3">
               <div className="flex items-start justify-between gap-3">

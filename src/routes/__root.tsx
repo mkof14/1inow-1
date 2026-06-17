@@ -81,9 +81,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Digital Invest Compass" },
-      { name: "description", content: "A premium command and execution environment for Digital Invest — portfolio, signals, decisions, people, knowledge." },
-      { property: "og:title", content: "Digital Invest Compass" },
+      { title: "1inow" },
+      { name: "description", content: "A premium command and execution environment for 1inow — portfolio, signals, decisions, people, knowledge." },
+      { property: "og:title", content: "1inow" },
       { property: "og:description", content: "Command. Portfolio. Signals. Decisions. Execution." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

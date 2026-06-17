@@ -80,7 +80,7 @@ export const Route = createFileRoute("/api/chat")({
           ? `\nCurrent page: ${pageContext.route ?? "?"}${pageContext.scope ? ` — ${pageContext.scope}` : ""}${pageContext.title ? ` "${pageContext.title}"` : ""}${pageContext.ids ? ` ids=${JSON.stringify(pageContext.ids)}` : ""}${pageContext.notes ? `\nPage notes: ${pageContext.notes}` : ""}`
           : "";
 
-        const system = `You are Compass, the intelligence layer of Digital Invest Compass — a private decision and execution environment.
+        const system = `You are 1inow, the intelligence layer of 1inow — a private decision and execution environment.
 
 LANGUAGE: Respond in ${langName} (locale "${lang}"). Match the user's language even if your context is in English. Localize numbers, dates and any UI-style phrases.
 
