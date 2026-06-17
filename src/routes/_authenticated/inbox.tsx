@@ -47,13 +47,13 @@ function InboxPage() {
 
   return (
     <div className="p-6 md:p-8 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t("inbox.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("inbox.unread").replace("{n}", String(unread.length))}</p>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] sm:flex sm:items-center sm:justify-between mb-6 gap-3">
+        <div className="min-w-0">
+          <h1 className="truncate text-xl sm:text-2xl font-semibold tracking-tight">{t("inbox.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1 truncate">{t("inbox.unread").replace("{n}", String(unread.length))}</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => allMut.mutate()} disabled={unread.length === 0}>
-          <CheckCheck className="size-4 mr-1.5" /> {t("common.markAllRead")}
+        <Button variant="outline" size="sm" onClick={() => allMut.mutate()} disabled={unread.length === 0} className="shrink-0">
+          <CheckCheck className="size-4 mr-1.5 shrink-0" /> <span className="truncate">{t("common.markAllRead")}</span>
         </Button>
       </div>
 
