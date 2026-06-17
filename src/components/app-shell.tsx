@@ -90,11 +90,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen w-full bg-background text-foreground">
       <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar sticky top-0 h-screen">
-        <Link to="/dashboard" className="px-5 py-5 flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <BrandLogo size={32} />
+        <Link to="/dashboard" className="px-5 py-6 flex items-center gap-3 hover:opacity-90 transition-opacity">
+          <BrandLogo size={48} />
           <div className="leading-tight">
-            <BrandWordmark size={20} />
-            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mt-1">1inow.com</div>
+            <BrandWordmark size={26} />
+            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mt-1.5">1inow.com</div>
           </div>
         </Link>
 
