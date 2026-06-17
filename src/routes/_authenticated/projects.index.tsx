@@ -154,40 +154,63 @@ function ProjectsPage() {
       </div>
 
       {view === "grid" && (
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.map((p) => (
-          <div key={p.id} className="group rounded-xl border border-border bg-card p-5 hover:border-accent/50 hover:shadow-md transition-all">
-            <Link to="/projects/$slug" params={{ slug: p.slug }} className="block">
-              <div className="flex items-start justify-between mb-4">
-                <div className="relative size-12 rounded-lg grid place-items-center text-white font-semibold shadow-sm" style={{ background: p.color ?? "#0a2540" }}>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {filtered.map((p, idx) => (
+          <div
+            key={p.id}
+            className="group relative rounded-2xl border border-border bg-card p-5 surface-aurora shimmer-border ring-accent-soft transition-all duration-300 ease-out hover:scale-[1.02] hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_12px_40px_-16px_color-mix(in_oklab,var(--accent)_35%,transparent)] active:scale-[0.99] active:duration-150 fade-rise"
+            style={{ animationDelay: `${idx * 40}ms` }}
+          >
+            {/* Left color accent strip */}
+            <div
+              className="absolute left-0 top-4 bottom-4 w-[3px] rounded-full opacity-60 group-hover:opacity-100 group-hover:top-3 group-hover:bottom-3 transition-all duration-300"
+              style={{ background: p.color ?? "#0a2540" }}
+            />
+            <Link to="/projects/$slug" params={{ slug: p.slug }} className="block relative z-10">
+              <div className="flex items-start justify-between mb-4 pl-2">
+                <div className="relative size-12 rounded-xl grid place-items-center text-white font-semibold shadow-md transition-transform duration-300 group-hover:scale-110 group-hover:shadow-lg" style={{ background: p.color ?? "#0a2540" }}>
                   {p.name.slice(0, 2).toUpperCase()}
-                  <span className={`absolute -bottom-1 -right-1 size-3 rounded-full border-2 border-card ${
-                    p.priority === "critical" ? "bg-rose-500" : p.priority === "high" ? "bg-amber-500" : "bg-emerald-500"
+                  <span className={`absolute -bottom-1 -right-1 size-3.5 rounded-full border-2 border-card transition-transform duration-300 group-hover:scale-125 ${
+                    p.priority === "critical" ? "bg-rose-500 signal-pulse" : p.priority === "high" ? "bg-amber-500" : "bg-emerald-500"
                   }`} />
                 </div>
-                <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                <span className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full transition-colors duration-300 ${
+                  p.status === "active" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" :
+                  p.status === "planning" ? "bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20" :
+                  p.status === "on_hold" ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" :
+                  p.status === "completed" ? "bg-primary/10 text-primary border border-primary/20" :
+                  "bg-muted text-muted-foreground border border-border"
+                }`}>
                   {PROJECT_STATUS_LABEL[p.status as keyof typeof PROJECT_STATUS_LABEL]}
                 </span>
               </div>
-              <h3 className="font-semibold tracking-tight">{p.name}</h3>
-              <p className="text-xs text-muted-foreground mt-1 line-clamp-2 min-h-[2rem]">{p.description ?? t("page.projects.noDescription")}</p>
-              <div className="mt-4">
-                <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
-                  <span>{t("page.projects.priority").replace("{p}", p.priority)}</span>
-                  <span className="font-mono text-foreground">{p.progress}%</span>
+              <h3 className="font-semibold tracking-tight pl-2 group-hover:text-accent transition-colors duration-200">{p.name}</h3>
+              <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2 min-h-[2rem] pl-2">{p.description ?? t("page.projects.noDescription")}</p>
+              <div className="mt-5 pl-2">
+                <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className={`size-1.5 rounded-full ${
+                      p.priority === "critical" ? "bg-rose-500" : p.priority === "high" ? "bg-amber-500" : p.priority === "medium" ? "bg-sky-500" : "bg-emerald-500"
+                    }`} />
+                    {t("page.projects.priority").replace("{p}", p.priority)}
+                  </span>
+                  <span className="font-mono text-foreground font-medium">{p.progress}%</span>
                 </div>
-                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                  <div className="h-full rounded-full bg-gradient-to-r from-accent to-accent/70" style={{ width: `${p.progress}%` }} />
+                <div className="h-2 rounded-full bg-muted/60 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-accent to-primary/70 transition-all duration-700 ease-out group-hover:from-accent group-hover:to-accent/80"
+                    style={{ width: `${p.progress}%` }}
+                  />
                 </div>
               </div>
             </Link>
-            <div className="mt-4 pt-4 border-t border-border flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
-              <Link to="/projects/$slug" params={{ slug: p.slug }} className="text-xs text-accent font-medium hover:underline">
-                {t("btn.open")} →
+            <div className="mt-4 pt-4 border-t border-border/60 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300 pl-2">
+              <Link to="/projects/$slug" params={{ slug: p.slug }} className="text-xs font-medium text-accent hover:text-accent-foreground inline-flex items-center gap-1 transition-colors">
+                {t("btn.open")} <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
               </Link>
               <button
                 onClick={() => { if (confirm(t("page.projects.archiveConfirm"))) archive.mutate(p.id); }}
-                className="text-xs text-muted-foreground hover:text-destructive inline-flex items-center gap-1"
+                className="text-xs text-muted-foreground hover:text-destructive inline-flex items-center gap-1 transition-colors"
               >
                 <Trash2 className="size-3" /> {t("btn.archive")}
               </button>
