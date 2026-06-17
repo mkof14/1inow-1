@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/use-auth";
+import { devOwnerMagicLink } from "@/lib/api/dev-owner.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -72,6 +73,19 @@ function AuthPage() {
   const handleGoogle = async () => {
     const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
     if (result.error) toast.error(result.error.message ?? "Google sign-in failed");
+  };
+
+  const handleOwnerDev = async () => {
+    setBusy(true);
+    try {
+      const { actionLink } = await devOwnerMagicLink({
+        data: { origin: window.location.origin },
+      });
+      window.location.href = actionLink;
+    } catch (e: any) {
+      setBusy(false);
+      toast.error(e?.message ?? "Owner dev sign-in failed");
+    }
   };
 
   return (
@@ -197,6 +211,18 @@ function AuthPage() {
               </form>
             </TabsContent>
           </Tabs>
+
+          <div className="pt-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleOwnerDev}
+              disabled={busy}
+              className="w-full text-xs text-muted-foreground hover:text-foreground"
+            >
+              Dev owner access (dnainform@gmail.com)
+            </Button>
+          </div>
         </div>
       </div>
     </div>
