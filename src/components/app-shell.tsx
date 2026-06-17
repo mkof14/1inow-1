@@ -1,6 +1,7 @@
 import { type ReactNode, useState, useEffect } from "react";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { navSections, footerSections, type NavItem } from "@/lib/nav-config";
+import { PortfolioCard, ExecutionNode, IntelligenceBars, TimelinePulse, ShieldLine, GearMark, SignalWave } from "@/components/icons/compass-icons";
 import { useAuth } from "@/hooks/use-auth";
 import { Search, Bell, LogOut, Moon, Sun, Plus, Twitter, Linkedin, Github, Youtube } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -85,6 +86,21 @@ export function AppShell({ children }: { children: ReactNode }) {
     );
   };
 
+  // Role + context aware quick links pinned at the top of the footer.
+  const quickLinks: NavItem[] = [
+    { to: "/projects",  label: "Projects",  icon: PortfolioCard },
+    { to: "/tasks",     label: "Tasks",     icon: ExecutionNode },
+    { to: "/calendar",  label: "Calendar",  icon: TimelinePulse },
+    { to: "/reports",   label: "Reports",   icon: IntelligenceBars },
+    { to: "/communication", label: "Messages", icon: SignalWave },
+    { to: "/settings",  label: "Settings",  icon: GearMark },
+    ...(isAdmin ? [{ to: "/administration", label: "Admin Console", icon: ShieldLine } as NavItem] : []),
+  ];
+  const contextSection = pathname.split("/").filter(Boolean)[0];
+  const orderedQuickLinks = [
+    ...quickLinks.filter((l) => l.to === `/${contextSection}`),
+    ...quickLinks.filter((l) => l.to !== `/${contextSection}`),
+  ];
   const visibleFooterSections = [...navSections, ...footerSections];
 
   return (
@@ -220,6 +236,30 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
             <div className="mb-8">
               <BrandWordmark size={20} />
+            </div>
+            <div className="mb-8">
+              <div className="text-[13px] font-semibold text-foreground mb-3">Quick access</div>
+              <div className="flex flex-wrap gap-2">
+                {orderedQuickLinks.map((l) => {
+                  const Icon = l.icon;
+                  const isCurrent = pathname === l.to || pathname.startsWith(l.to + "/");
+                  return (
+                    <Link
+                      key={l.to}
+                      to={l.to}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] transition-colors",
+                        isCurrent
+                          ? "border-accent/40 bg-accent/10 text-foreground"
+                          : "border-border bg-background text-muted-foreground hover:border-accent/30 hover:text-foreground",
+                      )}
+                    >
+                      <Icon className="size-3.5" />
+                      <span>{t(`nav.${l.label}`, l.label)}</span>
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
               {visibleFooterSections.map((section) => (
