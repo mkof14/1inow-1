@@ -133,7 +133,7 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
         onSubmit={(e) => { e.preventDefault(); submit(input); }}
         className="border-t border-border p-3 space-y-2"
       >
-        <div className="relative">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -142,13 +142,13 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
             }}
             placeholder={t("ai.placeholder")}
             rows={2}
-            className="w-full resize-none rounded-xl border border-border bg-background px-3 py-2 pr-20 text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
+            className="min-w-0 w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
           />
-          <div className="absolute right-2 bottom-2 flex items-center gap-1">
-            <Button type="button" variant="ghost" size="icon" className="size-7" title={t("ai.voice")}>
+          <div className="flex shrink-0 items-center gap-1 pb-1">
+            <Button type="button" variant="outline" size="icon" className="size-9 rounded-full" title={t("ai.voice")}>
               <Mic className="size-3.5" />
             </Button>
-            <Button type="submit" size="icon" className="size-7" disabled={loading || !input.trim()}>
+            <Button type="submit" size="icon" className="size-9 rounded-full" disabled={loading || !input.trim()}>
               <Send className="size-3.5" />
             </Button>
           </div>
