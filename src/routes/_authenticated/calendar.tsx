@@ -41,58 +41,73 @@ function TimelinePage() {
   const monthLabel = anchor.toLocaleDateString(undefined, { month: "long", year: "numeric" });
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 max-w-[1500px] mx-auto">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] sm:flex sm:items-start sm:justify-between mb-6 gap-4">
+    <div className="p-4 sm:p-6 md:p-8 max-w-[1600px] mx-auto">
+      {/* Header */}
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:flex-wrap sm:items-center sm:justify-between mb-8">
         <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <div className="text-accent shrink-0"><TimelinePulse size={36} /></div>
           <div className="min-w-0">
             <h1 className="text-2xl font-semibold tracking-tight font-display">{t("page.calendar.title")}</h1>
-            <p className="text-sm text-muted-foreground mt-1 truncate">{t("page.calendar.subtitle")}</p>
+            <p className="text-sm text-muted-foreground mt-1 line-clamp-2 sm:truncate">{t("page.calendar.subtitle")}</p>
           </div>
         </div>
-        <div className="col-span-2 flex items-center gap-2 sm:col-span-1">
+        <div className="flex items-center gap-2 shrink-0">
           <button onClick={() => { const d = new Date(anchor); d.setDate(d.getDate() - 7); setAnchor(d); }}
-            className="size-8 rounded-md border border-border bg-card hover:bg-muted grid place-items-center"><ChevronLeft className="size-4" /></button>
-          <div className="text-sm font-medium font-display min-w-[140px] text-center">{monthLabel}</div>
+            className="size-9 rounded-lg border border-border bg-card hover:bg-muted grid place-items-center transition-colors shrink-0">
+            <ChevronLeft className="size-4" />
+          </button>
+          <div className="text-sm font-medium font-display min-w-[120px] text-center">{monthLabel}</div>
           <button onClick={() => { const d = new Date(anchor); d.setDate(d.getDate() + 7); setAnchor(d); }}
-            className="size-8 rounded-md border border-border bg-card hover:bg-muted grid place-items-center"><ChevronRight className="size-4" /></button>
+            className="size-9 rounded-lg border border-border bg-card hover:bg-muted grid place-items-center transition-colors shrink-0">
+            <ChevronRight className="size-4" />
+          </button>
           <button onClick={() => setAnchor(startOfWeek(new Date()))}
-            className="ml-1 h-8 px-3 rounded-md border border-border bg-card hover:bg-muted text-xs font-medium">{t("page.calendar.today")}</button>
+            className="ml-1 h-9 px-3 rounded-lg border border-border bg-card hover:bg-muted text-xs font-medium whitespace-nowrap transition-colors shrink-0">
+            {t("page.calendar.today")}
+          </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
-        {days.map((d) => {
-          const key = d.toDateString();
-          const items = byDay[key] ?? [];
-          const isToday = key === today;
-          return (
-            <div key={key} className={`rounded-xl border min-h-[180px] lg:min-h-[260px] p-3 transition ${
-              isToday ? "border-accent bg-accent/5" : "border-border bg-card"
-            }`}>
-              <div className="flex items-baseline justify-between mb-3">
-                <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                  {d.toLocaleDateString(undefined, { weekday: "short" })}
-                </span>
-                <span className={`text-2xl font-display ${isToday ? "text-accent" : ""}`}>{d.getDate()}</span>
+      {/* Week grid — horizontal scroll when narrow */}
+      <div className="overflow-x-auto -mx-4 sm:-mx-6 md:-mx-8 px-4 sm:px-6 md:px-8 pb-4">
+        <div className="grid grid-cols-7 gap-3 min-w-[900px]">
+          {days.map((d) => {
+            const key = d.toDateString();
+            const items = byDay[key] ?? [];
+            const isToday = key === today;
+            return (
+              <div key={key} className={`rounded-2xl border min-h-[200px] lg:min-h-[300px] p-3 sm:p-4 transition-all duration-300 ${
+                isToday ? "border-accent bg-accent/[0.06] shadow-[inset_0_0_20px_rgba(0,0,0,0.02)]" : "border-border bg-card hover:border-accent/20"
+              }`}>
+                <div className="flex items-baseline justify-between mb-3 sm:mb-4">
+                  <span className={`text-[10px] sm:text-xs uppercase tracking-widest font-medium ${isToday ? "text-accent" : "text-muted-foreground"}`}>
+                    {d.toLocaleDateString(undefined, { weekday: "short" })}
+                  </span>
+                  <span className={`text-xl sm:text-2xl font-display font-semibold ${isToday ? "text-accent" : ""}`}>{d.getDate()}</span>
+                </div>
+                <div className="space-y-2">
+                  {items.map((t: any) => (
+                    <div key={t.id} className="group text-xs px-2.5 py-2 rounded-xl border border-border/80 bg-background/80 hover:border-accent/40 hover:shadow-[0_2px_12px_-4px_rgba(0,0,0,0.08)] transition-all duration-200 cursor-pointer">
+                      <div className="font-semibold leading-snug line-clamp-2">{t.title}</div>
+                      {t.projects && (
+                        <Link to="/projects/$slug" params={{ slug: t.projects.slug }}
+                          className="text-[11px] text-muted-foreground hover:text-accent inline-flex items-center gap-1.5 mt-1.5 transition-colors">
+                          <span className="size-1.5 rounded-full shrink-0" style={{ background: t.projects.color ?? "#0a2540" }} />
+                          <span className="truncate max-w-[100px]">{t.projects.name}</span>
+                        </Link>
+                      )}
+                    </div>
+                  ))}
+                  {items.length === 0 && (
+                    <div className="h-8 rounded-lg border border-dashed border-border/60 flex items-center justify-center">
+                      <span className="text-[10px] text-muted-foreground/60">—</span>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="space-y-1.5">
-                {items.map((t: any) => (
-                  <div key={t.id} className="text-[11px] px-2 py-1.5 rounded-md border border-border bg-card/80 hover:border-accent/50 transition">
-                    <div className="font-medium truncate">{t.title}</div>
-                    {t.projects && (
-                      <Link to="/projects/$slug" params={{ slug: t.projects.slug }}
-                        className="text-[10px] text-muted-foreground hover:text-accent inline-flex items-center gap-1 mt-0.5">
-                        <span className="size-1.5 rounded-sm" style={{ background: t.projects.color ?? "#0a2540" }} />
-                        {t.projects.name}
-                      </Link>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );
