@@ -219,19 +219,24 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <main className="flex-1 min-w-0 overflow-x-hidden overflow-y-auto flex flex-col">
           <div className="min-w-0 w-full flex-1">{children}</div>
-          <footer className="mt-12 border-t border-border bg-muted/40">
-            <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+        <footer className="mt-16 border-t border-border">
+          <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
+            <div className="flex items-center gap-2 mb-8">
+              <BrandLogo size={20} />
+              <BrandWordmark size={16} />
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8">
               {visibleFooterSections.map((section) => (
                 <div key={section.id} className="min-w-0">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-2.5">
+                  <div className="text-[13px] font-semibold text-foreground mb-3">
                     {t(`nav.section.${section.id}`, section.label)}
                   </div>
-                  <ul className="space-y-1.5">
+                  <ul className="space-y-2">
                     {section.items.filter((i) => !i.adminOnly || isAdmin).map((item) => (
                       <li key={item.to}>
                         <Link
                           to={item.to}
-                          className="text-xs text-muted-foreground hover:text-accent hover:underline underline-offset-4 truncate block transition-colors"
+                          className="text-[13px] text-muted-foreground hover:text-foreground block py-0.5 transition-colors"
                         >
                           {t(`nav.${item.label}`, item.label)}
                         </Link>
@@ -241,19 +246,36 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </div>
               ))}
             </div>
-            <div className="border-t border-border">
-              <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-3 text-[12px] text-muted-foreground">
-                <span>Copyright © {new Date().getFullYear()} 1inow Inc. All rights reserved.</span>
-                <div className="flex items-center gap-4">
-                  <Link to="/legal/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
-                  <span className="text-border">|</span>
-                  <Link to="/legal/terms" className="hover:text-foreground transition-colors">Terms of Use</Link>
-                  <span className="text-border">|</span>
-                  <span>1inow.com</span>
-                </div>
+          </div>
+
+          <div className="border-t border-border">
+            <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <span className="text-[12px] text-muted-foreground">
+                Copyright © {new Date().getFullYear()} 1inow Inc. All rights reserved.
+              </span>
+
+              <div className="flex items-center gap-5 text-[12px] text-muted-foreground">
+                <Link to="/legal/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+                <Link to="/legal/terms" className="hover:text-foreground transition-colors">Terms of Use</Link>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Twitter">
+                  <Twitter className="size-4" />
+                </a>
+                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="LinkedIn">
+                  <Linkedin className="size-4" />
+                </a>
+                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="GitHub">
+                  <Github className="size-4" />
+                </a>
+                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="YouTube">
+                  <Youtube className="size-4" />
+                </a>
               </div>
             </div>
-          </footer>
+          </div>
+        </footer>
         </main>
         <QuickCreate openSignal={quickOpen} />
         <CommandBar open={cmdOpen} onOpenChange={setCmdOpen} />
