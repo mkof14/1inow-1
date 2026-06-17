@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Digital Invest OS" },
+      { title: "1inow OS" },
       { name: "description", content: "One workspace. Unlimited projects." },
     ],
   }),

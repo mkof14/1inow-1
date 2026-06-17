@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CompassMark } from "@/components/icons/compass-icons";
+import { BrandMark } from "@/components/icons/compass-icons";
 import { useT } from "@/lib/i18n";
 
 /**
@@ -25,7 +25,7 @@ export function ComingSoon({
     <div className="mx-auto w-full max-w-3xl min-w-0 px-4 py-12 sm:px-6 md:py-20 fade-rise">
       <div className="flex flex-col items-center text-center">
         <div className="mb-6 grid size-16 place-items-center rounded-2xl border border-border bg-muted/30 text-muted-foreground/60">
-          {icon ?? <CompassMark size={36} />}
+          {icon ?? <BrandMark size={36} />}
         </div>
         {eyebrow && (
           <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">

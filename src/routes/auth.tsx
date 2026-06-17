@@ -9,11 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { CompassLogo } from "@/components/icons/compass-icons";
+import { BrandLogo } from "@/components/icons/compass-icons";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Sign in — Digital Invest Compass" }] }),
+  head: () => ({ meta: [{ title: "Sign in — 1inow" }] }),
   component: AuthPage,
 });
 
@@ -87,10 +87,10 @@ function AuthPage() {
       <div className="lg:hidden absolute top-3 right-3 z-10"><LanguageSwitcher /></div>
       <div className="hidden lg:flex flex-col justify-between p-12 gradient-compass text-primary-foreground relative overflow-hidden">
         <div className="flex items-center gap-3 relative">
-          <CompassLogo size={36} className="text-accent" />
+          <BrandLogo size={36} className="text-accent" />
           <div className="leading-tight">
-            <div className="font-display text-lg">Digital Invest</div>
-            <div className="text-[10px] uppercase tracking-[0.22em] text-primary-foreground/60">Compass</div>
+            <div className="font-display text-lg">1inow</div>
+            <div className="text-[10px] uppercase tracking-[0.22em] text-primary-foreground/60">1inow.com</div>
           </div>
         </div>
         <div className="space-y-5 max-w-md relative">
@@ -100,7 +100,7 @@ function AuthPage() {
             Execution.
           </h1>
           <p className="text-primary-foreground/70 text-pretty leading-relaxed">
-            A private command and execution environment for Digital Invest — for the
+            A private command and execution environment for 1inow — for the
             portfolio, for the people, for every decision in flight.
           </p>
         </div>
@@ -111,23 +111,23 @@ function AuthPage() {
         <div aria-hidden className="absolute -bottom-40 -right-40 size-[28rem] rounded-full border border-accent/20" />
         <div aria-hidden className="absolute -bottom-32 -right-32 size-96 rounded-full border border-accent/15" />
         <div aria-hidden className="absolute -bottom-24 -right-24 size-72 rounded-full border border-accent/10" />
-        <div aria-hidden className="absolute top-1/3 right-12 text-accent/20 compass-spin"><CompassLogo size={220} /></div>
+        <div aria-hidden className="absolute top-1/3 right-12 text-accent/20 compass-spin"><BrandLogo size={220} /></div>
       </div>
 
       <div className="flex items-center justify-center p-6 md:p-12">
         <div className="absolute top-3 right-3 hidden lg:block"><LanguageSwitcher /></div>
         <div className="w-full max-w-sm space-y-6">
           <div className="flex items-center gap-3 lg:hidden">
-            <CompassLogo size={32} className="text-accent" />
+            <BrandLogo size={32} className="text-accent" />
             <div className="leading-tight">
-              <div className="font-display text-base">Digital Invest</div>
-              <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">Compass</div>
+              <div className="font-display text-base">1inow</div>
+              <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">1inow.com</div>
             </div>
           </div>
           <div>
             <h2 className="font-display text-3xl">Welcome</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Sign in to Digital Invest Compass.
+              Sign in to 1inow.
             </p>
           </div>
 

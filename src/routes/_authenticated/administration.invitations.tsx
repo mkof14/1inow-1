@@ -52,7 +52,7 @@ function InvitationsPage() {
         variables: {
           recipient_name: fullName || email,
           inviter_name: "Administrator",
-          organization_name: "Digital Invest Compass",
+          organization_name: "1inow",
           role: ROLE_LABELS[role] ?? role,
           accept_url: `${window.location.origin}/auth?invite=${(inv as any)?.token ?? ""}`,
           expires_at: new Date(Date.now() + 14 * 86400_000).toLocaleDateString(),

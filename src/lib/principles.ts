@@ -1,5 +1,5 @@
 /**
- * Digital Invest Compass — Product Principles.
+ * 1inow — Product Principles.
  *
  * The single source of truth for how this product behaves. Read this before
  * adding any feature, page, form, or assistant behavior. Every contributor

@@ -17,8 +17,8 @@ import { useShortcuts } from "@/hooks/use-shortcuts";
 import { Badge } from "@/components/ui/badge";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useT } from "@/lib/i18n";
-import { CompassLogo } from "@/components/icons/compass-icons";
-import { CompassMark } from "@/components/icons/compass-mark";
+import { BrandLogo } from "@/components/icons/compass-icons";
+import { BrandMark } from "@/components/icons/compass-mark";
 import { AiSidebar, type AiSidebarMode } from "@/components/ai-sidebar";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -91,10 +91,10 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen w-full bg-background text-foreground">
       <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar sticky top-0 h-screen">
         <Link to="/dashboard" className="px-5 py-5 flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-          <span className="text-primary"><CompassLogo size={28} /></span>
+          <span className="text-primary"><BrandLogo size={28} /></span>
           <div className="leading-tight">
-            <div className="font-display text-base text-gradient-accent">Digital Invest</div>
-            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Compass</div>
+            <div className="font-display text-base text-gradient-accent">1inow</div>
+            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">1inow.com</div>
           </div>
         </Link>
 
@@ -108,10 +108,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                 ? "gradient-compass text-primary-foreground border-transparent shadow-md"
                 : "border-accent/30 bg-accent/5 text-foreground hover:bg-accent/10",
             )}
-            title={t("ai.openTip", "Compass AI")}
+            title={t("ai.openTip", "1inow AI")}
           >
-            <CompassMark className="size-4 shrink-0" />
-            <span className="flex-1 text-left">Compass AI</span>
+            <BrandMark className="size-4 shrink-0" />
+            <span className="flex-1 text-left">1inow AI</span>
             <kbd className={cn(
               "text-[10px] font-mono px-1.5 py-0.5 rounded border",
               aiOpen ? "border-primary-foreground/30 text-primary-foreground/80" : "border-border text-muted-foreground",
@@ -175,10 +175,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                 aiOpen && "border-accent/50 bg-accent/10 text-accent",
               )}
               onClick={() => setAiOpen((v) => !v)}
-              title={t("ai.openTip", "Compass AI")}
+              title={t("ai.openTip", "1inow AI")}
             >
-              <CompassMark className="size-4" />
-              <span className="hidden sm:inline">Compass AI</span>
+              <BrandMark className="size-4" />
+              <span className="hidden sm:inline">1inow AI</span>
               <span className="sm:hidden">AI</span>
               {aiOpen && <span className="absolute top-2 right-2 size-1.5 rounded-full bg-accent" />}
             </Button>
@@ -243,7 +243,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
             <div className="border-t border-border">
               <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
-                <span>© {new Date().getFullYear()} Digital Invest Compass</span>
+                <span>© {new Date().getFullYear()} 1inow</span>
                 <span>v1.0</span>
               </div>
             </div>
