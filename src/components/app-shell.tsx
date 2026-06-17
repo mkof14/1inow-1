@@ -219,7 +219,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <main className="flex-1 min-w-0 overflow-x-hidden overflow-y-auto flex flex-col">
           <div className="min-w-0 w-full flex-1">{children}</div>
-          <footer className="mt-12 border-t border-border bg-muted/20">
+          <footer className="mt-12 border-t border-border bg-muted/40">
             <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
               {visibleFooterSections.map((section) => (
                 <div key={section.id} className="min-w-0">
@@ -231,7 +231,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                       <li key={item.to}>
                         <Link
                           to={item.to}
-                          className="text-xs text-muted-foreground hover:text-foreground truncate block"
+                          className="text-xs text-muted-foreground hover:text-accent hover:underline underline-offset-4 truncate block transition-colors"
                         >
                           {t(`nav.${item.label}`, item.label)}
                         </Link>
@@ -242,13 +242,15 @@ export function AppShell({ children }: { children: ReactNode }) {
               ))}
             </div>
             <div className="border-t border-border">
-              <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <BrandLogo size={20} />
-                  <BrandWordmark size={14} />
-                  <span className="ml-2">© {new Date().getFullYear()} · 1inow.com</span>
+              <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-3 text-[12px] text-muted-foreground">
+                <span>Copyright © {new Date().getFullYear()} 1inow Inc. All rights reserved.</span>
+                <div className="flex items-center gap-4">
+                  <Link to="/legal/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+                  <span className="text-border">|</span>
+                  <Link to="/legal/terms" className="hover:text-foreground transition-colors">Terms of Use</Link>
+                  <span className="text-border">|</span>
+                  <span>1inow.com</span>
                 </div>
-                <span>v1.0</span>
               </div>
             </div>
           </footer>
