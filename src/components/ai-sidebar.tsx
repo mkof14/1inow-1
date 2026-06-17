@@ -75,7 +75,7 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
   const loading = status === "streaming" || status === "submitted";
 
   const containerCls = mode === "floating"
-    ? "fixed right-4 bottom-4 top-20 w-[420px] z-40 rounded-2xl border border-border shadow-2xl bg-card flex flex-col overflow-hidden"
+    ? "fixed right-4 bottom-20 top-20 w-[420px] z-40 rounded-2xl border border-border shadow-2xl bg-card flex flex-col overflow-hidden"
     : "hidden lg:flex w-[380px] shrink-0 sticky top-0 h-screen border-l border-border bg-card flex-col";
 
   return (

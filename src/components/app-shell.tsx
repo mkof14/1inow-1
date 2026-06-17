@@ -18,8 +18,9 @@ import { Badge } from "@/components/ui/badge";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useT } from "@/lib/i18n";
 import { CompassLogo } from "@/components/icons/compass-icons";
+import { CompassMark } from "@/components/icons/compass-mark";
 import { Fab } from "@/components/fab";
-import { AiSidebar, CollapsedRail, type AiSidebarMode } from "@/components/ai-sidebar";
+import { AiSidebar, type AiSidebarMode } from "@/components/ai-sidebar";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -129,6 +130,16 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn("relative", aiOpen && "bg-accent/10 text-accent")}
+              onClick={() => setAiOpen((v) => !v)}
+              title={t("ai.openTip", "Compass AI")}
+            >
+              <CompassMark className="size-4" />
+              {aiOpen && <span className="absolute top-2 right-2 size-1.5 rounded-full bg-accent" />}
+            </Button>
             <LanguageSwitcher />
             <Button variant="ghost" size="icon" onClick={toggleDark}>
               {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
@@ -198,13 +209,12 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
         <QuickCreate openSignal={quickOpen} />
         <CommandBar open={cmdOpen} onOpenChange={setCmdOpen} />
-        <Fab />
+        <Fab aiOpen={aiOpen} aiMode={aiMode} />
       </div>
 
       {aiMode !== "floating" && aiOpen && (
         <AiSidebar open={aiOpen} mode="docked" onModeChange={setAiMode} onClose={() => setAiOpen(false)} />
       )}
-      {!aiOpen && <CollapsedRail onOpen={() => setAiOpen(true)} />}
       {aiMode === "floating" && aiOpen && (
         <AiSidebar open={aiOpen} mode="floating" onModeChange={setAiMode} onClose={() => setAiOpen(false)} />
       )}

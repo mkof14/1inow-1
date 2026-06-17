@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Plus, FolderPlus, CheckSquare, MessageSquare, Calendar, FileText, X } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
+import { cn } from "@/lib/utils";
 
 type Action = { label: string; icon: any; onClick: () => void; tone?: string };
 
-export function Fab() {
+export function Fab({ aiOpen, aiMode }: { aiOpen?: boolean; aiMode?: string }) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -18,8 +19,13 @@ export function Fab() {
     { label: "New document", icon: FileText,      onClick: go("/documents") },
   ];
 
+  const isDockedOpen = aiOpen && aiMode === "docked";
+
   return (
-    <div className="fixed bottom-5 right-5 z-20 flex flex-col items-end gap-2">
+    <div className={cn(
+      "fixed bottom-5 z-20 flex flex-col items-end gap-2",
+      isDockedOpen ? "lg:right-[400px] right-5" : "right-5"
+    )}>
       {open && (
         <div className="flex flex-col items-end gap-2 mb-1 fade-rise">
           {actions.map((a) => (
