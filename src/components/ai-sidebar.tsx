@@ -3,8 +3,9 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { X, Maximize2, Minimize2, Mic, Send, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
+import { X, Maximize2, Minimize2, Mic, MicOff, Volume2, VolumeX, Send, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
 import { BrandMark } from "@/components/icons/compass-mark";
+import { StudioMeter } from "@/components/voice/studio-meter";
 import { cn } from "@/lib/utils";
 import { useAiPageContext } from "@/lib/ai-context";
 import { useI18n } from "@/lib/i18n";
@@ -53,6 +54,99 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
   const { messages, sendMessage, status } = useChat({ transport });
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Voice IO state
+  const [micStream, setMicStream] = useState<MediaStream | null>(null);
+  const [micError, setMicError] = useState<string | null>(null);
+  const [listening, setListening] = useState(false);
+  const [speakerOn, setSpeakerOn] = useState(true);
+  const recogRef = useRef<any>(null);
+  const spokenIdsRef = useRef<Set<string>>(new Set());
+
+  const stopMic = useCallback(() => {
+    try { recogRef.current?.stop?.(); } catch {}
+    recogRef.current = null;
+    setListening(false);
+    micStream?.getTracks().forEach((t) => t.stop());
+    setMicStream(null);
+  }, [micStream]);
+
+  const startMic = useCallback(async () => {
+    setMicError(null);
+    try {
+      if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+        throw new Error("Microphone not supported");
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      });
+      setMicStream(stream);
+
+      // Optional Web Speech recognition (Chrome/Edge/Safari).
+      const SR: any =
+        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SR) {
+        const rec = new SR();
+        rec.continuous = true;
+        rec.interimResults = true;
+        rec.lang = langRef.current || "en-US";
+        let finalBuf = "";
+        rec.onresult = (e: any) => {
+          let interim = "";
+          for (let i = e.resultIndex; i < e.results.length; i++) {
+            const r = e.results[i];
+            if (r.isFinal) finalBuf += r[0].transcript + " ";
+            else interim += r[0].transcript;
+          }
+          setInput((finalBuf + interim).trim());
+        };
+        rec.onend = () => setListening(false);
+        rec.onerror = () => setListening(false);
+        recogRef.current = rec;
+        try { rec.start(); setListening(true); } catch {}
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Microphone permission denied";
+      setMicError(msg);
+    }
+  }, []);
+
+  // Cleanup on unmount / close
+  useEffect(() => {
+    return () => {
+      try { recogRef.current?.stop?.(); } catch {}
+      micStream?.getTracks().forEach((t) => t.stop());
+      try { window.speechSynthesis?.cancel(); } catch {}
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Speak new assistant messages when speaker is on
+  useEffect(() => {
+    if (!speakerOn || typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant") return;
+    if (status === "streaming" || status === "submitted") return;
+    if (spokenIdsRef.current.has(last.id)) return;
+    const text = last.parts.map((p) => (p.type === "text" ? p.text : "")).join("").trim();
+    if (!text) return;
+    spokenIdsRef.current.add(last.id);
+    try {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = langRef.current || "en-US";
+      u.rate = 1;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(u);
+    } catch {}
+  }, [messages, status, speakerOn]);
+
+  const toggleSpeaker = () => {
+    setSpeakerOn((v) => {
+      const next = !v;
+      if (!next) { try { window.speechSynthesis?.cancel(); } catch {} }
+      return next;
+    });
+  };
+
   const SUGGESTIONS = [
     t("ai.chip.attention"),
     t("ai.chip.week"),
@@ -91,6 +185,15 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
           </div>
         </div>
         <div className="flex items-center gap-0.5">
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn("size-7", speakerOn ? "text-accent" : "text-muted-foreground")}
+            onClick={toggleSpeaker}
+            title={speakerOn ? "Mute voice" : "Unmute voice"}
+          >
+            {speakerOn ? <Volume2 className="size-3.5" /> : <VolumeX className="size-3.5" />}
+          </Button>
           <Button variant="ghost" size="icon" className="size-7" onClick={() => onModeChange(mode === "floating" ? "docked" : "floating")}>
             {mode === "floating" ? <Minimize2 className="size-3.5" /> : <Maximize2 className="size-3.5" />}
           </Button>
@@ -133,6 +236,20 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
         onSubmit={(e) => { e.preventDefault(); submit(input); }}
         className="border-t border-border p-3 space-y-2"
       >
+        {(micStream || micError) && (
+          <div className="flex items-center gap-2">
+            <StudioMeter stream={micStream} className="flex-1" />
+            {listening && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-accent">
+                <span className="size-1.5 rounded-full bg-accent animate-pulse" />
+                REC
+              </span>
+            )}
+            {micError && (
+              <span className="text-[10px] text-destructive truncate max-w-[140px]">{micError}</span>
+            )}
+          </div>
+        )}
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2">
           <textarea
             value={input}
@@ -145,8 +262,15 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
             className="min-w-0 w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
           />
           <div className="flex shrink-0 items-center gap-1 pb-1">
-            <Button type="button" variant="outline" size="icon" className="size-9 rounded-full" title={t("ai.voice")}>
-              <Mic className="size-3.5" />
+            <Button
+              type="button"
+              variant={micStream ? "default" : "outline"}
+              size="icon"
+              className={cn("size-9 rounded-full", micStream && "bg-accent text-accent-foreground hover:bg-accent/90")}
+              title={micStream ? "Stop mic" : "Start mic"}
+              onClick={micStream ? stopMic : startMic}
+            >
+              {micStream ? <Mic className="size-3.5" /> : <MicOff className="size-3.5" />}
             </Button>
             <Button type="submit" size="icon" className="size-9 rounded-full" disabled={loading || !input.trim()}>
               <Send className="size-3.5" />
