@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Plus, FolderKanban, CheckSquare, FileText, Video, StickyNote } from "lucide-react";
+import { FolderKanban, CheckSquare, FileText, Video, StickyNote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -60,14 +60,6 @@ export function QuickCreate({ openSignal = 0 }: { openSignal?: number }) {
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 size-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 transition-all grid place-items-center z-40"
-        aria-label="Quick create"
-      >
-        <Plus className="size-5" />
-      </button>
-
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
