@@ -71,7 +71,7 @@ export const navSections: NavSection[] = [
 export const footerSections: NavSection[] = [
   {
     id: "admin",
-    label: "Administration",
+    label: "Admin",
     items: [
       { to: "/administration",              label: "Overview",     icon: ShieldLine },
       { to: "/administration/users",        label: "Users",        icon: ShieldLine },
