@@ -81,7 +81,7 @@ function ExecutionPage() {
               onDrop={() => { if (draggingId) { update.mutate({ id: draggingId, status: col }); setDraggingId(null); } }}
               className="snap-start shrink-0 w-[260px] rounded-xl border border-border bg-card/50 p-3 min-h-[400px]">
               <div className="flex items-center justify-between mb-3 px-1">
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{TASK_STATUS_LABEL[col]}</span>
+                <h2 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground m-0">{TASK_STATUS_LABEL[col]}</h2>
                 <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{grouped[col].length}</span>
               </div>
               <div className="space-y-2">

@@ -81,13 +81,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "1inow" },
-      { name: "description", content: "A premium command and execution environment for 1inow — portfolio, signals, decisions, people, knowledge." },
-      { property: "og:title", content: "1inow" },
-      { property: "og:description", content: "Command. Portfolio. Signals. Decisions. Execution." },
+      { title: "1inow — Command Workspace for Investment Teams" },
+      { name: "description", content: "1inow is a private command and execution workspace for investment teams — portfolio, signals, decisions, people, and knowledge in one place." },
+      { property: "og:title", content: "1inow — Command Workspace for Investment Teams" },
+      { property: "og:description", content: "Private command and execution environment — portfolio, signals, decisions, people, knowledge." },
+      { property: "og:site_name", content: "1inow" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "1inow — Command Workspace for Investment Teams" },
+      { name: "twitter:description", content: "Private command and execution environment — portfolio, signals, decisions, people, knowledge." },
       { name: "theme-color", content: "#0B1220" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
@@ -109,6 +112,27 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500;600;700&display=swap",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "1inow",
+          url: "https://investspace-hub.lovable.app",
+          logo: "https://investspace-hub.lovable.app/icons/icon-512.png",
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "1inow",
+          url: "https://investspace-hub.lovable.app",
+        }),
       },
     ],
   }),

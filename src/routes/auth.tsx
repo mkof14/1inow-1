@@ -14,7 +14,17 @@ import { BrandLogo } from "@/components/icons/compass-icons";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Sign in — 1inow" }] }),
+  head: () => ({
+    meta: [
+      { title: "Sign in — 1inow" },
+      { name: "description", content: "Sign in to your 1inow workspace to access portfolio, decisions, people, and execution in one private command environment." },
+      { property: "og:title", content: "Sign in — 1inow" },
+      { property: "og:description", content: "Sign in to your 1inow workspace." },
+      { property: "og:url", content: "https://investspace-hub.lovable.app/auth" },
+      { property: "og:type", content: "website" },
+    ],
+    links: [{ rel: "canonical", href: "https://investspace-hub.lovable.app/auth" }],
+  }),
   component: AuthPage,
 });
 
@@ -89,7 +99,7 @@ function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-background">
+    <main className="min-h-screen grid lg:grid-cols-2 bg-background">
       <button
         type="button"
         onClick={() => navigate({ to: "/" })}
@@ -228,6 +238,6 @@ function AuthPage() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

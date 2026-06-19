@@ -217,7 +217,7 @@ function ProjectsPage() {
                   {PROJECT_STATUS_LABEL[p.status as keyof typeof PROJECT_STATUS_LABEL]}
                 </span>
               </div>
-              <h3 className={`font-semibold tracking-tight pl-2 transition-colors duration-300 ${isSelected ? "text-accent drop-shadow-[0_0_8px_color-mix(in_oklab,var(--accent)_35%,transparent)]" : "group-hover:text-accent"}`}>{p.name}</h3>
+              <h2 className={`font-semibold tracking-tight pl-2 text-base transition-colors duration-300 ${isSelected ? "text-accent drop-shadow-[0_0_8px_color-mix(in_oklab,var(--accent)_35%,transparent)]" : "group-hover:text-accent"}`}>{p.name}</h2>
               <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2 min-h-[2rem] pl-2">{p.description ?? t("page.projects.noDescription")}</p>
               <div className={`mt-5 pl-2 -mx-2 px-2 py-2 rounded-xl transition-all duration-500 ease-out ${isSelected ? "bg-accent/[0.07] ring-1 ring-accent/25 shadow-[inset_0_0_24px_color-mix(in_oklab,var(--accent)_10%,transparent)]" : "bg-transparent ring-0"}`}>
                 <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">

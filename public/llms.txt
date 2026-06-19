@@ -1,0 +1,8 @@
+# 1inow
+
+> 1inow is a private command and execution environment for investment teams — portfolio, signals, decisions, people, and knowledge in one workspace.
+
+## Pages
+
+- [Home](/): Overview of the 1inow workspace.
+- [Sign in](/auth): Sign in or create an account to access the workspace.
