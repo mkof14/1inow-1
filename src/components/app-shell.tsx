@@ -22,6 +22,7 @@ import { useT } from "@/lib/i18n";
 import { BrandWordmark } from "@/components/icons/compass-icons";
 import { BrandMark } from "@/components/icons/compass-mark";
 import { AiSidebar, type AiSidebarMode } from "@/components/ai-sidebar";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -279,7 +280,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
 
         <main className="flex-1 min-w-0 overflow-x-hidden overflow-y-auto flex flex-col">
-          <div className="min-w-0 w-full flex-1">{children}</div>
+          <div className="min-w-0 w-full flex-1 pb-20 md:pb-0">{children}</div>
         <footer className="mt-16 border-t border-border">
           <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
             <div className="mb-8">
@@ -363,6 +364,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
         <QuickCreate openSignal={quickOpen} />
         <CommandBar open={cmdOpen} onOpenChange={setCmdOpen} />
+        <MobileBottomNav />
       </div>
 
       {aiMode !== "floating" && aiOpen && (
