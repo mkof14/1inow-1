@@ -280,6 +280,38 @@ img[width][height] {
   max-width: 100%;
 }
 
+/* On narrow viewports, let tables keep readable columns and scroll horizontally
+   inside their wrapper instead of squishing. Pairs with the shadcn Table which
+   already wraps in an overflow-auto container. */
+@media (max-width: 767px) {
+  :where(main) table {
+    min-width: max-content;
+  }
+  :where(main) :is(th, td) {
+    white-space: nowrap;
+  }
+  /* Allow opt-out: cells/columns marked wrap can wrap and shrink. */
+  :where(main) :is(th, td).whitespace-normal,
+  :where(main) :is(th, td)[data-wrap="true"] {
+    white-space: normal;
+  }
+
+  /* Touch targets: enforce ≥44px hit area for primary interactive elements
+     in the app shell (header buttons, sidebar/menu links, dropdown items).
+     Page content keeps its own sizing. */
+  header button,
+  header a[role="button"],
+  [role="dialog"] [role="menuitem"],
+  [data-sidebar="menu-button"],
+  nav[aria-label="Primary"] a {
+    min-height: 44px;
+  }
+  header button[class*="size-"],
+  header a[class*="size-"] {
+    min-width: 44px;
+  }
+}
+
 /* Radix Dialog content (centered modals only — not Sheets which set data-side). */
 [role="dialog"]:not([data-side]) {
   max-width: min(calc(100vw - 2rem), 42rem);
