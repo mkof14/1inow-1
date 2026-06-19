@@ -13,6 +13,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PrinciplesStrategicVsTacticalRouteImport } from './routes/principles.strategic-vs-tactical'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
@@ -74,6 +75,12 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrinciplesStrategicVsTacticalRoute =
+  PrinciplesStrategicVsTacticalRouteImport.update({
+    id: '/principles/strategic-vs-tactical',
+    path: '/principles/strategic-vs-tactical',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiTtsRoute = ApiTtsRouteImport.update({
   id: '/api/tts',
   path: '/api/tts',
@@ -326,6 +333,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
+  '/principles/strategic-vs-tactical': typeof PrinciplesStrategicVsTacticalRoute
   '/administration/audit': typeof AuthenticatedAdministrationAuditRoute
   '/administration/downloads': typeof AuthenticatedAdministrationDownloadsRoute
   '/administration/email-logs': typeof AuthenticatedAdministrationEmailLogsRoute
@@ -371,6 +379,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
+  '/principles/strategic-vs-tactical': typeof PrinciplesStrategicVsTacticalRoute
   '/administration/audit': typeof AuthenticatedAdministrationAuditRoute
   '/administration/downloads': typeof AuthenticatedAdministrationDownloadsRoute
   '/administration/email-logs': typeof AuthenticatedAdministrationEmailLogsRoute
@@ -419,6 +428,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
+  '/principles/strategic-vs-tactical': typeof PrinciplesStrategicVsTacticalRoute
   '/_authenticated/administration/audit': typeof AuthenticatedAdministrationAuditRoute
   '/_authenticated/administration/downloads': typeof AuthenticatedAdministrationDownloadsRoute
   '/_authenticated/administration/email-logs': typeof AuthenticatedAdministrationEmailLogsRoute
@@ -467,6 +477,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/stt'
     | '/api/tts'
+    | '/principles/strategic-vs-tactical'
     | '/administration/audit'
     | '/administration/downloads'
     | '/administration/email-logs'
@@ -512,6 +523,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/stt'
     | '/api/tts'
+    | '/principles/strategic-vs-tactical'
     | '/administration/audit'
     | '/administration/downloads'
     | '/administration/email-logs'
@@ -559,6 +571,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/stt'
     | '/api/tts'
+    | '/principles/strategic-vs-tactical'
     | '/_authenticated/administration/audit'
     | '/_authenticated/administration/downloads'
     | '/_authenticated/administration/email-logs'
@@ -586,6 +599,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
+  PrinciplesStrategicVsTacticalRoute: typeof PrinciplesStrategicVsTacticalRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -616,6 +630,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/principles/strategic-vs-tactical': {
+      id: '/principles/strategic-vs-tactical'
+      path: '/principles/strategic-vs-tactical'
+      fullPath: '/principles/strategic-vs-tactical'
+      preLoaderRoute: typeof PrinciplesStrategicVsTacticalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/tts': {
@@ -1025,6 +1046,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
+  PrinciplesStrategicVsTacticalRoute: PrinciplesStrategicVsTacticalRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
