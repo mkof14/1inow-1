@@ -51,6 +51,7 @@ import { Route as AuthenticatedAdministrationRoleSwitcherRouteImport } from './r
 import { Route as AuthenticatedAdministrationInvitationsRouteImport } from './routes/_authenticated/administration.invitations'
 import { Route as AuthenticatedAdministrationEmailsRouteImport } from './routes/_authenticated/administration.emails'
 import { Route as AuthenticatedAdministrationEmailLogsRouteImport } from './routes/_authenticated/administration.email-logs'
+import { Route as AuthenticatedAdministrationDownloadsRouteImport } from './routes/_authenticated/administration.downloads'
 import { Route as AuthenticatedAdministrationAuditRouteImport } from './routes/_authenticated/administration.audit'
 
 const AuthRoute = AuthRouteImport.update({
@@ -278,6 +279,12 @@ const AuthenticatedAdministrationEmailLogsRoute =
     path: '/email-logs',
     getParentRoute: () => AuthenticatedAdministrationRoute,
   } as any)
+const AuthenticatedAdministrationDownloadsRoute =
+  AuthenticatedAdministrationDownloadsRouteImport.update({
+    id: '/downloads',
+    path: '/downloads',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
 const AuthenticatedAdministrationAuditRoute =
   AuthenticatedAdministrationAuditRouteImport.update({
     id: '/audit',
@@ -313,6 +320,7 @@ export interface FileRoutesByFullPath {
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/administration/audit': typeof AuthenticatedAdministrationAuditRoute
+  '/administration/downloads': typeof AuthenticatedAdministrationDownloadsRoute
   '/administration/email-logs': typeof AuthenticatedAdministrationEmailLogsRoute
   '/administration/emails': typeof AuthenticatedAdministrationEmailsRoute
   '/administration/invitations': typeof AuthenticatedAdministrationInvitationsRoute
@@ -356,6 +364,7 @@ export interface FileRoutesByTo {
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/administration/audit': typeof AuthenticatedAdministrationAuditRoute
+  '/administration/downloads': typeof AuthenticatedAdministrationDownloadsRoute
   '/administration/email-logs': typeof AuthenticatedAdministrationEmailLogsRoute
   '/administration/emails': typeof AuthenticatedAdministrationEmailsRoute
   '/administration/invitations': typeof AuthenticatedAdministrationInvitationsRoute
@@ -402,6 +411,7 @@ export interface FileRoutesById {
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/_authenticated/administration/audit': typeof AuthenticatedAdministrationAuditRoute
+  '/_authenticated/administration/downloads': typeof AuthenticatedAdministrationDownloadsRoute
   '/_authenticated/administration/email-logs': typeof AuthenticatedAdministrationEmailLogsRoute
   '/_authenticated/administration/emails': typeof AuthenticatedAdministrationEmailsRoute
   '/_authenticated/administration/invitations': typeof AuthenticatedAdministrationInvitationsRoute
@@ -448,6 +458,7 @@ export interface FileRouteTypes {
     | '/api/stt'
     | '/api/tts'
     | '/administration/audit'
+    | '/administration/downloads'
     | '/administration/email-logs'
     | '/administration/emails'
     | '/administration/invitations'
@@ -491,6 +502,7 @@ export interface FileRouteTypes {
     | '/api/stt'
     | '/api/tts'
     | '/administration/audit'
+    | '/administration/downloads'
     | '/administration/email-logs'
     | '/administration/emails'
     | '/administration/invitations'
@@ -536,6 +548,7 @@ export interface FileRouteTypes {
     | '/api/stt'
     | '/api/tts'
     | '/_authenticated/administration/audit'
+    | '/_authenticated/administration/downloads'
     | '/_authenticated/administration/email-logs'
     | '/_authenticated/administration/emails'
     | '/_authenticated/administration/invitations'
@@ -858,6 +871,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdministrationEmailLogsRouteImport
       parentRoute: typeof AuthenticatedAdministrationRoute
     }
+    '/_authenticated/administration/downloads': {
+      id: '/_authenticated/administration/downloads'
+      path: '/downloads'
+      fullPath: '/administration/downloads'
+      preLoaderRoute: typeof AuthenticatedAdministrationDownloadsRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
     '/_authenticated/administration/audit': {
       id: '/_authenticated/administration/audit'
       path: '/audit'
@@ -870,6 +890,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdministrationRouteChildren {
   AuthenticatedAdministrationAuditRoute: typeof AuthenticatedAdministrationAuditRoute
+  AuthenticatedAdministrationDownloadsRoute: typeof AuthenticatedAdministrationDownloadsRoute
   AuthenticatedAdministrationEmailLogsRoute: typeof AuthenticatedAdministrationEmailLogsRoute
   AuthenticatedAdministrationEmailsRoute: typeof AuthenticatedAdministrationEmailsRoute
   AuthenticatedAdministrationInvitationsRoute: typeof AuthenticatedAdministrationInvitationsRoute
@@ -885,6 +906,8 @@ const AuthenticatedAdministrationRouteChildren: AuthenticatedAdministrationRoute
   {
     AuthenticatedAdministrationAuditRoute:
       AuthenticatedAdministrationAuditRoute,
+    AuthenticatedAdministrationDownloadsRoute:
+      AuthenticatedAdministrationDownloadsRoute,
     AuthenticatedAdministrationEmailLogsRoute:
       AuthenticatedAdministrationEmailLogsRoute,
     AuthenticatedAdministrationEmailsRoute:
