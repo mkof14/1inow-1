@@ -3,7 +3,7 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { navSections, footerSections, type NavItem } from "@/lib/nav-config";
 import { PortfolioCard, ExecutionNode, IntelligenceBars, TimelinePulse, ShieldLine, GearMark, SignalWave } from "@/components/icons/compass-icons";
 import { useAuth } from "@/hooks/use-auth";
-import { Search, Bell, LogOut, Moon, Sun, Plus, Twitter, Linkedin, Github, Youtube } from "lucide-react";
+import { Search, Bell, Moon, Sun, Plus, Twitter, Linkedin, Github, Youtube } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +24,7 @@ import { AiSidebar, type AiSidebarMode } from "@/components/ai-sidebar";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { user, signOut, isAdmin } = useAuth() as any;
+  const { user, isAdmin } = useAuth() as any;
   const navigate = useNavigate();
   const t = useT();
   const [dark, setDark] = useState(false);
@@ -218,12 +218,6 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate({ to: "/settings" })}>
                   {t("common.settings", "Settings")}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={async () => { await signOut(); navigate({ to: "/auth" }); }}
-                  className="text-destructive"
-                >
-                  <LogOut className="size-4 mr-2" /> {t("common.signOut", "Sign out")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
