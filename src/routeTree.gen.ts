@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
+import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedThinkingRouteImport } from './routes/_authenticated/thinking'
 import { Route as AuthenticatedTeamMapRouteImport } from './routes/_authenticated/team-map'
@@ -69,6 +70,11 @@ const IndexRoute = IndexRouteImport.update({
 const ApiTtsRoute = ApiTtsRouteImport.update({
   id: '/api/tts',
   path: '/api/tts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSttRoute = ApiSttRouteImport.update({
+  id: '/api/stt',
+  path: '/api/stt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -304,6 +310,7 @@ export interface FileRoutesByFullPath {
   '/team-map': typeof AuthenticatedTeamMapRoute
   '/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/administration/audit': typeof AuthenticatedAdministrationAuditRoute
   '/administration/email-logs': typeof AuthenticatedAdministrationEmailLogsRoute
@@ -346,6 +353,7 @@ export interface FileRoutesByTo {
   '/team-map': typeof AuthenticatedTeamMapRoute
   '/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/administration/audit': typeof AuthenticatedAdministrationAuditRoute
   '/administration/email-logs': typeof AuthenticatedAdministrationEmailLogsRoute
@@ -391,6 +399,7 @@ export interface FileRoutesById {
   '/_authenticated/team-map': typeof AuthenticatedTeamMapRoute
   '/_authenticated/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/_authenticated/administration/audit': typeof AuthenticatedAdministrationAuditRoute
   '/_authenticated/administration/email-logs': typeof AuthenticatedAdministrationEmailLogsRoute
@@ -436,6 +445,7 @@ export interface FileRouteTypes {
     | '/team-map'
     | '/thinking'
     | '/api/chat'
+    | '/api/stt'
     | '/api/tts'
     | '/administration/audit'
     | '/administration/email-logs'
@@ -478,6 +488,7 @@ export interface FileRouteTypes {
     | '/team-map'
     | '/thinking'
     | '/api/chat'
+    | '/api/stt'
     | '/api/tts'
     | '/administration/audit'
     | '/administration/email-logs'
@@ -522,6 +533,7 @@ export interface FileRouteTypes {
     | '/_authenticated/team-map'
     | '/_authenticated/thinking'
     | '/api/chat'
+    | '/api/stt'
     | '/api/tts'
     | '/_authenticated/administration/audit'
     | '/_authenticated/administration/email-logs'
@@ -546,6 +558,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
 }
 
@@ -577,6 +590,13 @@ declare module '@tanstack/react-router' {
       path: '/api/tts'
       fullPath: '/api/tts'
       preLoaderRoute: typeof ApiTtsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stt': {
+      id: '/api/stt'
+      path: '/api/stt'
+      fullPath: '/api/stt'
+      preLoaderRoute: typeof ApiSttRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -959,6 +979,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
 }
 export const routeTree = rootRouteImport

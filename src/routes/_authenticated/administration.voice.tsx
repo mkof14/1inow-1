@@ -5,17 +5,18 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { MicIndicator } from "@/components/voice/mic-indicator";
-import { Mic, Volume2, Keyboard, Save, Loader2 } from "lucide-react";
+import { Mic, Volume2, Keyboard, Save, Loader2, Play, Square, Radio, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchSystemSettings, updateSystemSetting, type SystemSetting } from "@/lib/admin-queries";
 import { useI18n } from "@/lib/i18n";
 import { dictionaries } from "@/lib/i18n/dictionaries";
+import { useRef } from "react";
+import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/_authenticated/administration/voice")({
   component: VoicePage,
@@ -35,6 +36,20 @@ const defaults: UserVoicePrefs = {
   inputGain: 100, outputVolume: 80, threshold: 0.08,
   pttKey: "Space", sttLang: "en", ttsVoice: "default", autoSend: false,
 };
+
+const TTS_VOICES = [
+  { id: "alloy", label: "Alloy — neutral" },
+  { id: "ash", label: "Ash — calm" },
+  { id: "ballad", label: "Ballad — warm" },
+  { id: "coral", label: "Coral — bright" },
+  { id: "echo", label: "Echo — soft male" },
+  { id: "fable", label: "Fable — expressive" },
+  { id: "onyx", label: "Onyx — deep male" },
+  { id: "nova", label: "Nova — energetic female" },
+  { id: "sage", label: "Sage — clear female" },
+  { id: "shimmer", label: "Shimmer — warm female" },
+  { id: "verse", label: "Verse — narrator" },
+];
 
 function loadUserPrefs(): UserVoicePrefs {
   if (typeof window === "undefined") return defaults;
@@ -68,6 +83,98 @@ function VoicePage() {
 
   const [prefs, setPrefs] = useState<UserVoicePrefs>(loadUserPrefs);
   const [recording, setRecording] = useState(false);
+
+  // --- TTS test ---
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [ttsText, setTtsText] = useState("Hello! This is a voice test from 1inow.");
+  const [ttsBusy, setTtsBusy] = useState(false);
+
+  const playTts = async () => {
+    setTtsBusy(true);
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: ttsText,
+          voice: prefs.ttsVoice && prefs.ttsVoice !== "default" ? prefs.ttsVoice : "alloy",
+        }),
+      });
+      if (!res.ok) throw new Error(await res.text() || `TTS ${res.status}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = audioRef.current ?? new Audio();
+      audioRef.current = a;
+      a.src = url;
+      a.volume = prefs.outputVolume / 100;
+      await a.play();
+      toast.success("Playing voice sample");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "TTS failed");
+    } finally {
+      setTtsBusy(false);
+    }
+  };
+
+  // --- STT test ---
+  const mediaRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const [sttRecording, setSttRecording] = useState(false);
+  const [sttBusy, setSttBusy] = useState(false);
+  const [transcript, setTranscript] = useState("");
+
+  const startStt = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      const mimeType =
+        ["audio/webm", "audio/mp4"].find((t) => MediaRecorder.isTypeSupported(t)) ||
+        "";
+      const mr = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      chunksRef.current = [];
+      mr.ondataavailable = (e) => e.data.size > 0 && chunksRef.current.push(e.data);
+      mr.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(chunksRef.current, { type: mr.mimeType || "audio/webm" });
+        if (blob.size < 1024) {
+          toast.error("Recording too short — try again");
+          return;
+        }
+        setSttBusy(true);
+        try {
+          const fd = new FormData();
+          fd.append("file", blob, `rec.${(mr.mimeType || "webm").includes("mp4") ? "mp4" : "webm"}`);
+          if (/^[a-z]{2}$/i.test(prefs.sttLang)) fd.append("language", prefs.sttLang);
+          const res = await fetch("/api/stt", { method: "POST", body: fd });
+          if (!res.ok) throw new Error(await res.text() || `STT ${res.status}`);
+          const data = (await res.json()) as { text: string };
+          setTranscript(data.text || "(empty)");
+          toast.success("Transcribed");
+        } catch (e) {
+          toast.error(e instanceof Error ? e.message : "STT failed");
+        } finally {
+          setSttBusy(false);
+        }
+      };
+      mr.start();
+      mediaRef.current = mr;
+      setSttRecording(true);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Microphone unavailable");
+    }
+  };
+
+  const stopStt = () => {
+    mediaRef.current?.stop();
+    mediaRef.current = null;
+    setSttRecording(false);
+  };
+
+  useEffect(() => () => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    mediaRef.current?.state === "recording" && mediaRef.current.stop();
+  }, []);
 
   const update = useMutation({
     mutationFn: (p: { key: string; value: unknown }) => updateSystemSetting(p.key, p.value),
@@ -117,6 +224,64 @@ function VoicePage() {
           <p className="text-xs text-muted-foreground mt-3">
             Speak into your mic. Bars turn accent-colored when input exceeds the activation threshold.
           </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Wand2 className="size-4 text-accent" /> Text-to-speech test
+          </CardTitle>
+          <CardDescription>Synthesize speech via Lovable AI (auto language detection).</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Textarea
+            value={ttsText}
+            onChange={(e) => setTtsText(e.target.value)}
+            rows={3}
+            placeholder="Type any text in any language…"
+          />
+          <div className="flex items-center gap-2">
+            <Button onClick={playTts} disabled={ttsBusy || !ttsText.trim()} className="gap-2">
+              {ttsBusy ? <Loader2 className="size-4 animate-spin" /> : <Play className="size-4" />}
+              Speak
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              Voice: <code className="font-mono">{prefs.ttsVoice || "alloy"}</code> · Volume {prefs.outputVolume}%
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Radio className="size-4 text-accent" /> Speech-to-text test
+          </CardTitle>
+          <CardDescription>Record a short clip and transcribe it.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center gap-2">
+            {!sttRecording ? (
+              <Button onClick={startStt} disabled={sttBusy} className="gap-2">
+                <Mic className="size-4" /> Start recording
+              </Button>
+            ) : (
+              <Button onClick={stopStt} variant="destructive" className="gap-2">
+                <Square className="size-4" /> Stop & transcribe
+              </Button>
+            )}
+            {sttBusy && (
+              <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                <Loader2 className="size-3 animate-spin" /> Transcribing…
+              </span>
+            )}
+          </div>
+          {transcript && (
+            <div className="rounded-md border bg-muted/40 p-3 text-sm">
+              {transcript}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -218,11 +383,17 @@ function VoicePage() {
             </div>
             <div>
               <Label>TTS voice</Label>
-              <Input
-                value={prefs.ttsVoice}
-                onChange={(e) => setPrefs((p) => ({ ...p, ttsVoice: e.target.value }))}
-                placeholder="default"
-              />
+              <Select
+                value={prefs.ttsVoice || "alloy"}
+                onValueChange={(v) => setPrefs((p) => ({ ...p, ttsVoice: v }))}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {TTS_VOICES.map((v) => (
+                    <SelectItem key={v.id} value={v.id}>{v.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div className="flex items-end gap-3">
