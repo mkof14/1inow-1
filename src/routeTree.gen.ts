@@ -46,6 +46,7 @@ import { Route as AuthenticatedAdministrationVoiceRouteImport } from './routes/_
 import { Route as AuthenticatedAdministrationUsersRouteImport } from './routes/_authenticated/administration.users'
 import { Route as AuthenticatedAdministrationSettingsRouteImport } from './routes/_authenticated/administration.settings'
 import { Route as AuthenticatedAdministrationRolesRouteImport } from './routes/_authenticated/administration.roles'
+import { Route as AuthenticatedAdministrationRoleSwitcherRouteImport } from './routes/_authenticated/administration.role-switcher'
 import { Route as AuthenticatedAdministrationInvitationsRouteImport } from './routes/_authenticated/administration.invitations'
 import { Route as AuthenticatedAdministrationEmailsRouteImport } from './routes/_authenticated/administration.emails'
 import { Route as AuthenticatedAdministrationEmailLogsRouteImport } from './routes/_authenticated/administration.email-logs'
@@ -247,6 +248,12 @@ const AuthenticatedAdministrationRolesRoute =
     path: '/roles',
     getParentRoute: () => AuthenticatedAdministrationRoute,
   } as any)
+const AuthenticatedAdministrationRoleSwitcherRoute =
+  AuthenticatedAdministrationRoleSwitcherRouteImport.update({
+    id: '/role-switcher',
+    path: '/role-switcher',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
 const AuthenticatedAdministrationInvitationsRoute =
   AuthenticatedAdministrationInvitationsRouteImport.update({
     id: '/invitations',
@@ -302,6 +309,7 @@ export interface FileRoutesByFullPath {
   '/administration/email-logs': typeof AuthenticatedAdministrationEmailLogsRoute
   '/administration/emails': typeof AuthenticatedAdministrationEmailsRoute
   '/administration/invitations': typeof AuthenticatedAdministrationInvitationsRoute
+  '/administration/role-switcher': typeof AuthenticatedAdministrationRoleSwitcherRoute
   '/administration/roles': typeof AuthenticatedAdministrationRolesRoute
   '/administration/settings': typeof AuthenticatedAdministrationSettingsRoute
   '/administration/users': typeof AuthenticatedAdministrationUsersRoute
@@ -343,6 +351,7 @@ export interface FileRoutesByTo {
   '/administration/email-logs': typeof AuthenticatedAdministrationEmailLogsRoute
   '/administration/emails': typeof AuthenticatedAdministrationEmailsRoute
   '/administration/invitations': typeof AuthenticatedAdministrationInvitationsRoute
+  '/administration/role-switcher': typeof AuthenticatedAdministrationRoleSwitcherRoute
   '/administration/roles': typeof AuthenticatedAdministrationRolesRoute
   '/administration/settings': typeof AuthenticatedAdministrationSettingsRoute
   '/administration/users': typeof AuthenticatedAdministrationUsersRoute
@@ -387,6 +396,7 @@ export interface FileRoutesById {
   '/_authenticated/administration/email-logs': typeof AuthenticatedAdministrationEmailLogsRoute
   '/_authenticated/administration/emails': typeof AuthenticatedAdministrationEmailsRoute
   '/_authenticated/administration/invitations': typeof AuthenticatedAdministrationInvitationsRoute
+  '/_authenticated/administration/role-switcher': typeof AuthenticatedAdministrationRoleSwitcherRoute
   '/_authenticated/administration/roles': typeof AuthenticatedAdministrationRolesRoute
   '/_authenticated/administration/settings': typeof AuthenticatedAdministrationSettingsRoute
   '/_authenticated/administration/users': typeof AuthenticatedAdministrationUsersRoute
@@ -431,6 +441,7 @@ export interface FileRouteTypes {
     | '/administration/email-logs'
     | '/administration/emails'
     | '/administration/invitations'
+    | '/administration/role-switcher'
     | '/administration/roles'
     | '/administration/settings'
     | '/administration/users'
@@ -472,6 +483,7 @@ export interface FileRouteTypes {
     | '/administration/email-logs'
     | '/administration/emails'
     | '/administration/invitations'
+    | '/administration/role-switcher'
     | '/administration/roles'
     | '/administration/settings'
     | '/administration/users'
@@ -515,6 +527,7 @@ export interface FileRouteTypes {
     | '/_authenticated/administration/email-logs'
     | '/_authenticated/administration/emails'
     | '/_authenticated/administration/invitations'
+    | '/_authenticated/administration/role-switcher'
     | '/_authenticated/administration/roles'
     | '/_authenticated/administration/settings'
     | '/_authenticated/administration/users'
@@ -797,6 +810,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdministrationRolesRouteImport
       parentRoute: typeof AuthenticatedAdministrationRoute
     }
+    '/_authenticated/administration/role-switcher': {
+      id: '/_authenticated/administration/role-switcher'
+      path: '/role-switcher'
+      fullPath: '/administration/role-switcher'
+      preLoaderRoute: typeof AuthenticatedAdministrationRoleSwitcherRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
     '/_authenticated/administration/invitations': {
       id: '/_authenticated/administration/invitations'
       path: '/invitations'
@@ -833,6 +853,7 @@ interface AuthenticatedAdministrationRouteChildren {
   AuthenticatedAdministrationEmailLogsRoute: typeof AuthenticatedAdministrationEmailLogsRoute
   AuthenticatedAdministrationEmailsRoute: typeof AuthenticatedAdministrationEmailsRoute
   AuthenticatedAdministrationInvitationsRoute: typeof AuthenticatedAdministrationInvitationsRoute
+  AuthenticatedAdministrationRoleSwitcherRoute: typeof AuthenticatedAdministrationRoleSwitcherRoute
   AuthenticatedAdministrationRolesRoute: typeof AuthenticatedAdministrationRolesRoute
   AuthenticatedAdministrationSettingsRoute: typeof AuthenticatedAdministrationSettingsRoute
   AuthenticatedAdministrationUsersRoute: typeof AuthenticatedAdministrationUsersRoute
@@ -850,6 +871,8 @@ const AuthenticatedAdministrationRouteChildren: AuthenticatedAdministrationRoute
       AuthenticatedAdministrationEmailsRoute,
     AuthenticatedAdministrationInvitationsRoute:
       AuthenticatedAdministrationInvitationsRoute,
+    AuthenticatedAdministrationRoleSwitcherRoute:
+      AuthenticatedAdministrationRoleSwitcherRoute,
     AuthenticatedAdministrationRolesRoute:
       AuthenticatedAdministrationRolesRoute,
     AuthenticatedAdministrationSettingsRoute:
