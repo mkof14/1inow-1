@@ -9,7 +9,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { MicIndicator } from "@/components/voice/mic-indicator";
-import { Mic, Volume2, Keyboard, Save, Loader2, Play, Square, Radio, Wand2 } from "lucide-react";
+import { Mic, Volume2, Keyboard, Save, Loader2, Play, Square, Radio, Wand2, Activity } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchSystemSettings, updateSystemSetting, type SystemSetting } from "@/lib/admin-queries";
@@ -83,6 +83,59 @@ function VoicePage() {
 
   const [prefs, setPrefs] = useState<UserVoicePrefs>(loadUserPrefs);
   const [recording, setRecording] = useState(false);
+
+  // --- Mic calibration (auto noise-floor based threshold) ---
+  const [calibrating, setCalibrating] = useState(false);
+  const [calibProgress, setCalibProgress] = useState(0); // 0..1
+  const [noiseFloor, setNoiseFloor] = useState<number | null>(null);
+  const calibSamplesRef = useRef<number[]>([]);
+  const calibEndRef = useRef<number>(0);
+  const liveLevelRef = useRef(0);
+
+  const CALIB_MS = 3000;
+
+  const startCalibration = () => {
+    calibSamplesRef.current = [];
+    calibEndRef.current = performance.now() + CALIB_MS;
+    setCalibProgress(0);
+    setNoiseFloor(null);
+    setCalibrating(true);
+    toast.message("Calibrating — stay quiet for 3 seconds");
+
+    const tick = () => {
+      const now = performance.now();
+      const remaining = calibEndRef.current - now;
+      if (remaining <= 0) {
+        const samples = calibSamplesRef.current;
+        if (samples.length < 5) {
+          setCalibrating(false);
+          toast.error("No mic signal — start the mic test first");
+          return;
+        }
+        // robust noise floor: 90th percentile of ambient samples
+        const sorted = [...samples].sort((a, b) => a - b);
+        const p90 = sorted[Math.floor(sorted.length * 0.9)] ?? 0;
+        const peak = sorted[sorted.length - 1] ?? 0;
+        const floor = Math.max(p90, 0.005);
+        // threshold = noise floor + 60% headroom, clamped 2%..50%
+        const recommended = Math.min(0.5, Math.max(0.02, floor * 1.6 + 0.02));
+        setNoiseFloor(floor);
+        setPrefs((p) => ({ ...p, threshold: Number(recommended.toFixed(3)) }));
+        setCalibrating(false);
+        setCalibProgress(1);
+        toast.success(
+          `Threshold set to ${Math.round(recommended * 100)}% (noise floor ${Math.round(
+            floor * 100,
+          )}%, peak ${Math.round(peak * 100)}%)`,
+        );
+        return;
+      }
+      calibSamplesRef.current.push(liveLevelRef.current);
+      setCalibProgress(1 - remaining / CALIB_MS);
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  };
 
   // --- TTS test ---
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -219,11 +272,77 @@ function VoicePage() {
           </CardTitle>
           <CardDescription>Real-time audio level using the Web Audio API.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <MicIndicator bars={24} threshold={prefs.threshold} />
-          <p className="text-xs text-muted-foreground mt-3">
+        <CardContent className="space-y-4">
+          <MicIndicator
+            bars={24}
+            threshold={prefs.threshold}
+            onLevel={(lvl) => { liveLevelRef.current = lvl; }}
+          />
+          <p className="text-xs text-muted-foreground">
             Speak into your mic. Bars turn accent-colored when input exceeds the activation threshold.
           </p>
+
+          <div className="rounded-md border bg-muted/30 p-3 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-medium flex items-center gap-2">
+                  <Activity className="size-4 text-accent" /> Auto calibration
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Measures ambient noise for 3 seconds, then sets a safe activation threshold.
+                </div>
+              </div>
+              <Button
+                size="sm"
+                variant={calibrating ? "secondary" : "default"}
+                disabled={calibrating}
+                onClick={startCalibration}
+                className="gap-2 shrink-0"
+              >
+                {calibrating ? <Loader2 className="size-4 animate-spin" /> : <Activity className="size-4" />}
+                {calibrating ? "Listening…" : "Calibrate"}
+              </Button>
+            </div>
+
+            {calibrating && (
+              <div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full bg-accent transition-[width] duration-100"
+                    style={{ width: `${Math.round(calibProgress * 100)}%` }}
+                  />
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  Stay quiet — sampling ambient noise…
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-3 gap-2 text-xs">
+              <div className="rounded bg-background/60 px-2 py-1.5">
+                <div className="text-muted-foreground">Noise floor</div>
+                <div className="font-mono tabular-nums">
+                  {noiseFloor != null ? `${Math.round(noiseFloor * 100)}%` : "—"}
+                </div>
+              </div>
+              <div className="rounded bg-background/60 px-2 py-1.5">
+                <div className="text-muted-foreground">Threshold</div>
+                <div className="font-mono tabular-nums">{Math.round(prefs.threshold * 100)}%</div>
+              </div>
+              <div className="rounded bg-background/60 px-2 py-1.5">
+                <div className="text-muted-foreground">Headroom</div>
+                <div className="font-mono tabular-nums">
+                  {noiseFloor != null
+                    ? `${Math.round(Math.max(0, prefs.threshold - noiseFloor) * 100)}%`
+                    : "—"}
+                </div>
+              </div>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              Tip: start the Live mic test first, then click Calibrate and stay quiet. The new threshold is saved with your preferences.
+            </p>
+          </div>
         </CardContent>
       </Card>
 
