@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Search, Bell, Moon, Sun, Plus, Twitter, Linkedin, Github, Youtube, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -185,17 +185,15 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-14 border-b border-border bg-background/70 backdrop-blur-md flex items-center justify-between gap-2 px-3 md:px-6 sticky top-0 z-10">
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden shrink-0"
-                onClick={() => setMobileNavOpen(true)}
-                aria-label="Open menu"
-              >
-                <Menu className="size-5" />
-              </Button>
-            </SheetTrigger>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden shrink-0"
+              onClick={() => setMobileNavOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu className="size-5" />
+            </Button>
             <Link to="/dashboard" className="md:hidden shrink-0 flex items-center">
               <BrandMark className="size-6" />
             </Link>
