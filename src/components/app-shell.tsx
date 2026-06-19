@@ -219,12 +219,6 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <DropdownMenuItem onClick={() => navigate({ to: "/settings" })}>
                   {t("common.settings", "Settings")}
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={async () => { await signOut(); navigate({ to: "/auth" }); }}
-                  className="text-destructive"
-                >
-                  <LogOut className="size-4 mr-2" /> {t("common.signOut", "Sign out")}
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
