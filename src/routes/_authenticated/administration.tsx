@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, Link, useRouterState } from "@tanstack/react-r
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, Users, Shield, Mail, ScrollText, Settings as SettingsIcon,
-  FileText, Send, Mic,
+  FileText, Send, Mic, FlaskConical,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/administration")({
@@ -19,6 +19,7 @@ const tabs = [
   { to: "/administration/voice",        label: "Voice Controls", icon: Mic },
   { to: "/administration/audit",        label: "Audit Logs",  icon: ScrollText },
   { to: "/administration/settings",     label: "Settings",    icon: SettingsIcon },
+  { to: "/administration/role-switcher", label: "Role Switcher", icon: FlaskConical },
 ];
 
 function AdminLayout() {

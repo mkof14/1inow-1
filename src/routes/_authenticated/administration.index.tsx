@@ -1,9 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchAdminStats, fetchAuditLogs } from "@/lib/admin-queries";
 import { Card } from "@/components/ui/card";
-import { Users, Mail, Activity, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Users, Mail, Activity, AlertTriangle, CheckCircle2, RotateCcw, Sparkles } from "lucide-react";
 import { useT } from "@/lib/i18n";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { toast } from "sonner";
+import { resetDemoData, seedDemoData } from "@/lib/api/dev-tools.functions";
 
 export const Route = createFileRoute("/_authenticated/administration/")({
   component: AdminDashboard,
@@ -28,15 +32,66 @@ function StatCard({ icon: Icon, label, value, hint, tone = "default" }: {
 
 function AdminDashboard() {
   const t = useT();
+  const qc = useQueryClient();
+  const [busy, setBusy] = useState<"reset" | "seed" | "both" | null>(null);
   const stats = useQuery({ queryKey: ["admin-stats"], queryFn: fetchAdminStats });
   const audit = useQuery({ queryKey: ["admin-audit-recent"], queryFn: () => fetchAuditLogs(10) });
   const s = stats.data;
+
+  const runReset = async () => {
+    if (!confirm("Wipe all demo data (projects, tasks, channels, messages, notifications)? Your account is preserved.")) return;
+    setBusy("reset");
+    try { await resetDemoData(); await qc.invalidateQueries(); toast.success("Demo data cleared"); }
+    catch (e: any) { toast.error(e?.message ?? "Reset failed"); }
+    finally { setBusy(null); }
+  };
+  const runSeed = async () => {
+    setBusy("seed");
+    try { const r = await seedDemoData(); await qc.invalidateQueries();
+      toast.success(`Seeded ${r.projects} projects, ${r.tasks} tasks, ${r.messages} messages`); }
+    catch (e: any) { toast.error(e?.message ?? "Seed failed"); }
+    finally { setBusy(null); }
+  };
+  const runFresh = async () => {
+    if (!confirm("Reset and reload demo data in one click?")) return;
+    setBusy("both");
+    try {
+      await resetDemoData();
+      const r = await seedDemoData();
+      await qc.invalidateQueries();
+      toast.success(`Fresh demo ready — ${r.projects} projects, ${r.tasks} tasks`);
+    } catch (e: any) { toast.error(e?.message ?? "Failed"); }
+    finally { setBusy(null); }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">{t("page.adminHome.title")}</h1>
         <p className="text-sm text-muted-foreground mt-1">{t("page.adminHome.subtitle")}</p>
       </div>
+
+      <Card className="p-5">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h2 className="font-semibold">Developer Tools</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Reset workspace data and reload a demo dataset in one click. Owner-only.
+            </p>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <Button variant="outline" size="sm" disabled={busy !== null} onClick={runReset}>
+              <RotateCcw className="size-4" /> {busy === "reset" ? "Resetting…" : "Reset"}
+            </Button>
+            <Button variant="outline" size="sm" disabled={busy !== null} onClick={runSeed}>
+              <Sparkles className="size-4" /> {busy === "seed" ? "Seeding…" : "Seed Demo"}
+            </Button>
+            <Button size="sm" disabled={busy !== null} onClick={runFresh}>
+              {busy === "both" ? "Working…" : "Reset & Reload"}
+            </Button>
+          </div>
+        </div>
+      </Card>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         <StatCard icon={Users} label={t("page.users.title")} value={s?.totalUsers ?? "—"} />
