@@ -1,0 +1,52 @@
+{
+  "name": "oneinow-desktop",
+  "productName": "1inow",
+  "version": "0.1.0",
+  "description": "1inow desktop shell",
+  "main": "main.cjs",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build:mac": "electron-builder --mac --publish always",
+    "build:mac-local": "electron-builder --mac --publish never"
+  },
+  "author": "1inow",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "update-electron-app": "^3.0.0"
+  },
+  "devDependencies": {
+    "electron": "^32.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "app.oneinow.desktop",
+    "productName": "1inow",
+    "asar": true,
+    "files": ["main.cjs", "preload.cjs", "icons/**/*", "package.json"],
+    "directories": { "output": "release" },
+    "publish": [{
+      "provider": "github",
+      "owner": "REPLACE_OWNER",
+      "repo": "REPLACE_REPO",
+      "releaseType": "release"
+    }],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "icons/icon.icns",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "entitlements.mac.plist",
+      "entitlementsInherit": "entitlements.mac.plist",
+      "notarize": true,
+      "target": [
+        { "target": "dmg", "arch": ["arm64", "x64"] },
+        { "target": "zip", "arch": ["arm64", "x64"] }
+      ]
+    },
+    "dmg": {
+      "sign": false,
+      "writeUpdateInfo": true
+    }
+  }
+}
