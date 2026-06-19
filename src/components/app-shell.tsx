@@ -3,9 +3,10 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { navSections, footerSections, type NavItem } from "@/lib/nav-config";
 import { PortfolioCard, ExecutionNode, IntelligenceBars, TimelinePulse, ShieldLine, GearMark, SignalWave } from "@/components/icons/compass-icons";
 import { useAuth } from "@/hooks/use-auth";
-import { Search, Bell, Moon, Sun, Plus, Twitter, Linkedin, Github, Youtube } from "lucide-react";
+import { Search, Bell, Moon, Sun, Plus, Twitter, Linkedin, Github, Youtube, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -32,6 +33,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [quickOpen, setQuickOpen] = useState(0);
   const [aiOpen, setAiOpen] = useState(false);
   const [aiMode, setAiMode] = useState<AiSidebarMode>("floating");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  // Close drawer on route change
+  useEffect(() => { setMobileNavOpen(false); }, [pathname]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -155,10 +160,46 @@ export function AppShell({ children }: { children: ReactNode }) {
         </nav>
       </aside>
 
+      <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+        <SheetContent side="left" className="w-72 p-0 flex flex-col bg-sidebar">
+          <SheetTitle className="sr-only">Navigation</SheetTitle>
+          <Link to="/dashboard" className="px-5 py-5 flex flex-col gap-1">
+            <BrandWordmark size={26} />
+            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">1inow.com</div>
+          </Link>
+          <nav className="flex-1 overflow-y-auto px-2.5 pb-4">
+            {navSections.map((section, idx) => (
+              <div key={section.id} className={cn(idx > 0 && "mt-4")}>
+                <div className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70">
+                  {t(`nav.section.${section.id}`, section.label)}
+                </div>
+                <div className="space-y-0.5">
+                  {section.items.map(navItem)}
+                </div>
+              </div>
+            ))}
+          </nav>
+        </SheetContent>
+      </Sheet>
+
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-14 border-b border-border bg-background/70 backdrop-blur-md flex items-center justify-between px-4 md:px-6 sticky top-0 z-10">
-          <div className="flex items-center gap-2 max-w-md flex-1">
-            <div className="relative w-full max-w-sm">
+        <header className="h-14 border-b border-border bg-background/70 backdrop-blur-md flex items-center justify-between gap-2 px-3 md:px-6 sticky top-0 z-10">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden shrink-0"
+                onClick={() => setMobileNavOpen(true)}
+                aria-label="Open menu"
+              >
+                <Menu className="size-5" />
+              </Button>
+            </SheetTrigger>
+            <Link to="/dashboard" className="md:hidden shrink-0 flex items-center">
+              <BrandMark className="size-6" />
+            </Link>
+            <div className="relative w-full max-w-sm hidden md:block">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <button
                 type="button"
@@ -171,11 +212,20 @@ export function AppShell({ children }: { children: ReactNode }) {
               <kbd className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-mono bg-background px-1.5 py-0.5 rounded border border-border text-muted-foreground">/</kbd>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden shrink-0"
+              onClick={() => setCmdOpen(true)}
+              aria-label="Search"
+            >
+              <Search className="size-4" />
+            </Button>
             <Button
               variant="outline"
               size="icon"
-              className="size-9 shrink-0 rounded-lg"
+              className="size-9 shrink-0 rounded-lg hidden sm:inline-flex"
               onClick={() => setQuickOpen((n) => n + 1)}
               title={t("common.create", "Create")}
             >
@@ -195,8 +245,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span className="sm:hidden">AI</span>
               {aiOpen && <span className="absolute top-2 right-2 size-1.5 rounded-full bg-accent" />}
             </Button>
-            <LanguageSwitcher />
-            <Button variant="ghost" size="icon" onClick={toggleDark}>
+            <div className="hidden sm:block"><LanguageSwitcher /></div>
+            <Button variant="ghost" size="icon" onClick={toggleDark} className="hidden sm:inline-flex">
               {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
             </Button>
             <Button variant="ghost" size="icon" className="relative" onClick={() => navigate({ to: "/inbox" })}>
@@ -205,7 +255,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 ml-2 rounded-full hover:bg-muted px-1.5 py-1 transition-colors">
+                <button className="flex items-center gap-2 ml-1 sm:ml-2 rounded-full hover:bg-muted px-1 sm:px-1.5 py-1 transition-colors">
                   <div className="size-8 rounded-full gradient-compass text-primary-foreground grid place-items-center text-xs font-semibold">
                     {initials}
                   </div>
@@ -216,6 +266,12 @@ export function AppShell({ children }: { children: ReactNode }) {
                   {user?.email}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setQuickOpen((n) => n + 1)} className="sm:hidden">
+                  {t("common.create", "Create")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={toggleDark} className="sm:hidden">
+                  {dark ? "Light mode" : "Dark mode"}
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate({ to: "/settings" })}>
                   {t("common.settings", "Settings")}
                 </DropdownMenuItem>
@@ -255,7 +311,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 })}
               </div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 sm:gap-8">
               {visibleFooterSections.map((section) => (
                 <div key={section.id} className="min-w-0">
                   <div className="text-[13px] font-semibold text-foreground mb-3">
