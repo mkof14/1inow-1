@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { UserCircle } from "lucide-react";
+import { UserCircle, FolderKanban } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
@@ -27,6 +28,28 @@ function ProfilePage() {
       const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
       if (error) throw error;
       return data;
+    },
+    enabled: !!user,
+  });
+
+  const { data: myProjects } = useQuery({
+    queryKey: ["my-projects", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data: owned } = await supabase
+        .from("projects").select("*").eq("created_by", user.id);
+      const { data: memberRows } = await supabase
+        .from("project_members").select("project_id").eq("user_id", user.id);
+      const memberIds = (memberRows ?? []).map((r: any) => r.project_id);
+      let memberProjects: any[] = [];
+      if (memberIds.length) {
+        const { data } = await supabase
+          .from("projects").select("*").in("id", memberIds);
+        memberProjects = data ?? [];
+      }
+      const map = new Map<string, any>();
+      [...(owned ?? []), ...memberProjects].forEach((p) => map.set(p.id, p));
+      return Array.from(map.values());
     },
     enabled: !!user,
   });
@@ -114,6 +137,42 @@ function ProfilePage() {
             {save.isPending ? "Saving…" : "Save profile"}
           </Button>
         </div>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card p-6 mt-6">
+        <div className="flex items-center gap-2 mb-4">
+          <FolderKanban className="size-5 text-accent" />
+          <h2 className="text-lg font-semibold tracking-tight">Мои проекты</h2>
+          <span className="text-xs text-muted-foreground ml-auto">{myProjects?.length ?? 0}</span>
+        </div>
+        {(!myProjects || myProjects.length === 0) ? (
+          <p className="text-sm text-muted-foreground">Проектов пока нет.</p>
+        ) : (
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {myProjects.map((p: any) => (
+              <li key={p.id}>
+                <Link
+                  to="/projects/$slug"
+                  params={{ slug: p.slug }}
+                  className="flex items-center gap-3 rounded-lg border border-border bg-background hover:border-accent/50 hover:bg-accent/5 p-3 transition-colors"
+                >
+                  <div
+                    className="size-9 shrink-0 rounded-lg grid place-items-center text-white text-xs font-semibold"
+                    style={{ background: p.color ?? "#0a2540" }}
+                  >
+                    {p.name.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium truncate">{p.name}</div>
+                    <div className="text-[11px] text-muted-foreground uppercase tracking-wider">
+                      {p.status} · {p.progress ?? 0}%
+                    </div>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );
