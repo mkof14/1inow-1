@@ -72,6 +72,16 @@ export const navSections: NavSection[] = [
 /** Footer — admin, legal, help. */
 export const footerSections: NavSection[] = [
   {
+    id: "insights",
+    label: "Insights",
+    items: [
+      { to: "/portfolio", label: "Portfolio",  icon: PortfolioCard },
+      { to: "/reports",   label: "Reports",    icon: IntelligenceBars },
+      { to: "/ai",        label: "Advisor",    icon: AdvisorRing },
+      { to: "/calendar",  label: "Calendar",   icon: TimelinePulse },
+    ],
+  },
+  {
     id: "admin",
     label: "Admin",
     items: [
