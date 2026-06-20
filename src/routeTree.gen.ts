@@ -39,6 +39,7 @@ import { Route as AuthenticatedAiRouteImport } from './routes/_authenticated/ai'
 import { Route as AuthenticatedAdministrationRouteImport } from './routes/_authenticated/administration'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects.index'
 import { Route as AuthenticatedAdministrationIndexRouteImport } from './routes/_authenticated/administration.index'
+import { Route as AuthenticatedProjects1inowRouteImport } from './routes/_authenticated/projects.1inow'
 import { Route as AuthenticatedProjectsSlugRouteImport } from './routes/_authenticated/projects.$slug'
 import { Route as AuthenticatedLegalTermsRouteImport } from './routes/_authenticated/legal.terms'
 import { Route as AuthenticatedLegalPrivacyRouteImport } from './routes/_authenticated/legal.privacy'
@@ -210,6 +211,12 @@ const AuthenticatedAdministrationIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedAdministrationRoute,
   } as any)
+const AuthenticatedProjects1inowRoute =
+  AuthenticatedProjects1inowRouteImport.update({
+    id: '/projects/1inow',
+    path: '/projects/1inow',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProjectsSlugRoute =
   AuthenticatedProjectsSlugRouteImport.update({
     id: '/projects/$slug',
@@ -342,6 +349,7 @@ export interface FileRoutesByFullPath {
   '/legal/privacy': typeof AuthenticatedLegalPrivacyRoute
   '/legal/terms': typeof AuthenticatedLegalTermsRoute
   '/projects/$slug': typeof AuthenticatedProjectsSlugRoute
+  '/projects/1inow': typeof AuthenticatedProjects1inowRoute
   '/administration/': typeof AuthenticatedAdministrationIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
 }
@@ -387,6 +395,7 @@ export interface FileRoutesByTo {
   '/legal/privacy': typeof AuthenticatedLegalPrivacyRoute
   '/legal/terms': typeof AuthenticatedLegalTermsRoute
   '/projects/$slug': typeof AuthenticatedProjectsSlugRoute
+  '/projects/1inow': typeof AuthenticatedProjects1inowRoute
   '/administration': typeof AuthenticatedAdministrationIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
 }
@@ -435,6 +444,7 @@ export interface FileRoutesById {
   '/_authenticated/legal/privacy': typeof AuthenticatedLegalPrivacyRoute
   '/_authenticated/legal/terms': typeof AuthenticatedLegalTermsRoute
   '/_authenticated/projects/$slug': typeof AuthenticatedProjectsSlugRoute
+  '/_authenticated/projects/1inow': typeof AuthenticatedProjects1inowRoute
   '/_authenticated/administration/': typeof AuthenticatedAdministrationIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
 }
@@ -483,6 +493,7 @@ export interface FileRouteTypes {
     | '/legal/privacy'
     | '/legal/terms'
     | '/projects/$slug'
+    | '/projects/1inow'
     | '/administration/'
     | '/projects/'
   fileRoutesByTo: FileRoutesByTo
@@ -528,6 +539,7 @@ export interface FileRouteTypes {
     | '/legal/privacy'
     | '/legal/terms'
     | '/projects/$slug'
+    | '/projects/1inow'
     | '/administration'
     | '/projects'
   id:
@@ -575,6 +587,7 @@ export interface FileRouteTypes {
     | '/_authenticated/legal/privacy'
     | '/_authenticated/legal/terms'
     | '/_authenticated/projects/$slug'
+    | '/_authenticated/projects/1inow'
     | '/_authenticated/administration/'
     | '/_authenticated/projects/'
   fileRoutesById: FileRoutesById
@@ -801,6 +814,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdministrationIndexRouteImport
       parentRoute: typeof AuthenticatedAdministrationRoute
     }
+    '/_authenticated/projects/1inow': {
+      id: '/_authenticated/projects/1inow'
+      path: '/projects/1inow'
+      fullPath: '/projects/1inow'
+      preLoaderRoute: typeof AuthenticatedProjects1inowRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/projects/$slug': {
       id: '/_authenticated/projects/$slug'
       path: '/projects/$slug'
@@ -981,6 +1001,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedLegalPrivacyRoute: typeof AuthenticatedLegalPrivacyRoute
   AuthenticatedLegalTermsRoute: typeof AuthenticatedLegalTermsRoute
   AuthenticatedProjectsSlugRoute: typeof AuthenticatedProjectsSlugRoute
+  AuthenticatedProjects1inowRoute: typeof AuthenticatedProjects1inowRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
 }
 
@@ -1012,6 +1033,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLegalPrivacyRoute: AuthenticatedLegalPrivacyRoute,
   AuthenticatedLegalTermsRoute: AuthenticatedLegalTermsRoute,
   AuthenticatedProjectsSlugRoute: AuthenticatedProjectsSlugRoute,
+  AuthenticatedProjects1inowRoute: AuthenticatedProjects1inowRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
 }
 
