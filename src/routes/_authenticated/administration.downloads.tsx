@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Apple, Smartphone, Download, ExternalLink, Info, Loader2 } from "lucide-react";
+import { Apple, Smartphone, Download, ExternalLink, Info, Loader2, Activity, Copy, RefreshCw, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,10 @@ function DownloadsPage() {
   const [installEvt, setInstallEvt] = useState<BIPEvent | null>(null);
   const [installed, setInstalled] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+  const [bipFired, setBipFired] = useState(false);
+  const [bipFiredAt, setBipFiredAt] = useState<string | null>(null);
+  const [appInstalledAt, setAppInstalledAt] = useState<string | null>(null);
+  const [diagTick, setDiagTick] = useState(0);
 
   const publicUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
@@ -30,8 +34,13 @@ function DownloadsPage() {
     const onBIP = (e: Event) => {
       e.preventDefault();
       setInstallEvt(e as BIPEvent);
+      setBipFired(true);
+      setBipFiredAt(new Date().toISOString());
     };
-    const onInstalled = () => setInstalled(true);
+    const onInstalled = () => {
+      setInstalled(true);
+      setAppInstalledAt(new Date().toISOString());
+    };
     window.addEventListener("beforeinstallprompt", onBIP);
     window.addEventListener("appinstalled", onInstalled);
     if (window.matchMedia?.("(display-mode: standalone)").matches) setInstalled(true);
@@ -73,6 +82,14 @@ function DownloadsPage() {
           Установи 1inow на телефон и компьютер. Все сборки используют единое лого и тёмную тему.
         </p>
       </header>
+
+      <PwaDiagnostics
+        bipFired={bipFired}
+        bipFiredAt={bipFiredAt}
+        appInstalledAt={appInstalledAt}
+        tick={diagTick}
+        onRefresh={() => setDiagTick((n) => n + 1)}
+      />
 
       {/* Android APK via PWABuilder */}
       <Card>
