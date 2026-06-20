@@ -117,6 +117,7 @@ export const footerSections: NavSection[] = [
     id: "account",
     label: "Account",
     items: [
+      { to: "/profile",  label: "МК",       icon: BrandMark },
       { to: "/settings", label: "Settings", icon: GearMark },
       { to: "/inbox",    label: "Inbox",    icon: SignalWave },
       { to: "/favorites",label: "Favorites",icon: BrandMark },
