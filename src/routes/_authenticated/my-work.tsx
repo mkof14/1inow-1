@@ -6,6 +6,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState, PageSkeleton } from "@/components/empty-state";
 import { Briefcase } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
+import { ExecutionNode } from "@/components/icons/compass-icons";
 import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/my-work")({
@@ -53,10 +55,11 @@ function MyWork() {
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("myWork.title")}</h1>
-        <p className="text-sm text-muted-foreground mt-1">{t("myWork.subtitle")}</p>
-      </div>
+      <PageHeader
+        icon={<ExecutionNode size={44} />}
+        title={t("myWork.title")}
+        subtitle={t("myWork.subtitle")}
+      />
 
       <Tabs defaultValue="assigned">
         <TabsList className="flex-wrap h-auto">
@@ -75,9 +78,13 @@ function MyWork() {
                 description={t("myWork.emptyDesc")}
               />
             ) : (
-              <div className="border border-border rounded-lg overflow-hidden bg-card">
-                {list.map((t) => (
-                  <div key={t.id} className="px-4 py-3 border-b border-border last:border-0 flex items-center justify-between hover:bg-muted/30">
+              <div className="rounded-2xl border border-border surface-aurora shimmer-border ring-accent-soft overflow-hidden fade-rise">
+                {list.map((t, idx) => (
+                  <div
+                    key={t.id}
+                    className="px-4 py-3 border-b border-border/60 last:border-0 flex items-center justify-between hover:bg-accent/5 transition-colors fade-rise"
+                    style={{ animationDelay: `${idx * 30}ms` }}
+                  >
                     <div className="min-w-0 flex-1">
                       <div className="font-medium text-sm truncate">{t.title}</div>
                       <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">

@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Check, CheckCheck, Inbox as InboxIcon } from "lucide-react";
 import { EmptyState, PageSkeleton } from "@/components/empty-state";
+import { PageHeader } from "@/components/page-header";
+import { SignalWave } from "@/components/icons/compass-icons";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -47,15 +49,16 @@ function InboxPage() {
 
   return (
     <div className="p-6 md:p-8 max-w-4xl mx-auto">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] sm:flex sm:items-center sm:justify-between mb-6 gap-3">
-        <div className="min-w-0">
-          <h1 className="truncate text-xl sm:text-2xl font-semibold tracking-tight">{t("inbox.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-1 truncate">{t("inbox.unread").replace("{n}", String(unread.length))}</p>
-        </div>
-        <Button variant="outline" size="sm" onClick={() => allMut.mutate()} disabled={unread.length === 0} className="shrink-0">
-          <CheckCheck className="size-4 mr-1.5 shrink-0" /> <span className="truncate">{t("common.markAllRead")}</span>
-        </Button>
-      </div>
+      <PageHeader
+        icon={<SignalWave size={44} />}
+        title={t("inbox.title")}
+        subtitle={t("inbox.unread").replace("{n}", String(unread.length))}
+        actions={
+          <Button variant="outline" size="sm" onClick={() => allMut.mutate()} disabled={unread.length === 0} className="shrink-0">
+            <CheckCheck className="size-4 mr-1.5 shrink-0" /> <span className="truncate">{t("common.markAllRead")}</span>
+          </Button>
+        }
+      />
 
       <Tabs defaultValue="all">
         <TabsList>
@@ -71,9 +74,13 @@ function InboxPage() {
               {list.length === 0 ? (
                 <EmptyState icon={InboxIcon} title={t("inbox.emptyTitle")} description={t("inbox.emptyDesc")} />
               ) : (
-                <div className="border border-border rounded-lg overflow-hidden bg-card">
-                  {list.map((n) => (
-                    <div key={n.id} className={`px-4 py-3 border-b border-border last:border-0 flex items-start gap-3 ${!n.read_at ? "bg-accent/5" : ""}`}>
+                <div className="rounded-2xl border border-border surface-aurora shimmer-border ring-accent-soft overflow-hidden fade-rise">
+                  {list.map((n, idx) => (
+                    <div
+                      key={n.id}
+                      style={{ animationDelay: `${idx * 30}ms` }}
+                      className={`fade-rise px-4 py-3 border-b border-border/60 last:border-0 flex items-start gap-3 transition-colors hover:bg-accent/10 ${!n.read_at ? "bg-accent/5" : ""}`}
+                    >
                       <div className={`size-2 rounded-full mt-2 shrink-0 ${!n.read_at ? "bg-accent" : "bg-transparent"}`} />
                       <div className="min-w-0 flex-1">
                         <div className="text-sm font-medium">{n.title}</div>
