@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { RelatedItems } from "@/components/related-items";
 import { ProjectSuggestions } from "@/components/ai-suggestions";
+import { ProjectAdvisor } from "@/components/project-advisor";
 import { createRelation } from "@/lib/relations";
 import { useSetPageContext } from "@/lib/ai-context";
 import { Button } from "@/components/ui/button";
@@ -196,6 +197,7 @@ function ProjectDetail() {
           })}
         </div>
         <aside className="space-y-4">
+          <ProjectAdvisor projectId={p.id} projectName={p.name} />
           <ProjectSuggestions projectId={p.id} />
           <RelatedItems sourceType="project" sourceId={p.id} title="Related Items" />
         </aside>
