@@ -3,12 +3,12 @@ import { useServerFn } from "@tanstack/react-start";
 import { askProjectAdvisor } from "@/lib/project-advisor.functions";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Send, AlertTriangle, TrendingUp, Calendar, Loader2 } from "lucide-react";
-import { useT, useLang } from "@/lib/i18n";
+import { useT, useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 
 export function ProjectAdvisor({ projectId, projectName }: { projectId: string; projectName: string }) {
   const t = useT();
-  const lang = useLang();
+  const { lang } = useI18n();
   const ask = useServerFn(askProjectAdvisor);
   const [prompt, setPrompt] = useState("");
   const [answer, setAnswer] = useState<string>("");
