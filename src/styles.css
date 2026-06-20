@@ -173,6 +173,27 @@
     font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
   }
+
+  /* WCAG AA contrast bumps for dark theme — applies app-wide
+     (pages, modals/dialogs, tables, forms). */
+  .dark :where(h1, h2, h3, h4, h5, h6) {
+    color: var(--color-foreground);
+  }
+  .dark :where(a:not([class*="text-"]):not([class*="bg-"])) {
+    color: var(--color-accent);
+    text-underline-offset: 2px;
+  }
+  .dark :where(a:not([class*="text-"]):not([class*="bg-"]):hover) {
+    color: color-mix(in oklab, var(--color-accent) 85%, white);
+  }
+  .dark :where(input, textarea, select)::placeholder {
+    color: color-mix(in oklab, var(--color-foreground) 62%, transparent);
+    opacity: 1;
+  }
+  /* Icons inside muted contexts inherit the lifted muted-foreground */
+  .dark :where(.text-muted-foreground) svg {
+    color: inherit;
+  }
 }
 
 /* Domain color utilities mapped through @theme inline scope */
