@@ -5,8 +5,10 @@ import { fetchNotifications } from "@/lib/wave1";
 import { useAuth } from "@/hooks/use-auth";
 import { MessageSquare, ListChecks, Plus, ArrowRight, Clock } from "lucide-react";
 import { BrandMark } from "@/components/icons/compass-mark";
+import { BrandMark as BrandRing } from "@/components/icons/compass-icons";
 import { buildAttention } from "@/lib/brain";
 import { firstScreenGreeting } from "@/lib/simplicity";
+import { PageHeader } from "@/components/page-header";
 import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({ component: HomePage });
@@ -46,14 +48,33 @@ function HomePage() {
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "j", metaKey: true }));
 
   return (
-    <div className="p-6 md:p-10 max-w-[920px] mx-auto">
+    <div className="p-6 md:p-10 max-w-[1100px] mx-auto">
+      <PageHeader
+        icon={<BrandRing size={44} />}
+        title={t("dashboard.today")}
+        subtitle={greet.subline}
+      />
+
       {/* First screen — calm, single focus */}
-      <div className="mb-10 surface-aurora shimmer-border rounded-3xl border border-border p-6 md:p-8 ring-accent-soft">
+      <div className="relative mb-10 surface-aurora shimmer-border ring-accent-soft rounded-3xl border border-border p-6 md:p-8 fade-rise overflow-hidden">
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -top-24 -right-24 size-72 rounded-full blur-3xl opacity-60"
+          style={{
+            background:
+              "radial-gradient(closest-side, color-mix(in oklab, var(--accent) 35%, transparent), transparent 70%)",
+          }}
+        />
+        <div className="relative">
         <div className="flex items-center gap-3 mb-6">
-          <div className="size-9 rounded-xl gradient-compass grid place-items-center text-primary-foreground shrink-0">
+          <div className="size-9 rounded-xl gradient-compass grid place-items-center text-primary-foreground shrink-0 transition-transform duration-500 hover:scale-110 hover:rotate-3">
             <BrandMark className="size-4" />
           </div>
           <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{t("dashboard.today")}</span>
+          <span className="ml-2 inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <span className="size-1.5 rounded-full bg-accent signal-pulse" />
+            live
+          </span>
         </div>
 
         <h1 className="text-3xl md:text-4xl font-display tracking-tight text-gradient-accent">
@@ -73,23 +94,24 @@ function HomePage() {
         {/* Four attention items. No more. */}
         {attention.length > 0 && (
           <ul className="mt-8 divide-y divide-border rounded-2xl border border-border bg-card/80 backdrop-blur shimmer-border overflow-hidden">
-            {attention.map((a) => (
-              <li key={a.id}>
+            {attention.map((a, idx) => (
+              <li key={a.id} style={{ animationDelay: `${idx * 40}ms` }} className="fade-rise">
                 <Link
                   to={a.href as any}
-                  className="flex items-start gap-3 p-4 hover:bg-muted/40 transition"
+                  className="group flex items-start gap-3 p-4 hover:bg-accent/10 transition-colors"
                 >
-                  <div className="mt-1 size-1.5 rounded-full bg-accent shrink-0" />
+                  <div className="mt-1 size-1.5 rounded-full bg-accent shrink-0 signal-pulse" />
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium truncate">{a.title}</div>
+                    <div className="text-sm font-medium truncate group-hover:text-accent transition-colors">{a.title}</div>
                     <div className="text-xs text-muted-foreground truncate">{a.reason}</div>
                   </div>
-                  <ArrowRight className="size-4 text-muted-foreground shrink-0 mt-1" />
+                  <ArrowRight className="size-4 text-muted-foreground shrink-0 mt-1 transition-transform group-hover:translate-x-0.5 group-hover:text-accent" />
                 </Link>
               </li>
             ))}
           </ul>
         )}
+        </div>
       </div>
 
       {/* Secondary — quietly available, never the main act */}
@@ -205,7 +227,7 @@ function HomePage() {
 
 function Section({ title, to, children, className = "" }: { title: string; to?: any; children: any; className?: string }) {
   return (
-    <div className={`relative rounded-2xl border border-border surface-aurora shimmer-border p-5 ${className}`}>
+    <div className={`relative rounded-2xl border border-border surface-aurora shimmer-border ring-accent-soft p-5 fade-rise transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-[0_12px_40px_-16px_color-mix(in_oklab,var(--accent)_35%,transparent)] ${className}`}>
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
         {to && (
