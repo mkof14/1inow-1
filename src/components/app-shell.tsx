@@ -343,6 +343,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Link to="/legal/terms" className="hover:text-foreground transition-colors">Terms of Use</Link>
               </div>
 
+              <div className="flex items-center gap-1 -ml-2 sm:ml-0">
+                <LanguageSwitcher />
+                <ThemeToggle showLabel />
+              </div>
+
               <div className="flex items-center gap-4">
                 <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Twitter">
                   <Twitter className="size-4" />
