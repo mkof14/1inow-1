@@ -1,7 +1,7 @@
 import {
   BrandMark, PortfolioCard, ExecutionNode, SignalWave, TimelinePulse,
   PeopleOrbit, KnowledgeLens, VaultMark, DecisionDiamond, IntelligenceBars,
-  ShieldLine, GearMark,
+  ShieldLine, GearMark, AdvisorRing,
 } from "@/components/icons/compass-icons";
 import { BrainPulse } from "@/components/icons/brain-pulse";
 import { ThinkingLoop } from "@/components/icons/thinking-loop";
@@ -49,8 +49,10 @@ export const navSections: NavSection[] = [
     items: [
       { to: "/brain",        label: "System Brain",   icon: BrainPulse },
       { to: "/thinking",     label: "Thinking Engine", icon: ThinkingLoop },
+      { to: "/ai",           label: "Advisor",        icon: AdvisorRing },
       { to: "/reports",      label: "Reports",        icon: IntelligenceBars },
       { to: "/intelligence", label: "Intelligence",   icon: IntelligenceBars },
+      { to: "/portfolio",    label: "Portfolio",      icon: PortfolioCard },
     ],
   },
   {
@@ -69,6 +71,16 @@ export const navSections: NavSection[] = [
 
 /** Footer — admin, legal, help. */
 export const footerSections: NavSection[] = [
+  {
+    id: "insights",
+    label: "Insights",
+    items: [
+      { to: "/portfolio", label: "Portfolio",  icon: PortfolioCard },
+      { to: "/reports",   label: "Reports",    icon: IntelligenceBars },
+      { to: "/ai",        label: "Advisor",    icon: AdvisorRing },
+      { to: "/calendar",  label: "Calendar",   icon: TimelinePulse },
+    ],
+  },
   {
     id: "admin",
     label: "Admin",
