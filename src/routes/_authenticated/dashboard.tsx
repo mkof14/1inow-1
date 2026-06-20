@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchProjects, fetchTasks, fetchProfiles } from "@/lib/queries";
 import { fetchNotifications } from "@/lib/wave1";
 import { useAuth } from "@/hooks/use-auth";
-import { MessageSquare, ListChecks, Plus, ArrowRight, Clock } from "lucide-react";
+import { MessageSquare, ListChecks, Plus, ArrowRight, Clock, CalendarDays, Sparkles, FolderKanban, CheckCircle2 } from "lucide-react";
 import { BrandMark } from "@/components/icons/compass-mark";
 import { BrandMark as BrandRing } from "@/components/icons/compass-icons";
 import { buildAttention } from "@/lib/brain";
@@ -46,6 +46,38 @@ function HomePage() {
 
   const openTalk = () =>
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "j", metaKey: true }));
+
+  // ── Widget data ────────────────────────────────────────────────────
+  const now = Date.now();
+  const inDays = (d: any, n: number) => {
+    if (!d) return false;
+    const t = new Date(d).getTime();
+    return t >= now && t - now <= n * 86400000;
+  };
+  const isToday = (d: any) => {
+    if (!d) return false;
+    const x = new Date(d); const y = new Date();
+    return x.getFullYear() === y.getFullYear() && x.getMonth() === y.getMonth() && x.getDate() === y.getDate();
+  };
+  const openTasks = (tasks.data ?? []).filter((t: any) => t.status !== "done" && t.status !== "canceled");
+  const todayTasks = openTasks.filter((t: any) => isToday(t.due_date));
+  const upcoming = openTasks
+    .filter((t: any) => inDays(t.due_date, 14))
+    .sort((a: any, b: any) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+    .slice(0, 6);
+  const doneCount = (tasks.data ?? []).filter((t: any) => t.status === "done").length;
+  const overdue = openTasks.filter((t: any) => t.due_date && new Date(t.due_date).getTime() < now).length;
+  const aiHighlights: string[] = [
+    activeProjects.length
+      ? `${activeProjects.length} active project${activeProjects.length === 1 ? "" : "s"} in motion.`
+      : "No active projects — a fresh canvas is waiting.",
+    todayTasks.length
+      ? `${todayTasks.length} task${todayTasks.length === 1 ? "" : "s"} due today — focus here first.`
+      : "Nothing due today. Use the calm to plan the week.",
+    overdue
+      ? `${overdue} overdue item${overdue === 1 ? "" : "s"} need attention.`
+      : `${doneCount} task${doneCount === 1 ? "" : "s"} already shipped. Momentum looks healthy.`,
+  ];
 
   return (
     <div className="p-6 md:p-10 max-w-[1100px] mx-auto">
@@ -112,6 +144,123 @@ function HomePage() {
           </ul>
         )}
         </div>
+      </div>
+
+      {/* ── Premium widgets ──────────────────────────────────────── */}
+      <div className="grid md:grid-cols-2 gap-5 mb-10">
+        {/* Today's Tasks */}
+        <Widget
+          icon={<CheckCircle2 className="size-4" />}
+          title="Today’s Tasks"
+          accent={`${todayTasks.length} due`}
+          to="/tasks"
+        >
+          {todayTasks.length === 0 ? (
+            <EmptyLine msg="Nothing on the docket today." />
+          ) : (
+            <ul className="space-y-1.5">
+              {todayTasks.slice(0, 5).map((t: any, i: number) => (
+                <li key={t.id} style={{ animationDelay: `${i * 40}ms` }} className="fade-rise flex items-start gap-2.5 p-2 rounded-lg hover:bg-accent/5 transition">
+                  <span className="mt-1.5 size-1.5 rounded-full bg-accent signal-pulse shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm truncate">{t.title}</div>
+                    {t.projects?.name && (
+                      <div className="text-[11px] text-muted-foreground truncate">{t.projects.name}</div>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Widget>
+
+        {/* Upcoming Deadlines */}
+        <Widget
+          icon={<CalendarDays className="size-4" />}
+          title="Upcoming Deadlines"
+          accent={`${upcoming.length} next 14d`}
+          to="/calendar"
+        >
+          {upcoming.length === 0 ? (
+            <EmptyLine msg="No deadlines in the next two weeks." />
+          ) : (
+            <ul className="space-y-1.5">
+              {upcoming.map((t: any, i: number) => (
+                <li key={t.id} style={{ animationDelay: `${i * 40}ms` }} className="fade-rise flex items-center gap-3 p-2 rounded-lg hover:bg-accent/5 transition">
+                  <div className="size-9 rounded-lg bg-accent/10 text-accent grid place-items-center text-[10px] font-semibold leading-none flex-col">
+                    <span>{new Date(t.due_date).toLocaleDateString(undefined, { month: "short" }).toUpperCase()}</span>
+                    <span className="text-sm font-bold">{new Date(t.due_date).getDate()}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm truncate">{t.title}</div>
+                    <div className="text-[11px] text-muted-foreground truncate flex items-center gap-1">
+                      <Clock className="size-3" />
+                      {new Date(t.due_date).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Widget>
+
+        {/* My Projects */}
+        <Widget
+          icon={<FolderKanban className="size-4" />}
+          title="My Projects"
+          accent={`${activeProjects.length} active`}
+          to="/projects"
+        >
+          {activeProjects.length === 0 ? (
+            <EmptyLine msg="No active projects yet." />
+          ) : (
+            <div className="grid grid-cols-2 gap-2.5">
+              {activeProjects.slice(0, 4).map((p: any, i: number) => (
+                <Link
+                  key={p.id}
+                  to="/projects/$slug"
+                  params={{ slug: p.slug }}
+                  style={{ animationDelay: `${i * 40}ms` }}
+                  className="fade-rise group rounded-xl border border-border bg-card/60 p-3 hover:border-accent/40 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_-12px_color-mix(in_oklab,var(--accent)_35%,transparent)] transition-all duration-300"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="size-7 rounded-md grid place-items-center text-white font-semibold text-[11px]" style={{ background: p.color ?? "#0a2540" }}>
+                      {p.name.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div className="text-xs font-medium truncate group-hover:text-accent transition-colors">{p.name}</div>
+                  </div>
+                  <div className="h-1 rounded-full bg-muted overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-accent to-accent/70" style={{ width: `${p.progress ?? 0}%` }} />
+                  </div>
+                  <div className="text-[10px] text-muted-foreground mt-1 font-mono">{p.progress ?? 0}%</div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </Widget>
+
+        {/* AI Summary */}
+        <Widget
+          icon={<Sparkles className="size-4" />}
+          title="AI Summary"
+          accent="live"
+          accentPulse
+        >
+          <ul className="space-y-2">
+            {aiHighlights.map((line, i) => (
+              <li key={i} style={{ animationDelay: `${i * 60}ms` }} className="fade-rise flex items-start gap-2.5 text-sm leading-snug">
+                <span className="mt-1.5 size-1.5 rounded-full bg-accent shrink-0 signal-pulse" />
+                <span className="text-foreground/90">{line}</span>
+              </li>
+            ))}
+          </ul>
+          <button
+            onClick={openTalk}
+            className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-accent hover:underline"
+          >
+            <MessageSquare className="size-3.5" /> Ask AI about today
+          </button>
+        </Widget>
       </div>
 
       {/* Secondary — quietly available, never the main act */}
