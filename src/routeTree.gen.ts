@@ -17,6 +17,7 @@ import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedThinkingRouteImport } from './routes/_authenticated/thinking'
+import { Route as AuthenticatedTeamsRouteImport } from './routes/_authenticated/teams'
 import { Route as AuthenticatedTeamMapRouteImport } from './routes/_authenticated/team-map'
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as AuthenticatedSimplicityRouteImport } from './routes/_authenticated/simplicity'
@@ -95,6 +96,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
 const AuthenticatedThinkingRoute = AuthenticatedThinkingRouteImport.update({
   id: '/thinking',
   path: '/thinking',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTeamsRoute = AuthenticatedTeamsRouteImport.update({
+  id: '/teams',
+  path: '/teams',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedTeamMapRoute = AuthenticatedTeamMapRouteImport.update({
@@ -336,6 +342,7 @@ export interface FileRoutesByFullPath {
   '/simplicity': typeof AuthenticatedSimplicityRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/team-map': typeof AuthenticatedTeamMapRoute
+  '/teams': typeof AuthenticatedTeamsRoute
   '/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
@@ -383,6 +390,7 @@ export interface FileRoutesByTo {
   '/simplicity': typeof AuthenticatedSimplicityRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/team-map': typeof AuthenticatedTeamMapRoute
+  '/teams': typeof AuthenticatedTeamsRoute
   '/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
@@ -433,6 +441,7 @@ export interface FileRoutesById {
   '/_authenticated/simplicity': typeof AuthenticatedSimplicityRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/_authenticated/team-map': typeof AuthenticatedTeamMapRoute
+  '/_authenticated/teams': typeof AuthenticatedTeamsRoute
   '/_authenticated/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
@@ -483,6 +492,7 @@ export interface FileRouteTypes {
     | '/simplicity'
     | '/tasks'
     | '/team-map'
+    | '/teams'
     | '/thinking'
     | '/api/chat'
     | '/api/stt'
@@ -530,6 +540,7 @@ export interface FileRouteTypes {
     | '/simplicity'
     | '/tasks'
     | '/team-map'
+    | '/teams'
     | '/thinking'
     | '/api/chat'
     | '/api/stt'
@@ -579,6 +590,7 @@ export interface FileRouteTypes {
     | '/_authenticated/simplicity'
     | '/_authenticated/tasks'
     | '/_authenticated/team-map'
+    | '/_authenticated/teams'
     | '/_authenticated/thinking'
     | '/api/chat'
     | '/api/stt'
@@ -670,6 +682,13 @@ declare module '@tanstack/react-router' {
       path: '/thinking'
       fullPath: '/thinking'
       preLoaderRoute: typeof AuthenticatedThinkingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/teams': {
+      id: '/_authenticated/teams'
+      path: '/teams'
+      fullPath: '/teams'
+      preLoaderRoute: typeof AuthenticatedTeamsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/team-map': {
@@ -1015,6 +1034,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSimplicityRoute: typeof AuthenticatedSimplicityRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedTeamMapRoute: typeof AuthenticatedTeamMapRoute
+  AuthenticatedTeamsRoute: typeof AuthenticatedTeamsRoute
   AuthenticatedThinkingRoute: typeof AuthenticatedThinkingRoute
   AuthenticatedHelpFaqRoute: typeof AuthenticatedHelpFaqRoute
   AuthenticatedHelpLearningRoute: typeof AuthenticatedHelpLearningRoute
@@ -1048,6 +1068,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSimplicityRoute: AuthenticatedSimplicityRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedTeamMapRoute: AuthenticatedTeamMapRoute,
+  AuthenticatedTeamsRoute: AuthenticatedTeamsRoute,
   AuthenticatedThinkingRoute: AuthenticatedThinkingRoute,
   AuthenticatedHelpFaqRoute: AuthenticatedHelpFaqRoute,
   AuthenticatedHelpLearningRoute: AuthenticatedHelpLearningRoute,
