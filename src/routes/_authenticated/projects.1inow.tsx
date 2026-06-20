@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/page-header";
 import { BrandMark as BrandRing, PortfolioCard } from "@/components/icons/compass-icons";
 import { StarButton } from "@/components/star-button";
+import { ProjectAdvisor } from "@/components/project-advisor";
 import {
   ChevronLeft,
   Users,
