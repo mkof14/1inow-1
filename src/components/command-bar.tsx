@@ -4,7 +4,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { fetchProjects } from "@/lib/queries";
 import { fetchRecent } from "@/lib/wave1";
-import { LayoutDashboard, FolderKanban, CheckSquare, Inbox, Briefcase, Clock, MessageSquare, DecimalsArrowRight } from "lucide-react";
+import { LayoutDashboard, FolderKanban, CheckSquare, Inbox, Briefcase, Clock, MessageSquare, Gavel } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useT } from "@/lib/i18n";
 
@@ -107,7 +107,7 @@ export function CommandBar({ open, onOpenChange }: { open: boolean; onOpenChange
           <CommandGroup heading={t("cmd.decisions")}>
             {decisions.data!.map((d: any) => (
               <CommandItem key={d.id} onSelect={() => go("/approvals")}>
-                <DecimalsArrowRight className="size-4 mr-2" />
+                <Gavel className="size-4 mr-2" />
                 <span className="truncate">{d.title}</span>
               </CommandItem>
             ))}
