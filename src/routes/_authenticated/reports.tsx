@@ -1,12 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { fetchProjects, fetchTasks, fetchProfiles } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
 import { IntelligenceBars } from "@/components/icons/compass-icons";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid } from "recharts";
-import { TrendingUp, CheckCircle2, AlertTriangle, Users, Target, Zap } from "lucide-react";
+import { TrendingUp, CheckCircle2, AlertTriangle, Users, Target, Zap, FileDown, FileText, RotateCcw } from "lucide-react";
 import { useT } from "@/lib/i18n";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { exportReportCSV, exportReportPDF, type ReportPayload } from "@/lib/report-export";
 
 export const Route = createFileRoute("/_authenticated/reports")({ component: ReportsPage });
 
@@ -38,9 +42,34 @@ function ReportsPage() {
   const tasks = useQuery({ queryKey: ["tasks"], queryFn: () => fetchTasks() });
   const people = useQuery({ queryKey: ["profiles"], queryFn: fetchProfiles });
 
+  const today = new Date(); today.setHours(0,0,0,0);
+  const defaultFrom = new Date(today); defaultFrom.setDate(today.getDate() - 29);
+  const fmt = (d: Date) => d.toISOString().slice(0, 10);
+  const [from, setFrom] = useState<string>(fmt(defaultFrom));
+  const [to, setTo] = useState<string>(fmt(today));
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  function applyPreset(days: number | "ytd") {
+    const end = new Date(); end.setHours(0,0,0,0);
+    const start = new Date(end);
+    if (days === "ytd") start.setMonth(0, 1);
+    else start.setDate(end.getDate() - (days - 1));
+    setFrom(fmt(start)); setTo(fmt(end));
+  }
+  function resetFilters() { setFrom(fmt(defaultFrom)); setTo(fmt(today)); setStatusFilter("all"); }
+
   const stats = useMemo(() => {
-    const P = projects.data ?? [];
-    const T = tasks.data ?? [];
+    const fromD = new Date(from); fromD.setHours(0,0,0,0);
+    const toD = new Date(to); toD.setHours(23,59,59,999);
+    const allP = projects.data ?? [];
+    const allT = tasks.data ?? [];
+    const P = allP.filter((p: any) => statusFilter === "all" ? true : p.status === statusFilter);
+    const T = allT.filter((x: any) => {
+      if (statusFilter !== "all" && x.projects && x.projects.status && false) return false;
+      const stamp = x.completed_at ? new Date(x.completed_at) : (x.created_at ? new Date(x.created_at) : null);
+      if (!stamp) return true;
+      return stamp >= fromD && stamp <= toD;
+    });
     const active = P.filter((p: any) => p.status === "active" || p.status === "in_progress").length;
     const atRisk = P.filter((p: any) => p.health === "at_risk" || p.health === "off_track").length;
     const done = T.filter((t: any) => t.status === "done").length;
@@ -56,9 +85,10 @@ function ReportsPage() {
       T.reduce((a: Record<string, number>, x: any) => { a[x.status] = (a[x.status] ?? 0) + 1; return a; }, {})
     ).map(([name, value]) => ({ name, value }));
 
-    // Tasks completed last 14 days
-    const days = Array.from({ length: 14 }, (_, i) => {
-      const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() - (13 - i));
+    // Tasks completed across selected period
+    const spanDays = Math.max(1, Math.min(60, Math.round((toD.getTime() - fromD.getTime()) / 86400000) + 1));
+    const days = Array.from({ length: spanDays }, (_, i) => {
+      const d = new Date(fromD); d.setHours(0,0,0,0); d.setDate(fromD.getDate() + i);
       return d;
     });
     const trend = days.map((d) => {
@@ -77,7 +107,37 @@ function ReportsPage() {
       .sort((a, b) => b.done - a.done).slice(0, 6);
 
     return { active, atRisk, done, overdue, completion, avgProgress, byStatus, tasksByStatus, trend, contributors, totalProjects: P.length, totalTasks: T.length, totalPeople: (people.data ?? []).length };
-  }, [projects.data, tasks.data, people.data]);
+  }, [projects.data, tasks.data, people.data, from, to, statusFilter]);
+
+  function buildPayload(): ReportPayload {
+    const statusLabel = statusFilter === "all" ? t("reports.filters.all") : statusFilter;
+    return {
+      title: t("reports.export.title"),
+      generatedLabel: `${t("reports.export.generated")}: ${new Date().toLocaleString()}`,
+      rangeLabel: `${t("reports.export.range")}: ${from} → ${to}`,
+      filtersLabel: `${t("reports.export.filters")}: ${t("reports.filters.status")} = ${statusLabel}`,
+      kpi: [
+        { label: t("reports.kpi.active"), value: String(stats.active), hint: `${stats.totalProjects} ${t("reports.kpi.total")}` },
+        { label: t("reports.kpi.atRisk"), value: String(stats.atRisk), hint: t("reports.kpi.healthHint") },
+        { label: t("reports.kpi.completion"), value: `${stats.completion}%`, hint: `${stats.done} / ${stats.totalTasks}` },
+        { label: t("reports.kpi.overdue"), value: String(stats.overdue), hint: t("reports.kpi.overdueHint") },
+        { label: t("reports.kpi.progress"), value: `${stats.avgProgress}%`, hint: t("reports.kpi.progressHint") },
+        { label: t("reports.kpi.people"), value: String(stats.totalPeople), hint: t("reports.kpi.peopleHint") },
+      ],
+      sections: [
+        { title: t("reports.export.section.projects"), head: ["Status", "Count"], rows: stats.byStatus.map((e: any) => [String(e.name), Number(e.value)]) },
+        { title: t("reports.export.section.tasks"), head: ["Status", "Count"], rows: stats.tasksByStatus.map((e: any) => [String(e.name), Number(e.value)]) },
+        { title: t("reports.export.section.velocity"), head: ["Day", "Completed"], rows: stats.trend.map((d) => [d.day, d.done]) },
+        { title: t("reports.export.section.contributors"), head: ["Member", "Completed tasks"], rows: stats.contributors.map((c) => [c.name, c.done]) },
+      ],
+    };
+  }
+
+  const stamp = `${from}_${to}`;
+  const onPDF = () => exportReportPDF(buildPayload(), `report_${stamp}.pdf`);
+  const onCSV = () => exportReportCSV(buildPayload(), `report_${stamp}.csv`);
+
+  const statuses = useMemo(() => Array.from(new Set((projects.data ?? []).map((p: any) => p.status).filter(Boolean))) as string[], [projects.data]);
 
   return (
     <div className="p-4 sm:p-6 md:p-8 max-w-[1500px] mx-auto fade-rise">
@@ -86,6 +146,39 @@ function ReportsPage() {
         title={t("page.reports.title")}
         subtitle={t("page.reports.desc")}
       />
+
+      {/* Filters + Export */}
+      <div className="surface-aurora shimmer-border rounded-2xl p-4 mb-6 flex flex-wrap items-end gap-3">
+        <div className="flex flex-col gap-1">
+          <label className="text-[10px] uppercase tracking-widest text-muted-foreground">{t("reports.filters.from")}</label>
+          <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-9 w-[150px]" />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-[10px] uppercase tracking-widest text-muted-foreground">{t("reports.filters.to")}</label>
+          <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-9 w-[150px]" />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-[10px] uppercase tracking-widest text-muted-foreground">{t("reports.filters.status")}</label>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-9 w-[170px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("reports.filters.all")}</SelectItem>
+              {statuses.map((s) => <SelectItem key={s} value={s} className="capitalize">{s.replace("_", " ")}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          <Button variant="outline" size="sm" onClick={() => applyPreset(7)}>{t("reports.filters.preset.7")}</Button>
+          <Button variant="outline" size="sm" onClick={() => applyPreset(30)}>{t("reports.filters.preset.30")}</Button>
+          <Button variant="outline" size="sm" onClick={() => applyPreset(90)}>{t("reports.filters.preset.90")}</Button>
+          <Button variant="outline" size="sm" onClick={() => applyPreset("ytd")}>{t("reports.filters.preset.ytd")}</Button>
+          <Button variant="ghost" size="sm" onClick={resetFilters}><RotateCcw className="size-3.5 mr-1" />{t("reports.export.reset")}</Button>
+        </div>
+        <div className="ml-auto flex gap-2">
+          <Button variant="outline" size="sm" onClick={onCSV}><FileText className="size-4 mr-1.5" />{t("reports.export.csv")}</Button>
+          <Button size="sm" onClick={onPDF} className="bg-accent text-accent-foreground hover:bg-accent/90"><FileDown className="size-4 mr-1.5" />{t("reports.export.pdf")}</Button>
+        </div>
+      </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
