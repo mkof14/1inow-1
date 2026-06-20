@@ -24,6 +24,7 @@ import { BrandMark } from "@/components/icons/compass-mark";
 import { AiSidebar, type AiSidebarMode } from "@/components/ai-sidebar";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { InstallPrompt } from "@/components/install-prompt";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -369,6 +370,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <QuickCreate openSignal={quickOpen} />
         <CommandBar open={cmdOpen} onOpenChange={setCmdOpen} />
         <MobileBottomNav />
+        <InstallPrompt />
       </div>
 
       {aiMode !== "floating" && aiOpen && (
