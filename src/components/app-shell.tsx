@@ -370,6 +370,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <QuickCreate openSignal={quickOpen} />
         <CommandBar open={cmdOpen} onOpenChange={setCmdOpen} />
         <MobileBottomNav />
+        <InstallPrompt />
       </div>
 
       {aiMode !== "floating" && aiOpen && (
