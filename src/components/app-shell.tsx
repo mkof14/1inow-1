@@ -23,6 +23,7 @@ import { BrandWordmark } from "@/components/icons/compass-icons";
 import { BrandMark } from "@/components/icons/compass-mark";
 import { AiSidebar, type AiSidebarMode } from "@/components/ai-sidebar";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -245,7 +246,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               {aiOpen && <span className="absolute top-2 right-2 size-1.5 rounded-full bg-accent" />}
             </Button>
             <div className="hidden sm:block"><LanguageSwitcher /></div>
-            <Button variant="ghost" size="icon" onClick={toggleDark} className="hidden sm:inline-flex">
+            <div className="sm:hidden"><LanguageSwitcher compact /></div>
+            <Button variant="ghost" size="icon" onClick={toggleDark}>
               {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
             </Button>
             <Button variant="ghost" size="icon" className="relative" onClick={() => navigate({ to: "/inbox" })}>
@@ -267,9 +269,6 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setQuickOpen((n) => n + 1)} className="sm:hidden">
                   {t("common.create", "Create")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={toggleDark} className="sm:hidden">
-                  {dark ? "Light mode" : "Dark mode"}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate({ to: "/settings" })}>
                   {t("common.settings", "Settings")}
