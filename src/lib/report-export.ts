@@ -75,8 +75,16 @@ export function exportReportPDF(payload: ReportPayload, filename: string) {
 
   for (const s of payload.sections) {
     const prev = (doc as any).lastAutoTable?.finalY ?? y;
+    const titleY = prev + 28;
+    if (titleY > doc.internal.pageSize.getHeight() - 60) {
+      doc.addPage();
+    }
+    const ty = (doc as any).lastAutoTable?.finalY && titleY <= doc.internal.pageSize.getHeight() - 60 ? titleY : 48;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text(s.title, 40, ty);
     autoTable(doc, {
-      startY: prev + 22,
+      startY: ty + 8,
       head: [s.head],
       body: s.rows.map((r) => r.map((c) => String(c))),
       theme: "striped",
@@ -84,11 +92,6 @@ export function exportReportPDF(payload: ReportPayload, filename: string) {
       headStyles: { fillColor: [34, 211, 238], textColor: 15 },
       margin: { left: 40, right: 40 },
       tableWidth: W - 80,
-      didDrawPage: () => {
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(11);
-        doc.text(s.title, 40, (doc as any).lastAutoTable?.startY ? (doc as any).lastAutoTable.startY - 8 : 40);
-      },
     });
   }
 
