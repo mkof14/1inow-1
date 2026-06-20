@@ -418,3 +418,45 @@ function SecondaryAction({ icon: Icon, label, onClick }: { icon: any; label: str
     </button>
   );
 }
+
+function Widget({
+  icon, title, accent, accentPulse, to, children,
+}: { icon: any; title: string; accent?: string; accentPulse?: boolean; to?: any; children: any }) {
+  return (
+    <div className="relative rounded-2xl border border-border surface-aurora shimmer-border ring-accent-soft p-5 fade-rise overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-[0_12px_40px_-16px_color-mix(in_oklab,var(--accent)_35%,transparent)]">
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -top-16 -right-16 size-48 rounded-full blur-3xl opacity-50"
+        style={{ background: "radial-gradient(closest-side, color-mix(in oklab, var(--accent) 30%, transparent), transparent 70%)" }}
+      />
+      <div className="relative">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="size-8 rounded-lg bg-accent/10 text-accent grid place-items-center shrink-0 transition-transform duration-500 hover:scale-110 hover:rotate-3">
+              {icon}
+            </div>
+            <h2 className="text-sm font-semibold tracking-tight truncate">{title}</h2>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {accent && (
+              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                {accentPulse && <span className="size-1.5 rounded-full bg-accent signal-pulse" />}
+                {accent}
+              </span>
+            )}
+            {to && (
+              <Link to={to} className="text-xs text-muted-foreground hover:text-accent inline-flex items-center gap-0.5">
+                <ArrowRight className="size-3.5" />
+              </Link>
+            )}
+          </div>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function EmptyLine({ msg }: { msg: string }) {
+  return <p className="text-sm text-muted-foreground py-2">{msg}</p>;
+}
