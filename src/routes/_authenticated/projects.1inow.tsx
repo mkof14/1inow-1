@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/page-header";
 import { BrandMark as BrandRing, PortfolioCard } from "@/components/icons/compass-icons";
 import { StarButton } from "@/components/star-button";
+import { ProjectAdvisor } from "@/components/project-advisor";
 import {
   ChevronLeft,
   Users,
@@ -347,6 +348,10 @@ function OneInowPage() {
             </div>
           </Widget>
         </div>
+      </div>
+
+      <div className="mt-6">
+        <ProjectAdvisor projectId={p.id} projectName={p.name} />
       </div>
     </div>
   );

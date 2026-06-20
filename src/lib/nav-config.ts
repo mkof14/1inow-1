@@ -62,6 +62,7 @@ export const navSections: NavSection[] = [
       { to: "/calendar",   label: "Calendar",  icon: TimelinePulse },
       { to: "/approvals",  label: "Decisions", icon: DecisionDiamond },
       { to: "/documents",  label: "Knowledge", icon: KnowledgeLens },
+      { to: "/teams",      label: "Teams",     icon: PeopleOrbit },
       { to: "/principles", label: "Principles", icon: ShieldLine },
       { to: "/simplicity", label: "Simplicity", icon: ShieldLine },
       { to: "/settings",   label: "Settings",  icon: GearMark },

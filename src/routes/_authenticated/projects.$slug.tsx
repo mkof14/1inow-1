@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { RelatedItems } from "@/components/related-items";
 import { ProjectSuggestions } from "@/components/ai-suggestions";
+import { ProjectAdvisor } from "@/components/project-advisor";
+import { TaskTimer } from "@/components/task-timer";
 import { createRelation } from "@/lib/relations";
 import { useSetPageContext } from "@/lib/ai-context";
 import { Button } from "@/components/ui/button";
@@ -178,12 +180,15 @@ function ProjectDetail() {
                   <div key={t.id} className="group rounded-lg bg-card border border-border p-3 hover:border-accent/50 transition-colors">
                     <div className="text-sm font-medium">{t.title}</div>
                     <div className="mt-2 flex items-center justify-between">
-                      <Select value={t.status} onValueChange={(v) => updateTaskStatus.mutate({ id: t.id, status: v })}>
-                        <SelectTrigger className="h-7 text-xs w-auto"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {TASK_STATUSES.map((s) => <SelectItem key={s} value={s}>{TASK_STATUS_LABEL[s]}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center gap-1.5">
+                        <Select value={t.status} onValueChange={(v) => updateTaskStatus.mutate({ id: t.id, status: v })}>
+                          <SelectTrigger className="h-7 text-xs w-auto"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {TASK_STATUSES.map((s) => <SelectItem key={s} value={s}>{TASK_STATUS_LABEL[s]}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <TaskTimer taskId={t.id} actualHours={Number(t.actual_hours ?? 0)} />
+                      </div>
                       <button onClick={() => deleteTask.mutate(t.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive">
                         <Trash2 className="size-3.5" />
                       </button>
@@ -196,6 +201,7 @@ function ProjectDetail() {
           })}
         </div>
         <aside className="space-y-4">
+          <ProjectAdvisor projectId={p.id} projectName={p.name} />
           <ProjectSuggestions projectId={p.id} />
           <RelatedItems sourceType="project" sourceId={p.id} title="Related Items" />
         </aside>
