@@ -14,11 +14,21 @@ export function EmptyState({
   action?: { label: string; onClick: () => void };
 }) {
   return (
-    <div className="flex flex-col items-center justify-center text-center py-16 px-6">
-      <div className="size-12 rounded-xl bg-muted grid place-items-center mb-4 text-muted-foreground">
-        <Icon className="size-6" />
+    <div className="relative rounded-2xl border border-border surface-aurora shimmer-border ring-accent-soft fade-rise flex flex-col items-center justify-center text-center py-16 px-6">
+      <div className="relative mb-4">
+        <span
+          aria-hidden
+          className="absolute inset-0 rounded-xl blur-xl opacity-60"
+          style={{
+            background:
+              "radial-gradient(closest-side, color-mix(in oklab, var(--accent) 40%, transparent), transparent 70%)",
+          }}
+        />
+        <div className="relative size-14 rounded-xl border border-accent/30 bg-card/70 backdrop-blur grid place-items-center text-accent shadow-[0_8px_24px_-12px_color-mix(in_oklab,var(--accent)_55%,transparent)]">
+          <Icon className="size-6" />
+        </div>
       </div>
-      <h3 className="text-base font-semibold text-foreground">{title}</h3>
+      <h3 className="text-base font-semibold tracking-tight text-foreground">{title}</h3>
       {description && <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">{description}</p>}
       {action && (
         <Button className="mt-5" onClick={action.onClick}>{action.label}</Button>
