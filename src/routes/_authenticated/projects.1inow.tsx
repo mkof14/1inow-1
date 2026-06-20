@@ -348,6 +348,10 @@ function OneInowPage() {
           </Widget>
         </div>
       </div>
+
+      <div className="mt-6">
+        <ProjectAdvisor projectId={p.id} projectName={p.name} />
+      </div>
     </div>
   );
 }
