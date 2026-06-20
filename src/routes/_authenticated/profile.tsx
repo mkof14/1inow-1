@@ -32,17 +32,14 @@ function ProfilePage() {
   });
 
   const [form, setForm] = useState({
-    full_name: "", display_name: "", avatar_url: "", title: "",
-    bio: "", phone: "", country: "", city: "",
+    full_name: "", avatar_url: "", bio: "", phone: "", country: "", city: "",
   });
 
   useEffect(() => {
     if (!profile) return;
     setForm({
       full_name: profile.full_name ?? "",
-      display_name: profile.display_name ?? "",
       avatar_url: profile.avatar_url ?? "",
-      title: profile.title ?? "",
       bio: profile.bio ?? "",
       phone: profile.phone ?? "",
       country: profile.country ?? "",
@@ -66,7 +63,7 @@ function ProfilePage() {
 
   if (isLoading) return <PageSkeleton />;
 
-  const initials = (form.display_name || form.full_name || user?.email || "MK").slice(0, 2).toUpperCase();
+  const initials = (form.full_name || user?.email || "MK").slice(0, 2).toUpperCase();
 
   return (
     <div className="p-6 md:p-8 max-w-3xl mx-auto">
@@ -92,14 +89,6 @@ function ProfilePage() {
           <div className="space-y-1.5">
             <Label>Full name</Label>
             <Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Display name</Label>
-            <Input value={form.display_name} onChange={(e) => setForm({ ...form, display_name: e.target.value })} />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Title</Label>
-            <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
           </div>
           <div className="space-y-1.5">
             <Label>Phone</Label>
