@@ -326,9 +326,11 @@ export function EmptyState({
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-col items-center justify-center px-6 py-16 text-center", className)}>
-      <div className="mb-4 grid size-12 place-items-center rounded-xl bg-muted text-muted-foreground">
+    <div className={cn("relative overflow-hidden rounded-2xl border border-border surface-aurora shimmer-border ring-accent-soft flex flex-col items-center justify-center px-6 py-16 text-center", className)}>
+      <div className="absolute inset-x-8 top-6 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
+      <div className="relative mb-4 grid size-12 place-items-center rounded-xl border border-accent/25 bg-accent/10 text-accent">
         <Icon className="size-6" />
+        <span className="absolute -right-1 -top-1 size-2.5 rounded-full bg-accent live-dot" />
       </div>
       <h3 className="text-base font-semibold text-foreground">{title}</h3>
       {description && <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">{description}</p>}
@@ -341,8 +343,11 @@ export function EmptyState({
 
 export function LoadingState({ label = "Loading…", className }: { label?: string; className?: string }) {
   return (
-    <div className={cn("flex items-center justify-center gap-2 px-6 py-16 text-sm text-muted-foreground", className)}>
-      <Loader2 className="size-4 animate-spin" />
+    <div className={cn("flex flex-col items-center justify-center gap-3 px-6 py-16 text-sm text-muted-foreground", className)}>
+      <div className="relative grid size-12 place-items-center rounded-xl border border-accent/25 bg-accent/10 text-accent">
+        <Loader2 className="size-5 animate-spin" />
+        <span className="absolute -right-1 -top-1 size-2.5 rounded-full bg-accent live-dot" />
+      </div>
       <span>{label}</span>
     </div>
   );

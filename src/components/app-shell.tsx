@@ -1,9 +1,9 @@
-import { type ReactNode, useState, useEffect } from "react";
+import { type ReactNode, useState, useEffect, useMemo } from "react";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { navSections, footerSections, type NavItem } from "@/lib/nav-config";
 import { PortfolioCard, ExecutionNode, IntelligenceBars, TimelinePulse, ShieldLine, GearMark, SignalWave } from "@/components/icons/compass-icons";
 import { useAuth } from "@/hooks/use-auth";
-import { Search, Bell, Moon, Sun, Plus, Twitter, Linkedin, Github, Youtube, Menu } from "lucide-react";
+import { Activity, ArrowRight, Bell, Moon, Sun, Plus, Search, Twitter, Linkedin, Github, Youtube, Menu, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -110,6 +110,13 @@ export function AppShell({ children }: { children: ReactNode }) {
     ...quickLinks.filter((l) => l.to !== `/${contextSection}`),
   ];
   const visibleFooterSections = [...navSections, ...footerSections];
+  const allNavItems = useMemo(
+    () => [...navSections, ...footerSections].flatMap((section) => section.items),
+    [],
+  );
+  const activeItem = allNavItems
+    .filter((item) => !item.adminOnly || isAdmin)
+    .find((item) => pathname === item.to || pathname.startsWith(item.to + "/"));
 
   return (
     <div className="flex min-h-screen w-full bg-background text-foreground">
@@ -280,6 +287,14 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
 
         <main className="flex-1 min-w-0 overflow-x-hidden overflow-y-auto flex flex-col">
+          <LiveContextBar
+            activeLabel={activeItem?.label ?? "Workspace"}
+            activeIcon={activeItem?.icon ?? BrandMark}
+            pathname={pathname}
+            unread={unread}
+            onCreate={() => setQuickOpen((n) => n + 1)}
+            onAsk={() => setAiOpen(true)}
+          />
           <div className="min-w-0 w-full flex-1 pb-20 md:pb-0">{children}</div>
         <footer className="mt-16 border-t border-border">
           <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
@@ -381,4 +396,133 @@ export function AppShell({ children }: { children: ReactNode }) {
       )}
     </div>
   );
+}
+
+function LiveContextBar({
+  activeLabel,
+  activeIcon: ActiveIcon,
+  pathname,
+  unread,
+  onCreate,
+  onAsk,
+}: {
+  activeLabel: string;
+  activeIcon: NavItem["icon"];
+  pathname: string;
+  unread: number;
+  onCreate: () => void;
+  onAsk: () => void;
+}) {
+  const context = getLiveContext(pathname, unread);
+
+  return (
+    <div className="sticky top-14 z-[9] border-b border-border/70 bg-background/80 backdrop-blur-xl">
+      <div className="mx-auto flex min-h-12 w-full max-w-[1500px] items-center gap-3 px-3 py-2 md:px-8">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <div className="relative grid size-8 shrink-0 place-items-center rounded-lg border border-accent/25 bg-accent/10 text-accent">
+            <ActiveIcon className="size-4" />
+            <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full bg-accent live-dot" />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="truncate text-sm font-semibold text-foreground">{activeLabel}</span>
+              <span className="hidden rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground sm:inline-flex">
+                {context.status}
+              </span>
+            </div>
+            <div className="truncate text-xs text-muted-foreground">{context.next}</div>
+          </div>
+        </div>
+
+        <div className="hidden items-center gap-2 lg:flex">
+          {context.signals.map((signal) => (
+            <span
+              key={signal}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/70 px-2.5 py-1 text-[11px] text-muted-foreground"
+            >
+              <span className="size-1.5 rounded-full bg-accent" />
+              {signal}
+            </span>
+          ))}
+        </div>
+
+        <div className="flex shrink-0 items-center gap-1.5">
+          <button
+            type="button"
+            onClick={onAsk}
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-accent/30 bg-accent/10 px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-accent/15"
+          >
+            <Zap className="size-3.5 text-accent" />
+            <span className="hidden sm:inline">Ask</span>
+          </button>
+          <button
+            type="button"
+            onClick={onCreate}
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-2.5 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            <Plus className="size-3.5" />
+            <span className="hidden sm:inline">New</span>
+          </button>
+          <Activity className="hidden size-4 text-accent live-breathe sm:block" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function getLiveContext(pathname: string, unread: number) {
+  if (pathname.startsWith("/projects")) {
+    return {
+      status: "Planning",
+      next: "Open the active project, review progress, or create the next outcome.",
+      signals: ["progress", "priority", "owners"],
+    };
+  }
+  if (pathname.startsWith("/tasks")) {
+    return {
+      status: "Execution",
+      next: "Move work through the board. Keep the next visible action small.",
+      signals: ["drag", "due dates", "status"],
+    };
+  }
+  if (pathname.startsWith("/communication") || pathname.startsWith("/inbox")) {
+    return {
+      status: unread > 0 ? "Attention" : "Clear",
+      next: unread > 0 ? `${unread} unread signal${unread === 1 ? "" : "s"} waiting.` : "No unread signals. Continue from the workspace.",
+      signals: ["messages", "decisions", "follow-ups"],
+    };
+  }
+  if (pathname.startsWith("/intelligence") || pathname.startsWith("/ai") || pathname.startsWith("/brain") || pathname.startsWith("/thinking")) {
+    return {
+      status: "Thinking",
+      next: "Capture context, questions, and rules. AI execution stays intentionally disabled.",
+      signals: ["memory", "rules", "review"],
+    };
+  }
+  if (pathname.startsWith("/administration")) {
+    return {
+      status: "Control",
+      next: "Review access, system settings, and operational audit signals.",
+      signals: ["roles", "policies", "audit"],
+    };
+  }
+  if (pathname.startsWith("/calendar")) {
+    return {
+      status: "Timing",
+      next: "Use dates to turn scattered work into a sequence.",
+      signals: ["today", "deadlines", "rhythm"],
+    };
+  }
+  if (pathname.startsWith("/people") || pathname.startsWith("/teams")) {
+    return {
+      status: "People",
+      next: "Check ownership, team shape, and who should move what next.",
+      signals: ["owners", "roles", "capacity"],
+    };
+  }
+  return {
+    status: "Live",
+    next: "Start with the next useful action: ask, create, review, or decide.",
+    signals: ["ready", "context", "next step"],
+  };
 }

@@ -231,6 +231,28 @@
   from { transform: translateX(24px); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
+@keyframes live-dot {
+  0%, 100% {
+    opacity: .55;
+    transform: scale(.9);
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 45%, transparent);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+    box-shadow: 0 0 0 5px color-mix(in oklab, var(--accent) 0%, transparent);
+  }
+}
+@keyframes live-breathe {
+  0%, 100% {
+    opacity: .55;
+    transform: scale(.96);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
 
 @utility compass-spin {
   animation: compass-spin 14s linear infinite;
@@ -243,6 +265,12 @@
 }
 @utility slide-inspector {
   animation: slide-inspector .25s ease-out both;
+}
+@utility live-dot {
+  animation: live-dot 2.4s ease-in-out infinite;
+}
+@utility live-breathe {
+  animation: live-breathe 2.8s ease-in-out infinite;
 }
 
 /* Compass surfaces */
