@@ -267,7 +267,7 @@ function PwaDiagnostics({
           label="serviceWorker API"
           status={diag.hasSW ? "ok" : "warn"}
           value={diag.hasSW ? "доступен" : "недоступен"}
-          hint="Сам SW не зарегистрирован — Lovable использует cache-headers"
+          hint="Сам SW не зарегистрирован — используются HTTP cache headers"
         />
         <DiagRow label="User-Agent" status="info" value={<span className="text-[10px]">{diag.ua}</span>} />
 

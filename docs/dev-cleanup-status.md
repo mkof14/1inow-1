@@ -2,14 +2,12 @@
 
 ## What Was Removed
 
-- Removed direct Lovable package dependencies from `package.json`:
-  - `@lovable.dev/cloud-auth-js`
-  - `@lovable.dev/vite-tanstack-config`
-- Removed the Lovable AI gateway helper.
-- Removed the Lovable auth integration wrapper.
-- Replaced Lovable browser error reporting with a neutral local error logger.
+- Removed platform package dependencies from `package.json`.
+- Removed the platform AI gateway helper.
+- Removed the platform auth integration wrapper.
+- Replaced platform browser error reporting with a neutral local error logger.
 - Replaced the old hosted app URL with `https://1inow.com`.
-- Removed the old package-age bypass entries for Lovable packages in `bunfig.toml`.
+- Removed old package-age bypass entries in `bunfig.toml`.
 - Cleaned `.env.example` so it only contains Supabase/Vercel-safe local development variables.
 
 ## What Was Stubbed
@@ -50,17 +48,21 @@
 - AI project advisor
 - Translations
 - AI rewrite/editing
-- Lovable broker-based OAuth
+- Broker-based OAuth
 
 ## Still Needed Later
 
-- Choose and implement the production AI provider strategy.
+- OpenAI: choose and implement the production AI provider strategy.
+- Resend: add transactional email provider configuration.
+- Stripe: add billing provider configuration if subscriptions or payments remain in scope.
+- Analytics: choose analytics provider and privacy settings.
+- Email: configure sender domain, templates, and deliverability checks.
+- Monitoring: add production error reporting, logs, and uptime checks.
 - Reconnect `/api/chat` to the chosen provider.
 - Reconnect `/api/stt` and `/api/tts` if voice features remain in scope.
 - Reconnect translations/rewrite if those features remain in scope.
 - Configure direct Supabase OAuth providers before enabling Google sign-in.
 - Decide whether to keep `@ai-sdk/react` and `ai` for the future AI layer or remove/re-add them when implementation starts.
-- Add production observability/error reporting if needed.
 
 ## Validation Status
 

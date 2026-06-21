@@ -94,4 +94,4 @@ Vercel builds on every push to the default branch (Production) and on every PR (
 
 - Do **not** commit `.env` — it is already in `.gitignore`.
 - The Cloudflare-specific `wrangler.toml` / `.wrangler/` config is unused on Vercel and safe to ignore.
-- Database migrations live in `supabase/migrations/` and are applied through the existing Lovable Cloud pipeline, not by Vercel.
+- Database migrations live in `supabase/migrations/` and should be applied through the Supabase migration workflow, not by Vercel.

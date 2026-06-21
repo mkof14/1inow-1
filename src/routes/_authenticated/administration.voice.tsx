@@ -351,7 +351,7 @@ function VoicePage() {
           <CardTitle className="flex items-center gap-2 text-base">
             <Wand2 className="size-4 text-accent" /> Text-to-speech test
           </CardTitle>
-          <CardDescription>Synthesize speech via Lovable AI (auto language detection).</CardDescription>
+          <CardDescription>Synthesize speech after a voice provider is connected.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <Textarea
@@ -542,8 +542,6 @@ function VoicePage() {
           </div>
         </CardContent>
       </Card>
-
-      {/* TODO: Wire STT/TTS engine (Web Speech API or server-side via Lovable AI Gateway) once provider is chosen. */}
     </div>
   );
 }
