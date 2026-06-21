@@ -470,3 +470,18 @@ Still intentionally separate:
 
 - Founder `super_admin` role assignment remains handled by controlled owner bootstrap/admin tooling.
 - No Supabase schema migration was added in this step.
+
+## Dev Role Switcher Status
+
+Implemented:
+
+- The role switcher route is available only in local founder dev mode.
+- The role switcher tab is hidden unless `VITE_ENABLE_FOUNDER_MODE=true` in Vite dev mode.
+- The server-side `setSelfRole` action now also requires `ENABLE_DEV_OWNER_TOOLS=true`.
+- Owner email and real Supabase auth checks remain required.
+
+Production:
+
+- The role switcher is not shown in navigation.
+- Direct navigation to `/administration/role-switcher` redirects to `/administration`.
+- Role switching remains disabled unless server-side dev owner tools are explicitly enabled.

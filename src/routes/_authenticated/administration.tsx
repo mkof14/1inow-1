@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet, Link, useRouterState } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+import { isFounderModeEnabled } from "@/lib/founder-mode";
 import {
   LayoutDashboard, Users, Shield, Mail, ScrollText, Settings as SettingsIcon,
   FileText, Send, Mic, FlaskConical, Download,
@@ -25,6 +26,10 @@ const tabs = [
 
 function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const visibleTabs = isFounderModeEnabled()
+    ? tabs
+    : tabs.filter((tab) => tab.to !== "/administration/role-switcher");
+
   return (
     <div className="flex h-full min-h-[calc(100vh-3.5rem)]">
       <aside className="w-56 shrink-0 border-r border-border bg-muted/20 p-3">
@@ -33,7 +38,7 @@ function AdminLayout() {
           <div className="text-sm font-semibold mt-0.5">Control Center</div>
         </div>
         <nav className="space-y-0.5">
-          {tabs.map((t) => {
+          {visibleTabs.map((t) => {
             const Icon = t.icon;
             const active = t.exact ? pathname === t.to : pathname.startsWith(t.to);
             return (

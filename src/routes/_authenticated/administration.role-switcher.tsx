@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
@@ -8,8 +8,14 @@ import { Shield, ShieldCheck, Briefcase, User } from "lucide-react";
 import { setSelfRole } from "@/lib/api/dev-tools.functions";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
+import { isFounderModeEnabled } from "@/lib/founder-mode";
 
 export const Route = createFileRoute("/_authenticated/administration/role-switcher")({
+  beforeLoad: () => {
+    if (!isFounderModeEnabled()) {
+      throw redirect({ to: "/administration" });
+    }
+  },
   component: RoleSwitcherPage,
 });
 

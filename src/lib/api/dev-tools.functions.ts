@@ -36,6 +36,7 @@ export const setSelfRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((data: { role: AppRole }) => data)
   .handler(async ({ data, context }) => {
+    requireDevOwnerToolsEnabled();
     const { supabaseAdmin } = await assertOwner(context.userId);
     await supabaseAdmin.from("user_roles").delete().eq("user_id", context.userId);
     const { error } = await supabaseAdmin
