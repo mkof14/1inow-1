@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, LayoutGrid, Table as TableIcon, Activity, Search } from "lucide-react";
+import { AlertTriangle, ArrowRight, CheckCircle2, Plus, Trash2, LayoutGrid, Table as TableIcon, Activity, Search, Target } from "lucide-react";
 import { toast } from "sonner";
 import { PortfolioCard } from "@/components/icons/compass-icons";
 import { useT } from "@/lib/i18n";
@@ -83,6 +83,16 @@ function ProjectsPage() {
       return true;
     });
   }, [projects.data, q, statusFilter]);
+  const allProjects = projects.data ?? [];
+  const activeCount = allProjects.filter((p: any) => p.status === "active" || p.status === "in_progress").length;
+  const riskCount = allProjects.filter((p: any) => p.priority === "critical" || p.priority === "high").length;
+  const completedCount = allProjects.filter((p: any) => p.status === "completed").length;
+  const nextProject = [...allProjects]
+    .filter((p: any) => p.status !== "archived" && p.status !== "completed")
+    .sort((a: any, b: any) => {
+      const priorityRank: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+      return (priorityRank[a.priority] ?? 4) - (priorityRank[b.priority] ?? 4) || (a.progress ?? 0) - (b.progress ?? 0);
+    })[0];
 
   return (
     <div className="p-6 md:p-8 max-w-[1500px] mx-auto">
@@ -140,6 +150,39 @@ function ProjectsPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+      </div>
+
+      <div className="mb-5 grid gap-3 lg:grid-cols-[1.2fr_repeat(3,minmax(0,0.55fr))]">
+        <div className="surface-aurora shimmer-border ring-accent-soft rounded-2xl border border-border p-4">
+          <div className="flex items-start gap-3">
+            <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-accent/10 text-accent">
+              <Target className="size-5" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Next project move</div>
+              <div className="mt-1 text-sm font-semibold text-foreground">
+                {nextProject ? nextProject.name : "Create the first project outcome"}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {nextProject
+                  ? `${PROJECT_STATUS_LABEL[nextProject.status as keyof typeof PROJECT_STATUS_LABEL]} · ${nextProject.priority} priority · ${nextProject.progress ?? 0}% complete`
+                  : "Start with a clear outcome, owner, and priority."}
+              </p>
+              {nextProject && (
+                <Link
+                  to="/projects/$slug"
+                  params={{ slug: nextProject.slug }}
+                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:underline"
+                >
+                  Open project <ArrowRight className="size-3.5" />
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+        <ProjectSignal icon={Activity} label="Active" value={activeCount} onClick={() => setStatusFilter("active")} />
+        <ProjectSignal icon={AlertTriangle} label="High risk" value={riskCount} tone={riskCount ? "risk" : "calm"} onClick={() => setView("risk")} />
+        <ProjectSignal icon={CheckCircle2} label="Completed" value={completedCount} tone="done" onClick={() => setStatusFilter("completed")} />
       </div>
 
       <div className="flex flex-wrap items-center gap-3 mb-5">
@@ -331,5 +374,40 @@ function ProjectsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function ProjectSignal({
+  icon: Icon,
+  label,
+  value,
+  tone = "default",
+  onClick,
+}: {
+  icon: typeof Activity;
+  label: string;
+  value: number;
+  tone?: "default" | "risk" | "calm" | "done";
+  onClick: () => void;
+}) {
+  const toneClass = tone === "risk"
+    ? "text-amber-600 bg-amber-500/10 border-amber-500/25"
+    : tone === "done"
+      ? "text-emerald-600 bg-emerald-500/10 border-emerald-500/25"
+      : tone === "calm"
+        ? "text-muted-foreground bg-card border-border"
+        : "text-accent bg-accent/10 border-accent/25";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-2xl border border-border bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-[0_12px_36px_-18px_color-mix(in_oklab,var(--accent)_45%,transparent)]"
+    >
+      <div className={`mb-3 inline-grid size-8 place-items-center rounded-lg border ${toneClass}`}>
+        <Icon className="size-4" />
+      </div>
+      <div className="text-2xl font-semibold tracking-tight">{value}</div>
+      <div className="mt-0.5 text-xs text-muted-foreground">{label}</div>
+    </button>
   );
 }

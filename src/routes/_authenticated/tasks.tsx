@@ -5,7 +5,7 @@ import { fetchTasks, TASK_STATUS_LABEL, TASK_STATUSES, type TaskStatus } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Search, LayoutGrid, List, Calendar } from "lucide-react";
+import { AlertTriangle, ArrowRight, CheckCircle2, Clock, Search, LayoutGrid, List, Calendar } from "lucide-react";
 import { ExecutionNode } from "@/components/icons/compass-icons";
 import { useSetPageContext } from "@/lib/ai-context";
 import { toast } from "sonner";
@@ -44,6 +44,18 @@ function ExecutionPage() {
 
   const grouped: Record<string, any[]> = BOARD_COLS.reduce((acc, s) => ({ ...acc, [s]: [] }), {} as any);
   filtered.forEach((t: any) => { if (grouped[t.status]) grouped[t.status].push(t); });
+  const now = Date.now();
+  const openTasks = (tasks.data ?? []).filter((task: any) => task.status !== "done" && task.status !== "canceled");
+  const overdue = openTasks.filter((task: any) => task.due_date && new Date(task.due_date).getTime() < now);
+  const today = openTasks.filter((task: any) => {
+    if (!task.due_date) return false;
+    const date = new Date(task.due_date);
+    const current = new Date();
+    return date.getFullYear() === current.getFullYear() && date.getMonth() === current.getMonth() && date.getDate() === current.getDate();
+  });
+  const inProgress = openTasks.filter((task: any) => task.status === "in_progress");
+  const inReview = openTasks.filter((task: any) => task.status === "review");
+  const nextTask = overdue[0] ?? today[0] ?? inProgress[0] ?? openTasks[0];
 
   return (
     <div className="p-4 sm:p-6 md:p-8 max-w-[1500px] mx-auto">
@@ -66,6 +78,31 @@ function ExecutionPage() {
               }`}><v.icon className="size-3.5 shrink-0" /><span className="hidden xs:inline sm:inline">{v.label}</span></button>
           ))}
         </div>
+      </div>
+
+      <div className="mb-5 grid gap-3 lg:grid-cols-[1.25fr_repeat(4,minmax(0,0.48fr))]">
+        <div className="surface-aurora shimmer-border ring-accent-soft rounded-2xl border border-border p-4">
+          <div className="flex items-start gap-3">
+            <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-accent/10 text-accent">
+              <Clock className="size-5" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Next execution move</div>
+              <div className="mt-1 text-sm font-semibold text-foreground">
+                {nextTask ? nextTask.title : "No open tasks"}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {nextTask
+                  ? `${TASK_STATUS_LABEL[nextTask.status as TaskStatus] ?? nextTask.status} · ${nextTask.priority ?? "normal"} priority${nextTask.due_date ? ` · due ${new Date(nextTask.due_date).toLocaleDateString()}` : ""}`
+                  : "Create or pull the next small action into the board."}
+              </p>
+            </div>
+          </div>
+        </div>
+        <TaskSignal icon={AlertTriangle} label="Overdue" value={overdue.length} tone={overdue.length ? "risk" : "calm"} />
+        <TaskSignal icon={Calendar} label="Today" value={today.length} />
+        <TaskSignal icon={Clock} label="In progress" value={inProgress.length} />
+        <TaskSignal icon={CheckCircle2} label="Review" value={inReview.length} tone="review" />
       </div>
 
       <div className="relative max-w-md mb-5">
@@ -156,6 +193,38 @@ function ExecutionPage() {
           </table>
         </div>
       )}
+    </div>
+  );
+}
+
+function TaskSignal({
+  icon: Icon,
+  label,
+  value,
+  tone = "default",
+}: {
+  icon: typeof Clock;
+  label: string;
+  value: number;
+  tone?: "default" | "risk" | "calm" | "review";
+}) {
+  const toneClass = tone === "risk"
+    ? "text-rose-600 bg-rose-500/10 border-rose-500/25"
+    : tone === "review"
+      ? "text-sky-600 bg-sky-500/10 border-sky-500/25"
+      : tone === "calm"
+        ? "text-muted-foreground bg-card border-border"
+        : "text-accent bg-accent/10 border-accent/25";
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4">
+      <div className={`mb-3 inline-grid size-8 place-items-center rounded-lg border ${toneClass}`}>
+        <Icon className="size-4" />
+      </div>
+      <div className="text-2xl font-semibold tracking-tight">{value}</div>
+      <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+        {label}
+        {value > 0 && <ArrowRight className="size-3" />}
+      </div>
     </div>
   );
 }

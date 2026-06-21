@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Brain, Bot, Workflow, Shield, MessageSquareWarning, Database, Lock, History, Settings2, Trash2, Bell } from "lucide-react";
+import { Brain, Bot, Workflow, Shield, MessageSquareWarning, Database, Lock, History, Settings2, Trash2, Bell, Radio, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { BrandMark } from "@/components/icons/compass-mark";
 
 export const Route = createFileRoute("/_authenticated/intelligence")({
@@ -56,6 +56,30 @@ function IntelligencePage() {
         </div>
       </header>
 
+      <div className="mb-6 grid gap-3 md:grid-cols-3">
+        <IntelligenceSignal
+          icon={Radio}
+          label="Model execution"
+          value="Disabled"
+          description="AI routes are safe stubs until a provider is explicitly approved."
+          tone="paused"
+        />
+        <IntelligenceSignal
+          icon={CheckCircle2}
+          label="Control layer"
+          value="Active"
+          description="Memory, rules, questions, privacy zones, and audit state are editable."
+          tone="active"
+        />
+        <IntelligenceSignal
+          icon={AlertTriangle}
+          label="Next decision"
+          value="Gateway plan"
+          description="Define permissions, costs, logs, and provider routing before connecting AI."
+          tone="review"
+        />
+      </div>
+
       <Tabs defaultValue="memory">
         <TabsList className="flex w-full flex-wrap justify-start gap-1 bg-transparent p-0">
           <TabsTrigger value="memory" className="data-[state=active]:bg-card"><Brain className="mr-1.5 h-4 w-4" />Memory</TabsTrigger>
@@ -83,6 +107,36 @@ function IntelligencePage() {
           <TabsContent value="prefs"><PrefsPanel /></TabsContent>
         </div>
       </Tabs>
+    </div>
+  );
+}
+
+function IntelligenceSignal({
+  icon: Icon,
+  label,
+  value,
+  description,
+  tone,
+}: {
+  icon: typeof Brain;
+  label: string;
+  value: string;
+  description: string;
+  tone: "paused" | "active" | "review";
+}) {
+  const toneClass = tone === "active"
+    ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-600"
+    : tone === "review"
+      ? "border-amber-500/25 bg-amber-500/10 text-amber-600"
+      : "border-border bg-card text-muted-foreground";
+  return (
+    <div className="surface-aurora shimmer-border ring-accent-soft rounded-2xl border border-border p-4">
+      <div className={`mb-3 inline-grid size-9 place-items-center rounded-xl border ${toneClass}`}>
+        <Icon className="size-4" />
+      </div>
+      <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{label}</div>
+      <div className="mt-1 text-lg font-semibold tracking-tight">{value}</div>
+      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{description}</p>
     </div>
   );
 }
