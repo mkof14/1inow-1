@@ -105,7 +105,7 @@ Recommended production login model:
 
 ## Environment Variable Contract
 
-These variables should be introduced later in a dedicated implementation task.
+These variables are now part of the server-side environment contract.
 
 ### `VITE_ENABLE_FOUNDER_MODE`
 
@@ -142,7 +142,8 @@ Expected value:
 
 Default:
 
-- No default in production.
+- `dnainform@gmail.com` in the current implementation.
+- Production can override this from environment settings.
 
 ### `ENABLE_DEV_OWNER_TOOLS`
 
@@ -196,7 +197,7 @@ Allowed changes:
 
 Status:
 
-- This document covers Phase A.
+- Implemented.
 
 ### Phase B: Guard `devOwnerMagicLink`
 
@@ -222,6 +223,12 @@ Files likely involved later:
 Validation:
 
 - `npm run build`
+
+Status:
+
+- Implemented.
+- `devOwnerMagicLink` now refuses to run unless `ENABLE_DEV_OWNER_TOOLS=true`.
+- Founder email is read from server-only config.
 
 ### Phase C: Normalize Owner Role Checks
 
@@ -291,6 +298,12 @@ Files likely involved later:
 Validation:
 
 - `npm run build`
+
+Status:
+
+- Implemented for `resetDemoData` and `seedDemoData`.
+- Both functions now require `ENABLE_DEV_OWNER_TOOLS=true` before running.
+- Owner email and real Supabase auth checks remain required.
 
 ## Risks And Mitigations
 

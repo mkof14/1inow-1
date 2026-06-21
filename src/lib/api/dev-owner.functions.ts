@@ -1,14 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
-
-const OWNER_EMAIL = "dnainform@gmail.com";
+import { requireDevOwnerToolsEnabled } from "@/lib/config.server";
 
 /**
  * Dev-only: issues a magic-link sign-in for the workspace owner.
- * Hard-coded to a single email. Ensures the user exists and has super_admin.
+ * Disabled unless explicitly enabled in a trusted local/dev environment.
  */
 export const devOwnerMagicLink = createServerFn({ method: "POST" })
   .validator((data: { origin?: string }) => data)
   .handler(async ({ data }) => {
+    const config = requireDevOwnerToolsEnabled();
+    const ownerEmail = config.founderEmail;
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
@@ -19,14 +20,14 @@ export const devOwnerMagicLink = createServerFn({ method: "POST" })
       await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
     if (listErr) throw new Error(listErr.message);
     const existing = list.users.find(
-      (u) => u.email?.toLowerCase() === OWNER_EMAIL,
+      (u) => u.email?.toLowerCase() === ownerEmail,
     );
     if (existing) {
       userId = existing.id;
     } else {
       const { data: created, error: createErr } =
         await supabaseAdmin.auth.admin.createUser({
-          email: OWNER_EMAIL,
+          email: ownerEmail,
           email_confirm: true,
           user_metadata: { full_name: "Owner" },
         });
@@ -48,7 +49,7 @@ export const devOwnerMagicLink = createServerFn({ method: "POST" })
     const { data: link, error: linkErr } =
       await supabaseAdmin.auth.admin.generateLink({
         type: "magiclink",
-        email: OWNER_EMAIL,
+        email: ownerEmail,
         options: origin ? { redirectTo: `${origin}/dashboard` } : undefined,
       });
     if (linkErr) throw new Error(linkErr.message);

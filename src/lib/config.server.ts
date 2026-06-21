@@ -17,9 +17,25 @@ import process from "node:process";
 //     VITE_ prefix. Never put secrets here — they ship to the browser.
 
 export function getServerConfig() {
+  const founderEmail = process.env.FOUNDER_EMAIL?.trim().toLowerCase();
+
   return {
     nodeEnv: process.env.NODE_ENV,
+    founderEmail: founderEmail || "dnainform@gmail.com",
+    devOwnerToolsEnabled: process.env.ENABLE_DEV_OWNER_TOOLS === "true",
     // Add server-only values here, e.g.:
     //   databaseUrl: process.env.DATABASE_URL,
   };
+}
+
+export function requireDevOwnerToolsEnabled() {
+  const config = getServerConfig();
+
+  if (!config.devOwnerToolsEnabled) {
+    throw new Error(
+      "Dev owner tools are disabled. Set ENABLE_DEV_OWNER_TOOLS=true only in a trusted local/dev environment.",
+    );
+  }
+
+  return config;
 }

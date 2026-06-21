@@ -1,7 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-
-const OWNER_EMAIL = "dnainform@gmail.com";
+import {
+  getServerConfig,
+  requireDevOwnerToolsEnabled,
+} from "@/lib/config.server";
 
 type AppRole =
   | "super_admin"
@@ -16,13 +18,14 @@ type AppRole =
   | "guest";
 
 async function assertOwner(userId: string) {
+  const config = getServerConfig();
   const { supabaseAdmin } = await import(
     "@/integrations/supabase/client.server"
   );
   const { data, error } = await supabaseAdmin.auth.admin.getUserById(userId);
   if (error) throw new Error(error.message);
   const email = data.user?.email?.toLowerCase();
-  if (email !== OWNER_EMAIL) {
+  if (email !== config.founderEmail) {
     throw new Error("Forbidden: dev tools are owner-only");
   }
   return { supabaseAdmin, email };
@@ -46,6 +49,7 @@ export const setSelfRole = createServerFn({ method: "POST" })
 export const resetDemoData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    requireDevOwnerToolsEnabled();
     const { supabaseAdmin } = await assertOwner(context.userId);
     const tables = [
       "message_reactions",
@@ -91,6 +95,7 @@ export const resetDemoData = createServerFn({ method: "POST" })
 export const seedDemoData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    requireDevOwnerToolsEnabled();
     const { supabaseAdmin } = await assertOwner(context.userId);
     const uid = context.userId;
 
