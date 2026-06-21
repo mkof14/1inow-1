@@ -282,6 +282,14 @@ Validation:
 
 - `npm run build`
 
+Status:
+
+- Implemented for route-level access.
+- `/_authenticated` routes now require a real Supabase session by default.
+- Local founder convenience is allowed only when `VITE_ENABLE_FOUNDER_MODE=true` and Vite is running in dev mode.
+- Unauthenticated app traffic redirects to `/auth`.
+- No Supabase schema changes were made.
+
 ### Phase E: Audit Destructive Dev Tools
 
 Purpose:
