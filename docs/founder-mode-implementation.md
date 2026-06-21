@@ -456,3 +456,17 @@ Required validation for the implementation task:
 ```bash
 npm run build
 ```
+
+## Profile Bootstrap Status
+
+Implemented:
+
+- The client now ensures the authenticated user's `profiles` row exists after session load.
+- Profile save uses idempotent `upsert` so a missing profile row does not silently discard changes.
+- Settings profile save also uses idempotent `upsert`.
+- Existing profile fields are not overwritten during routine bootstrap, except email sync when the auth email changes.
+
+Still intentionally separate:
+
+- Founder `super_admin` role assignment remains handled by controlled owner bootstrap/admin tooling.
+- No Supabase schema migration was added in this step.

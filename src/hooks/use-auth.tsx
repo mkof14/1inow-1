@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { ensureCurrentProfile } from "@/lib/profile-bootstrap";
 
 interface AuthContextValue {
   session: Session | null;
@@ -20,9 +21,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
+      if (s?.user) {
+        void ensureCurrentProfile(s.user).catch((error) => {
+          console.warn("[auth] profile bootstrap failed", error);
+        });
+      }
     });
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (data.session?.user) {
+        try {
+          await ensureCurrentProfile(data.session.user);
+        } catch (error) {
+          console.warn("[auth] profile bootstrap failed", error);
+        }
+      }
       setSession(data.session);
+      setLoading(false);
+    }).catch(() => {
       setLoading(false);
     });
     return () => sub.subscription.unsubscribe();

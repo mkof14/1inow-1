@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { UserCircle, FolderKanban } from "lucide-react";
+import { ensureCurrentProfile } from "@/lib/profile-bootstrap";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
@@ -73,7 +74,10 @@ function ProfilePage() {
   const save = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Not signed in");
-      const { error } = await supabase.from("profiles").update(form).eq("id", user.id);
+      await ensureCurrentProfile(user);
+      const { error } = await supabase
+        .from("profiles")
+        .upsert({ id: user.id, email: user.email ?? null, ...form }, { onConflict: "id" });
       if (error) throw error;
     },
     onSuccess: () => {

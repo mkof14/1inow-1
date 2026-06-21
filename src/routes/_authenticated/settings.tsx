@@ -13,6 +13,7 @@ import { useI18n } from "@/lib/i18n";
 import { dictionaries } from "@/lib/i18n/dictionaries";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { ensureCurrentProfile } from "@/lib/profile-bootstrap";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsPage,
@@ -87,14 +88,17 @@ function SettingsPage() {
 
   const saveProfile = async () => {
     if (!user) return;
-    const { error } = await supabase.from("profiles").update({
+    await ensureCurrentProfile(user);
+    const { error } = await supabase.from("profiles").upsert({
+      id: user.id,
+      email: user.email ?? null,
       preferred_language: pf.preferred_language,
       secondary_language: pf.secondary_language || null,
       country: pf.country || null, city: pf.city || null,
       timezone: pf.timezone, date_format: pf.date_format,
       time_format: pf.time_format, number_format: pf.number_format,
       auto_translate: pf.auto_translate,
-    }).eq("id", user.id);
+    }, { onConflict: "id" });
     if (error) return toast.error(error.message);
     setLang(pf.preferred_language);
     toast.success(t("common.save"));
