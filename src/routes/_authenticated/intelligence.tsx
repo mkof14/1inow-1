@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Brain, Bot, Workflow, Shield, ClipboardList, MessageSquareWarning, Database, Lock, History, Settings2, Trash2, Bell } from "lucide-react";
+import { Brain, Bot, Workflow, Shield, MessageSquareWarning, Database, Lock, History, Settings2, Trash2, Bell } from "lucide-react";
 import { BrandMark } from "@/components/icons/compass-mark";
 
 export const Route = createFileRoute("/_authenticated/intelligence")({

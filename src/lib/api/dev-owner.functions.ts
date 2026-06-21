@@ -7,7 +7,7 @@ const OWNER_EMAIL = "dnainform@gmail.com";
  * Hard-coded to a single email. Ensures the user exists and has super_admin.
  */
 export const devOwnerMagicLink = createServerFn({ method: "POST" })
-  .inputValidator((data: { origin?: string }) => data)
+  .validator((data: { origin?: string }) => data)
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"

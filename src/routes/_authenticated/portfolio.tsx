@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { fetchProjects } from "@/lib/queries";
-import { PageHeader } from "@/components/page-header";
 import { PortfolioCard, BrandMark } from "@/components/icons/compass-icons";
 import { ArrowUpRight, Sparkles } from "lucide-react";
 import { useT } from "@/lib/i18n";

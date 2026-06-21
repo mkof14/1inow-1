@@ -31,7 +31,7 @@ async function assertOwner(userId: string) {
 /** Replace the caller's role rows with a single chosen role. Owner-only. */
 export const setSelfRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { role: AppRole }) => data)
+  .validator((data: { role: AppRole }) => data)
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await assertOwner(context.userId);
     await supabaseAdmin.from("user_roles").delete().eq("user_id", context.userId);

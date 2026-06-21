@@ -10,7 +10,7 @@ import { useT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { exportReportCSV, exportReportPDF, type ReportPayload } from "@/lib/report-export";
+import type { ReportPayload } from "@/lib/report-export";
 
 export const Route = createFileRoute("/_authenticated/reports")({ component: ReportsPage });
 
@@ -134,8 +134,14 @@ function ReportsPage() {
   }
 
   const stamp = `${from}_${to}`;
-  const onPDF = () => exportReportPDF(buildPayload(), `report_${stamp}.pdf`);
-  const onCSV = () => exportReportCSV(buildPayload(), `report_${stamp}.csv`);
+  const onPDF = async () => {
+    const { exportReportPDF } = await import("@/lib/report-export");
+    exportReportPDF(buildPayload(), `report_${stamp}.pdf`);
+  };
+  const onCSV = async () => {
+    const { exportReportCSV } = await import("@/lib/report-export");
+    exportReportCSV(buildPayload(), `report_${stamp}.csv`);
+  };
 
   const statuses = useMemo(() => Array.from(new Set((projects.data ?? []).map((p: any) => p.status).filter(Boolean))) as string[], [projects.data]);
 

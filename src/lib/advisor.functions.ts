@@ -5,7 +5,7 @@ type Input = { prompt: string; lang?: string };
 
 export const askAdvisor = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => {
+  .validator((d: unknown) => {
     const i = d as Input;
     if (!i?.prompt) throw new Error("prompt required");
     if (i.prompt.length > 4000) throw new Error("prompt too long");

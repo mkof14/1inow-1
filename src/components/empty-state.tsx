@@ -1,4 +1,3 @@
-import { type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Inbox } from "lucide-react";
 

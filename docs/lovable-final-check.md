@@ -106,11 +106,11 @@ These stubs are safe for local and Vercel builds because they do not require pai
 
 `npm run build` completed successfully with zero build errors.
 
-Non-blocking warnings remain, but they are not caused by Lovable:
+The previously noted non-Lovable build warnings were addressed in the production-readiness cleanup:
 
-- Several TanStack Start server functions still use deprecated `inputValidator()` instead of `validator()`.
-- The production client build reports large JavaScript chunks.
-- Some SSR output reports unused imports from TanStack package internals.
+- TanStack Start server functions now use `validator()` instead of deprecated `inputValidator()`.
+- Production vendor chunk splitting keeps generated JavaScript chunks below Vite's default warning threshold.
+- Known unused-import warnings from TanStack package internals are filtered at the Vite/Rollup boundary.
 
 ## Files Changed During This Check
 
@@ -120,14 +120,12 @@ No runtime source files, package files, environment files, Vite config, Supabase
 
 ## Exact Next Cleanup Actions
 
-1. Replace deprecated TanStack Start `inputValidator()` calls with `validator()` in a separate cleanup task.
-2. Review production bundle chunk size and add manual chunking only if it becomes a real performance issue.
-3. Smoke-test frontend flows that call `/api/chat`, `/api/stt`, and `/api/tts` to confirm the placeholder states display cleanly.
-4. Plan production integrations separately and intentionally:
+1. Smoke-test frontend flows that call `/api/chat`, `/api/stt`, and `/api/tts` to confirm the placeholder states display cleanly.
+2. Plan production integrations separately and intentionally:
    - OpenAI
    - Resend
    - Stripe
    - Analytics
    - Email
    - Monitoring
-5. Keep external AI, payment, email, and analytics services disconnected until their implementation phase is explicitly started.
+3. Keep external AI, payment, email, and analytics services disconnected until their implementation phase is explicitly started.

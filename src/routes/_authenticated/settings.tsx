@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
 
 function SettingsPage() {
   const qc = useQueryClient();
-  const { lang, setLang, t } = useI18n();
+  const { setLang, t } = useI18n();
   const { user } = useAuth();
   const { data, isLoading } = useQuery({ queryKey: ["user-settings"], queryFn: fetchSettings });
   const { data: profile } = useQuery({

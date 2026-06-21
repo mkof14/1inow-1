@@ -71,5 +71,5 @@
 
 Build notes:
 
-- TanStack reports existing `createServerFn().inputValidator()` deprecation warnings.
-- Vite reports existing large chunk warnings.
+- TanStack `createServerFn().inputValidator()` deprecation warnings have been resolved by moving server functions to `validator()`.
+- Vite large chunk warnings have been resolved with route-level lazy loading for report export code and production vendor chunk splitting.

@@ -13,7 +13,6 @@ import { Mic, Volume2, Keyboard, Save, Loader2, Play, Square, Radio, Wand2, Acti
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchSystemSettings, updateSystemSetting, type SystemSetting } from "@/lib/admin-queries";
-import { useI18n } from "@/lib/i18n";
 import { dictionaries } from "@/lib/i18n/dictionaries";
 import { useRef } from "react";
 import { Textarea } from "@/components/ui/textarea";
@@ -60,7 +59,6 @@ function loadUserPrefs(): UserVoicePrefs {
 }
 
 function VoicePage() {
-  const { t } = useI18n();
   const qc = useQueryClient();
   const { data: settings = [] } = useQuery<SystemSetting[]>({
     queryKey: ["admin", "system-settings"],

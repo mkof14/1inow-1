@@ -5,7 +5,7 @@ type Input = { text: string; targetLang: string; sourceLang?: string; tone?: str
 
 export const translateText = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => {
+  .validator((d: unknown) => {
     const i = d as Input;
     if (!i?.text || !i?.targetLang) throw new Error("text and targetLang required");
     if (i.text.length > 12000) throw new Error("Text too long");
@@ -24,7 +24,7 @@ type RewriteInput = { text: string; mode: "improve" | "simplify" | "professional
 
 export const rewriteText = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => {
+  .validator((d: unknown) => {
     const i = d as RewriteInput;
     if (!i?.text || !i?.mode) throw new Error("text and mode required");
     return i;
