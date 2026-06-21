@@ -19,7 +19,7 @@ Electron-обёртка с **автообновлениями** через GitHu
 1. В `desktop/package.json` замени `REPLACE_OWNER` и `REPLACE_REPO` на свои значения GitHub.
 2. Положи иконку `desktop/icons/icon.icns` (1024×1024, .icns). Можно сконвертировать
    из `public/icons/icon-1024.png` через `iconutil` на маке или онлайн-конвертером.
-3. В `desktop/main.cjs` проверь `ONEINOW_URL` — по умолчанию `https://1inow.lovable.app`.
+3. В `desktop/main.cjs` проверь `ONEINOW_URL` — по умолчанию `https://1inow.com`.
    Поменяй, если опубликуешь по другому адресу.
 
 ## Релиз

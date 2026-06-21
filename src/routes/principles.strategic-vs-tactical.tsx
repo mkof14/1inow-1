@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-const CANONICAL = "https://investspace-hub.lovable.app/principles/strategic-vs-tactical";
+const CANONICAL = "https://1inow.com/principles/strategic-vs-tactical";
 
 export const Route = createFileRoute("/principles/strategic-vs-tactical")({
   head: () => ({
@@ -44,7 +44,7 @@ export const Route = createFileRoute("/principles/strategic-vs-tactical")({
             name: "1inow",
             logo: {
               "@type": "ImageObject",
-              url: "https://investspace-hub.lovable.app/icons/icon-512.png",
+              url: "https://1inow.com/icons/icon-512.png",
             },
           },
         }),
@@ -59,13 +59,13 @@ export const Route = createFileRoute("/principles/strategic-vs-tactical")({
               "@type": "ListItem",
               position: 1,
               name: "Home",
-              item: "https://investspace-hub.lovable.app/",
+              item: "https://1inow.com/",
             },
             {
               "@type": "ListItem",
               position: 2,
               name: "Principles",
-              item: "https://investspace-hub.lovable.app/principles",
+              item: "https://1inow.com/principles",
             },
             {
               "@type": "ListItem",

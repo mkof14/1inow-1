@@ -10,7 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
+import { reportError } from "../lib/error-reporting";
 import { AuthProvider } from "@/hooks/use-auth";
 import { Toaster } from "sonner";
 import { I18nProvider } from "@/lib/i18n";
@@ -42,7 +42,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    reportError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
   return (
@@ -88,7 +88,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:site_name", content: "1inow" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "1inow — Command Workspace for Investment Teams" },
       { name: "twitter:description", content: "Private command and execution environment — portfolio, signals, decisions, people, knowledge." },
       { name: "theme-color", content: "#0B1220" },
@@ -123,8 +122,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@context": "https://schema.org",
           "@type": "Organization",
           name: "1inow",
-          url: "https://investspace-hub.lovable.app",
-          logo: "https://investspace-hub.lovable.app/icons/icon-512.png",
+          url: "https://1inow.com",
+          logo: "https://1inow.com/icons/icon-512.png",
         }),
       },
       {
@@ -133,7 +132,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@context": "https://schema.org",
           "@type": "WebSite",
           name: "1inow",
-          url: "https://investspace-hub.lovable.app",
+          url: "https://1inow.com",
         }),
       },
     ],

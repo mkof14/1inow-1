@@ -2,7 +2,7 @@
 
 ## 1. Push to GitHub
 
-In Lovable, open the **+** menu (bottom-left of chat) → **GitHub** → **Connect project** → **Create Repository**. After that, every Lovable change auto-syncs to the repo, and pushes to the default branch sync back to Lovable.
+Use the GitHub repository as the source of truth for Vercel deploys.
 
 If you prefer to push manually from a clone:
 
@@ -37,20 +37,18 @@ Copy from `.env.example`. Required:
 | `SUPABASE_PUBLISHABLE_KEY` | Production, Preview, Development | same as VITE_* |
 | `SUPABASE_PROJECT_ID` | Production, Preview, Development | same as VITE_* |
 
-Optional, only if you use them in server functions:
+Optional, only if you use privileged server functions:
 
-- `LOVABLE_API_KEY` — for the Lovable AI gateway.
 - `SUPABASE_SERVICE_ROLE_KEY` — only if you call privileged admin APIs.
 
 ### Google sign-in on Vercel
 
-Google OAuth in this app uses the Lovable broker (`/~oauth/*`), which only
-exists on `*.lovable.app` and Lovable-managed custom domains. On Vercel that
-path 404s, so the **Continue with Google** button is hidden by default.
+Google OAuth should be configured directly in Supabase before enabling the
+**Continue with Google** button.
 
 Email/password sign-in via the backend works on Vercel without any extra
-setup. To turn the Google button back on (only when deploying on Lovable),
-set `VITE_ENABLE_GOOGLE_AUTH="true"` in that environment.
+setup. To turn the Google button back on, configure Supabase OAuth redirect URLs
+for the deployment and set `VITE_ENABLE_GOOGLE_AUTH="true"`.
 
 ## 4. Post-deploy check: email/password auth flow
 

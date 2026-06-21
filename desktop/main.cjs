@@ -16,7 +16,7 @@ if (app.isPackaged) {
   }
 }
 
-const APP_URL = process.env.ONEINOW_URL || 'https://1inow.lovable.app';
+const APP_URL = process.env.ONEINOW_URL || 'https://1inow.com';
 
 function createWindow() {
   const win = new BrowserWindow({

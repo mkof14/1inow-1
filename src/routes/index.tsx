@@ -8,10 +8,10 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Run portfolio, signals, decisions, people, and knowledge from one private command workspace built for investment teams." },
       { property: "og:title", content: "1inow — Command Workspace for Investment Teams" },
       { property: "og:description", content: "Run portfolio, signals, decisions, people, and knowledge from one private command workspace built for investment teams." },
-      { property: "og:url", content: "https://investspace-hub.lovable.app/" },
+      { property: "og:url", content: "https://1inow.com/" },
       { property: "og:type", content: "website" },
     ],
-    links: [{ rel: "canonical", href: "https://investspace-hub.lovable.app/" }],
+    links: [{ rel: "canonical", href: "https://1inow.com/" }],
   }),
   component: Index,
 });
