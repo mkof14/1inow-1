@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!uid) { setIsAdmin(false); return; }
     (async () => {
       try {
-        const { data } = await supabase.rpc("has_role", { _user_id: uid, _role: "admin" as any });
+        const { data } = await supabase.rpc("is_admin", { _user_id: uid });
         setIsAdmin(Boolean(data));
       } catch { setIsAdmin(false); }
     })();

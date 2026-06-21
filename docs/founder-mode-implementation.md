@@ -252,6 +252,13 @@ Validation:
 
 - `npm run build`
 
+Status:
+
+- Implemented for the current client auth flag.
+- `useAuth().isAdmin` now uses the existing Supabase `is_admin` RPC.
+- The database helper already treats `super_admin` as admin-equivalent.
+- No role model or Supabase schema changes were made.
+
 ### Phase D: Re-Enable Protected App Route Behavior
 
 Purpose:
