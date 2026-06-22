@@ -1,15 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { fetchDecisions, fetchProjects, fetchTasks, fetchProfiles } from "@/lib/queries";
 import { fetchNotifications } from "@/lib/wave1";
 import { useAuth } from "@/hooks/use-auth";
-import { AlertTriangle, Bell, CheckCircle2, Clock, CalendarDays, FolderKanban, Hourglass, Info, MessageSquare, ListChecks, Plus, ArrowRight, Sparkles, Target, TrendingUp } from "lucide-react";
+import { AlertTriangle, Bell, CheckCircle2, Clock, CalendarDays, FolderKanban, Hourglass, Info, MessageSquare, ListChecks, Plus, ArrowRight, Sparkles, Target, TrendingUp, Mic } from "lucide-react";
 import { BrandMark } from "@/components/icons/compass-mark";
 import { BrandMark as BrandRing } from "@/components/icons/compass-icons";
 import { buildAttention, buildToday, buildWaitingFor, detectOpenLoops, scoreProject } from "@/lib/brain";
 import { firstScreenGreeting } from "@/lib/simplicity";
 import { PageHeader } from "@/components/page-header";
 import { useT } from "@/lib/i18n";
+import { getVoiceInboxItems, subscribeVoiceInbox, type VoiceInboxItem } from "@/lib/voice-intake";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({ component: HomePage });
 
@@ -22,6 +24,7 @@ function HomePage() {
   const people = useQuery({ queryKey: ["profiles"], queryFn: fetchProfiles });
   const notifs = useQuery({ queryKey: ["notifications"], queryFn: fetchNotifications });
   const decisions = useQuery({ queryKey: ["decisions"], queryFn: fetchDecisions });
+  const [voiceInbox, setVoiceInbox] = useState<VoiceInboxItem[]>([]);
 
   const name = (user?.user_metadata as any)?.full_name?.split(" ")[0] ?? user?.email?.split("@")[0] ?? "there";
 
@@ -48,6 +51,12 @@ function HomePage() {
 
   const openTalk = () =>
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "j", metaKey: true }));
+
+  useEffect(() => {
+    const refresh = () => setVoiceInbox(getVoiceInboxItems());
+    refresh();
+    return subscribeVoiceInbox(refresh);
+  }, []);
 
   // ── Widget data ────────────────────────────────────────────────────
   const now = Date.now();
@@ -235,6 +244,8 @@ function HomePage() {
           activeProjects: activeProjects.length,
         }}
       />
+
+      <VoiceReviewQueue items={voiceInbox.filter((item) => item.status === "new").slice(0, 5)} />
 
       {/* ── Premium widgets ──────────────────────────────────────── */}
       <div className="grid md:grid-cols-2 gap-5 mb-10">
@@ -633,6 +644,51 @@ function DailyCommandCenter({
             </CommandList>
           )}
         </CommandPanel>
+      </div>
+    </section>
+  );
+}
+
+function VoiceReviewQueue({ items }: { items: VoiceInboxItem[] }) {
+  if (!items.length) return null;
+
+  return (
+    <section className="mb-10 rounded-2xl border border-border bg-card/70 p-4 fade-rise">
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-3">
+          <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-accent/10 text-accent">
+            <Mic className="size-4" />
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold tracking-tight">Voice Review Queue</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Recent captured thoughts waiting to become tasks, projects, or decisions.
+            </p>
+          </div>
+        </div>
+        <Link to="/inbox" className="inline-flex items-center gap-1.5 text-xs font-medium text-accent hover:underline">
+          Review in Inbox
+          <ArrowRight className="size-3.5" />
+        </Link>
+      </div>
+
+      <div className="grid gap-2 md:grid-cols-2">
+        {items.map((item) => (
+          <Link
+            key={item.id}
+            to="/inbox"
+            className="group rounded-xl border border-border bg-background/60 p-3 transition-colors hover:border-accent/35 hover:bg-accent/5"
+          >
+            <div className="mb-1 flex items-center gap-2">
+              <span className="rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-medium capitalize text-muted-foreground">
+                {item.kind}
+              </span>
+              <span className="text-[10px] text-muted-foreground">{new Date(item.createdAt).toLocaleString()}</span>
+            </div>
+            <div className="truncate text-sm font-medium group-hover:text-accent">{item.title}</div>
+            <div className="mt-1 truncate text-[11px] text-muted-foreground">{item.summary}</div>
+          </Link>
+        ))}
       </div>
     </section>
   );
