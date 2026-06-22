@@ -1,8 +1,15 @@
 # 1inow
 
-> 1inow is a private command and execution environment for investment teams — portfolio, signals, decisions, people, and knowledge in one workspace.
+> 1inow is a private personal command center for projects, tasks, voice capture, decisions, and daily execution.
 
-## Pages
+## Public pages
 
-- [Home](/): Overview of the 1inow workspace.
-- [Sign in](/auth): Sign in or create an account to access the workspace.
+- [Home](/): Product overview and entry point.
+- [Strategic vs Tactical](/principles/strategic-vs-tactical): Operating principle for decision and execution balance.
+- [Sign in](/auth): Access the private workspace.
+
+## Product direction
+
+- Voice capture and Voice Inbox are available without external AI services.
+- AI, speech-to-text, and text-to-speech provider connections are prepared but intentionally disabled.
+- The authenticated workspace contains dashboard, projects, tasks, calendar, inbox, communication, people, reports, intelligence, admin, and settings modules.

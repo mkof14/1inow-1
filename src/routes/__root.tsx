@@ -81,15 +81,26 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "1inow — Command Workspace for Investment Teams" },
-      { name: "description", content: "1inow is a private command and execution workspace for investment teams — portfolio, signals, decisions, people, and knowledge in one place." },
-      { property: "og:title", content: "1inow — Command Workspace for Investment Teams" },
-      { property: "og:description", content: "Private command and execution environment — portfolio, signals, decisions, people, knowledge." },
+      { title: "1inow - Personal Command Center" },
+      {
+        name: "description",
+        content:
+          "1inow is a private command center for projects, tasks, voice capture, decisions, and daily execution.",
+      },
+      { property: "og:title", content: "1inow - Personal Command Center" },
+      {
+        property: "og:description",
+        content:
+          "Private command center for projects, tasks, voice capture, decisions, and daily execution.",
+      },
       { property: "og:site_name", content: "1inow" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "1inow — Command Workspace for Investment Teams" },
-      { name: "twitter:description", content: "Private command and execution environment — portfolio, signals, decisions, people, knowledge." },
+      { name: "twitter:title", content: "1inow - Personal Command Center" },
+      {
+        name: "twitter:description",
+        content: "Projects, tasks, voice capture, decisions, and daily execution in one workspace.",
+      },
       { name: "theme-color", content: "#0B1220" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
