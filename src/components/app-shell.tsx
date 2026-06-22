@@ -368,7 +368,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             onCreate={() => setQuickOpen((n) => n + 1)}
             onAsk={() => setAiOpen(true)}
           />
-          <div className="min-w-0 w-full flex-1 pb-20 md:pb-0">{children}</div>
+          <div className="min-w-0 w-full flex-1 pb-20 pt-5 md:pb-0 md:pt-6">{children}</div>
           <footer className="mt-16 border-t border-border">
             <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
               <div className="mb-8">
