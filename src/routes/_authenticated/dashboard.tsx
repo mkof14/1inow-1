@@ -1,12 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { fetchProjects, fetchTasks, fetchProfiles } from "@/lib/queries";
+import { fetchDecisions, fetchProjects, fetchTasks, fetchProfiles } from "@/lib/queries";
 import { fetchNotifications } from "@/lib/wave1";
 import { useAuth } from "@/hooks/use-auth";
-import { MessageSquare, ListChecks, Plus, ArrowRight, Clock, CalendarDays, Sparkles, FolderKanban, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, Bell, CheckCircle2, Clock, CalendarDays, FolderKanban, Hourglass, MessageSquare, ListChecks, Plus, ArrowRight, Sparkles, Target, TrendingUp } from "lucide-react";
 import { BrandMark } from "@/components/icons/compass-mark";
 import { BrandMark as BrandRing } from "@/components/icons/compass-icons";
-import { buildAttention } from "@/lib/brain";
+import { buildAttention, buildToday, buildWaitingFor, detectOpenLoops, scoreProject } from "@/lib/brain";
 import { firstScreenGreeting } from "@/lib/simplicity";
 import { PageHeader } from "@/components/page-header";
 import { useT } from "@/lib/i18n";
@@ -21,6 +21,7 @@ function HomePage() {
   const tasks = useQuery({ queryKey: ["tasks"], queryFn: () => fetchTasks() });
   const people = useQuery({ queryKey: ["profiles"], queryFn: fetchProfiles });
   const notifs = useQuery({ queryKey: ["notifications"], queryFn: fetchNotifications });
+  const decisions = useQuery({ queryKey: ["decisions"], queryFn: fetchDecisions });
 
   const name = (user?.user_metadata as any)?.full_name?.split(" ")[0] ?? user?.email?.split("@")[0] ?? "there";
 
@@ -43,6 +44,7 @@ function HomePage() {
     t.assignee_id === user?.id && t.status !== "done" && t.status !== "canceled"
   );
   const activeProjects = (projects.data ?? []).filter((p: any) => p.status === "active" || p.status === "in_progress");
+  const decisionData = decisions.data ?? [];
 
   const openTalk = () =>
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "j", metaKey: true }));
@@ -66,7 +68,50 @@ function HomePage() {
     .sort((a: any, b: any) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
     .slice(0, 6);
   const doneCount = (tasks.data ?? []).filter((t: any) => t.status === "done").length;
-  const overdue = openTasks.filter((t: any) => t.due_date && new Date(t.due_date).getTime() < now).length;
+  const overdueTasks = openTasks.filter((t: any) => t.due_date && new Date(t.due_date).getTime() < now);
+  const overdue = overdueTasks.length;
+  const todayFocus = buildToday({
+    userId: user?.id,
+    tasks: tasks.data ?? [],
+    projects: projects.data ?? [],
+  });
+  const waitingBuckets = buildWaitingFor({
+    userId: user?.id,
+    tasks: tasks.data ?? [],
+    decisions: decisionData,
+  }).map((bucket) => ({ ...bucket, items: bucket.items.slice(0, 3) }));
+  const openLoops = detectOpenLoops({
+    projects: projects.data ?? [],
+    tasks: tasks.data ?? [],
+    decisions: decisionData,
+  }).slice(0, 5);
+  const projectRisks = (projects.data ?? [])
+    .filter((p: any) => p.status !== "completed" && p.status !== "archived" && p.status !== "canceled")
+    .map((project: any) => scoreProject(project, tasks.data ?? []))
+    .filter((health) => health.level === "risk" || health.level === "critical" || health.level === "attention")
+    .sort((a, b) => a.score - b.score)
+    .slice(0, 4);
+  const pendingDecisions = decisionData
+    .filter((d: any) => d.status === "pending" || d.status === "review")
+    .slice(0, 4);
+  const unreadNotifications = (notifs.data ?? []).filter((n: any) => !n.read_at);
+  const suggestedActions = [
+    overdueTasks.length
+      ? { label: `Clear ${overdueTasks.length} overdue task${overdueTasks.length === 1 ? "" : "s"}`, href: "/tasks", reason: "Time risk" }
+      : null,
+    pendingDecisions.length
+      ? { label: `Decide ${pendingDecisions.length} pending item${pendingDecisions.length === 1 ? "" : "s"}`, href: "/approvals", reason: "Decision queue" }
+      : null,
+    projectRisks.length
+      ? { label: `Review ${projectRisks.length} project risk${projectRisks.length === 1 ? "" : "s"}`, href: "/projects", reason: "Portfolio health" }
+      : null,
+    unreadNotifications.length
+      ? { label: `Read ${unreadNotifications.length} new signal${unreadNotifications.length === 1 ? "" : "s"}`, href: "/inbox", reason: "Fresh updates" }
+      : null,
+    !openTasks.length
+      ? { label: "Create the next useful action", href: "/projects", reason: "No open work" }
+      : null,
+  ].filter(Boolean) as { label: string; href: string; reason: string }[];
   const aiHighlights: string[] = [
     activeProjects.length
       ? `${activeProjects.length} active project${activeProjects.length === 1 ? "" : "s"} in motion.`
@@ -145,6 +190,21 @@ function HomePage() {
         )}
         </div>
       </div>
+
+      <DailyCommandCenter
+        todayFocus={todayFocus}
+        projectRisks={projectRisks}
+        waitingBuckets={waitingBuckets}
+        openLoops={openLoops}
+        pendingDecisions={pendingDecisions}
+        suggestedActions={suggestedActions}
+        stats={{
+          open: openTasks.length,
+          done: doneCount,
+          overdue,
+          activeProjects: activeProjects.length,
+        }}
+      />
 
       {/* ── Premium widgets ──────────────────────────────────────── */}
       <div className="grid md:grid-cols-2 gap-5 mb-10">
@@ -370,6 +430,253 @@ function HomePage() {
         </Section>
         </div>
       </details>
+    </div>
+  );
+}
+
+function DailyCommandCenter({
+  todayFocus,
+  projectRisks,
+  waitingBuckets,
+  openLoops,
+  pendingDecisions,
+  suggestedActions,
+  stats,
+}: {
+  todayFocus: any[];
+  projectRisks: any[];
+  waitingBuckets: { label: string; items: { id: string; title: string; hint: string; href?: string }[] }[];
+  openLoops: { refId: string; title: string; hint: string; href?: string }[];
+  pendingDecisions: any[];
+  suggestedActions: { label: string; href: string; reason: string }[];
+  stats: { open: number; done: number; overdue: number; activeProjects: number };
+}) {
+  const waitingTotal = waitingBuckets.reduce((sum, bucket) => sum + bucket.items.length, 0);
+
+  return (
+    <section className="mb-10 fade-rise">
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            <span className="size-1.5 rounded-full bg-accent live-dot" />
+            Daily Command Center
+          </div>
+          <h2 className="mt-3 text-xl font-semibold tracking-tight">Today's operating picture</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Local intelligence from your projects, tasks, decisions, and notifications. No external AI is connected.
+          </p>
+        </div>
+        <div className="grid grid-cols-4 gap-2 sm:min-w-[360px]">
+          <SignalMetric label="Open" value={stats.open} />
+          <SignalMetric label="Done" value={stats.done} tone="done" />
+          <SignalMetric label="Risk" value={stats.overdue} tone={stats.overdue ? "risk" : "calm"} />
+          <SignalMetric label="Active" value={stats.activeProjects} />
+        </div>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <CommandPanel
+          icon={<Target className="size-4" />}
+          title="Today Focus"
+          accent={`${todayFocus.length} item${todayFocus.length === 1 ? "" : "s"}`}
+          href="/tasks"
+        >
+          {todayFocus.length ? (
+            <CommandList>
+              {todayFocus.slice(0, 5).map((item) => (
+                <CommandItem
+                  key={item.id}
+                  href={item.href}
+                  title={item.title}
+                  meta={item.projectName ? `${item.reason} · ${item.projectName}` : item.reason}
+                />
+              ))}
+            </CommandList>
+          ) : (
+            <CommandEmpty text="No assigned focus items. Use the calm to plan the next useful move." />
+          )}
+        </CommandPanel>
+
+        <CommandPanel
+          icon={<AlertTriangle className="size-4" />}
+          title="Risks"
+          accent={`${projectRisks.length + stats.overdue} signal${projectRisks.length + stats.overdue === 1 ? "" : "s"}`}
+          href="/projects"
+        >
+          {projectRisks.length ? (
+            <CommandList>
+              {projectRisks.map((health) => (
+                <CommandItem
+                  key={health.project.id}
+                  href={`/projects/${health.project.slug}`}
+                  title={health.project.name}
+                  meta={`${health.level} · ${health.reasons[0]}`}
+                  tone={health.level === "critical" || health.level === "risk" ? "risk" : "default"}
+                />
+              ))}
+            </CommandList>
+          ) : (
+            <CommandEmpty text={stats.overdue ? "Task risk exists. Open Tasks to clear overdue work." : "No project risk signals right now."} />
+          )}
+        </CommandPanel>
+
+        <CommandPanel
+          icon={<Hourglass className="size-4" />}
+          title="Waiting / Stuck"
+          accent={`${waitingTotal + openLoops.length} loop${waitingTotal + openLoops.length === 1 ? "" : "s"}`}
+          href="/tasks"
+        >
+          {waitingTotal || openLoops.length ? (
+            <CommandList>
+              {waitingBuckets.flatMap((bucket) =>
+                bucket.items.map((item) => (
+                  <CommandItem key={`${bucket.label}-${item.id}`} href={item.href ?? "/tasks"} title={item.title} meta={`${bucket.label} · ${item.hint}`} />
+                )),
+              ).slice(0, 4)}
+              {openLoops.slice(0, 2).map((item) => (
+                <CommandItem key={item.refId} href={item.href ?? "/tasks"} title={item.title} meta={`Open loop · ${item.hint}`} tone="risk" />
+              ))}
+            </CommandList>
+          ) : (
+            <CommandEmpty text="No stuck loops detected in current data." />
+          )}
+        </CommandPanel>
+
+        <CommandPanel
+          icon={<Bell className="size-4" />}
+          title="Decisions Needed"
+          accent={`${pendingDecisions.length} pending`}
+          href="/approvals"
+        >
+          {pendingDecisions.length ? (
+            <CommandList>
+              {pendingDecisions.map((decision) => (
+                <CommandItem
+                  key={decision.id}
+                  href="/approvals"
+                  title={decision.title ?? "Decision"}
+                  meta={`${decision.status} · ${decision.impact ?? "normal"} impact`}
+                  tone={decision.impact === "critical" || decision.impact === "high" ? "risk" : "default"}
+                />
+              ))}
+            </CommandList>
+          ) : (
+            <CommandEmpty text="No decision queue. Keep execution moving." />
+          )}
+        </CommandPanel>
+
+        <CommandPanel
+          icon={<TrendingUp className="size-4" />}
+          title="Momentum"
+          accent="local"
+          href="/reports"
+        >
+          <div className="grid grid-cols-2 gap-2">
+            <MomentumTile label="Open work" value={stats.open} />
+            <MomentumTile label="Shipped" value={stats.done} tone="done" />
+            <MomentumTile label="Overdue" value={stats.overdue} tone={stats.overdue ? "risk" : "calm"} />
+            <MomentumTile label="Projects" value={stats.activeProjects} />
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Momentum is calculated from existing task/project status only.
+          </p>
+        </CommandPanel>
+
+        <CommandPanel
+          icon={<Sparkles className="size-4" />}
+          title="Suggested Next Actions"
+          accent={`${suggestedActions.length || 1} move${suggestedActions.length === 1 ? "" : "s"}`}
+          href="/tasks"
+        >
+          {suggestedActions.length ? (
+            <CommandList>
+              {suggestedActions.slice(0, 5).map((action) => (
+                <CommandItem key={`${action.href}-${action.label}`} href={action.href} title={action.label} meta={action.reason} />
+              ))}
+            </CommandList>
+          ) : (
+            <CommandList>
+              <CommandItem href="/tasks" title="Review the board" meta="No urgent signals detected" />
+              <CommandItem href="/projects" title="Plan one next outcome" meta="Keep the system fresh" />
+            </CommandList>
+          )}
+        </CommandPanel>
+      </div>
+    </section>
+  );
+}
+
+function SignalMetric({ label, value, tone = "default" }: { label: string; value: number; tone?: "default" | "done" | "risk" | "calm" }) {
+  const toneClass = tone === "done"
+    ? "text-emerald-600"
+    : tone === "risk"
+      ? "text-rose-600"
+      : tone === "calm"
+        ? "text-muted-foreground"
+        : "text-foreground";
+  return (
+    <div className="rounded-xl border border-border bg-card/70 px-3 py-2 text-center">
+      <div className={`text-base font-semibold ${toneClass}`}>{value}</div>
+      <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{label}</div>
+    </div>
+  );
+}
+
+function CommandPanel({ icon, title, accent, href, children }: { icon: any; title: string; accent: string; href: string; children: any }) {
+  return (
+    <div className="surface-aurora shimmer-border ring-accent-soft rounded-2xl border border-border p-4 transition-all hover:-translate-y-0.5 hover:border-accent/40">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <div className="grid size-8 shrink-0 place-items-center rounded-lg bg-accent/10 text-accent">
+            {icon}
+          </div>
+          <h3 className="truncate text-sm font-semibold tracking-tight">{title}</h3>
+        </div>
+        <Link to={href as any} className="inline-flex shrink-0 items-center gap-1 text-[11px] text-muted-foreground hover:text-accent">
+          {accent}
+          <ArrowRight className="size-3" />
+        </Link>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function CommandList({ children }: { children: any }) {
+  return <div className="space-y-1.5">{children}</div>;
+}
+
+function CommandItem({ href, title, meta, tone = "default" }: { href: string; title: string; meta: string; tone?: "default" | "risk" }) {
+  return (
+    <Link
+      to={href as any}
+      className="group flex items-start gap-2.5 rounded-xl border border-transparent p-2 transition-colors hover:border-accent/25 hover:bg-accent/5"
+    >
+      <span className={`mt-1.5 size-1.5 shrink-0 rounded-full ${tone === "risk" ? "bg-rose-500 signal-pulse" : "bg-accent"}`} />
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-medium group-hover:text-accent">{title}</span>
+        <span className="block truncate text-[11px] text-muted-foreground">{meta}</span>
+      </span>
+    </Link>
+  );
+}
+
+function CommandEmpty({ text }: { text: string }) {
+  return <p className="rounded-xl border border-dashed border-border bg-card/40 p-3 text-sm text-muted-foreground">{text}</p>;
+}
+
+function MomentumTile({ label, value, tone = "default" }: { label: string; value: number; tone?: "default" | "done" | "risk" | "calm" }) {
+  const toneClass = tone === "done"
+    ? "text-emerald-600"
+    : tone === "risk"
+      ? "text-rose-600"
+      : tone === "calm"
+        ? "text-muted-foreground"
+        : "text-accent";
+  return (
+    <div className="rounded-xl border border-border bg-card/60 p-3">
+      <div className={`text-xl font-semibold tracking-tight ${toneClass}`}>{value}</div>
+      <div className="mt-0.5 text-[11px] text-muted-foreground">{label}</div>
     </div>
   );
 }
