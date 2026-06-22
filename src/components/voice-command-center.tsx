@@ -24,6 +24,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { saveVoiceInboxItem, type VoiceInboxKind } from "@/lib/voice-intake";
 
 type VoiceIntent =
   | "open_route"
@@ -210,6 +211,22 @@ export function VoiceCommandCenter() {
     setHistory((items) => [done, ...items.filter((item) => item.summary !== done.summary)].slice(0, 6));
   };
 
+  const captureToInbox = () => {
+    if (!text.trim() || !plan) return;
+    const item = saveVoiceInboxItem({
+      raw: text,
+      title: plan.title || text,
+      kind: mapPlanToInboxKind(plan.intent),
+      confidence: plan.confidence,
+      summary: plan.summary,
+    });
+    if (!item) return;
+    remember(plan);
+    setText("");
+    setPlan(null);
+    toast.success("Saved to Voice Inbox");
+  };
+
   return (
     <>
       <button
@@ -288,7 +305,7 @@ export function VoiceCommandCenter() {
             </div>
 
             {plan && (
-              <VoicePlanPreview plan={plan} busy={busy} onCancel={() => setPlan(null)} onConfirm={execute} />
+              <VoicePlanPreview plan={plan} busy={busy} onCancel={() => setPlan(null)} onCapture={captureToInbox} onConfirm={execute} />
             )}
 
             <div className="grid gap-3 md:grid-cols-2">
@@ -344,11 +361,13 @@ function VoicePlanPreview({
   plan,
   busy,
   onCancel,
+  onCapture,
   onConfirm,
 }: {
   plan: VoicePlan;
   busy: boolean;
   onCancel: () => void;
+  onCapture: () => void;
   onConfirm: () => void;
 }) {
   return (
@@ -390,13 +409,28 @@ function VoicePlanPreview({
           <X className="mr-1.5 size-4" />
           Cancel
         </Button>
-        <Button type="button" onClick={onConfirm} disabled={busy || !plan.executable}>
+        <Button type="button" variant="outline" onClick={onCapture} disabled={busy}>
+          <Inbox className="mr-1.5 size-4" />
+          Save to inbox
+        </Button>
+        <Button type="button" onClick={plan.executable ? onConfirm : onCapture} disabled={busy}>
           {busy ? <Loader2 className="mr-1.5 size-4 animate-spin" /> : <ArrowRight className="mr-1.5 size-4" />}
-          {plan.executable ? "Confirm action" : "Draft only"}
+          {plan.executable ? "Confirm action" : "Save draft"}
         </Button>
       </div>
     </div>
   );
+}
+
+function mapPlanToInboxKind(intent: VoiceIntent): VoiceInboxKind {
+  if (intent === "create_task") return "task";
+  if (intent === "create_project") return "project";
+  if (intent === "draft_note") return "note";
+  if (intent === "draft_reminder") return "reminder";
+  if (intent === "show_risks") return "risk";
+  if (intent === "search") return "search";
+  if (intent === "open_route" || intent === "show_today") return "navigation";
+  return "unknown";
 }
 
 function ConfidenceBadge({ value }: { value: VoicePlan["confidence"] }) {

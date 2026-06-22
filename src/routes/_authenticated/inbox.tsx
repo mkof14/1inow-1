@@ -4,14 +4,23 @@ import { fetchNotifications, markNotification, markAllRead } from "@/lib/wave1";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Check, CheckCheck, Inbox as InboxIcon } from "lucide-react";
+import { Check, CheckCheck, FolderKanban, Inbox as InboxIcon, ListChecks, Mic, Trash2 } from "lucide-react";
 import { EmptyState, PageSkeleton } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { SignalWave } from "@/components/icons/compass-icons";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useT } from "@/lib/i18n";
+import {
+  clearProcessedVoiceInboxItems,
+  deleteVoiceInboxItem,
+  getVoiceInboxItems,
+  subscribeVoiceInbox,
+  updateVoiceInboxItem,
+  type VoiceInboxItem,
+} from "@/lib/voice-intake";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/inbox")({
   component: InboxPage,
@@ -22,6 +31,7 @@ function InboxPage() {
   const qc = useQueryClient();
   const { user } = useAuth();
   const { data = [], isLoading } = useQuery({ queryKey: ["notifications"], queryFn: fetchNotifications });
+  const [voiceItems, setVoiceItems] = useState<VoiceInboxItem[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -32,6 +42,12 @@ function InboxPage() {
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [user, qc]);
+
+  useEffect(() => {
+    const refresh = () => setVoiceItems(getVoiceInboxItems());
+    refresh();
+    return subscribeVoiceInbox(refresh);
+  }, []);
 
   const markMut = useMutation({
     mutationFn: ({ id, fields }: { id: string; fields: { read_at?: string | null; resolved_at?: string | null } }) =>
@@ -65,7 +81,12 @@ function InboxPage() {
           <TabsTrigger value="all">{t("common.all")} <Badge variant="secondary" className="ml-2 h-5">{data.length}</Badge></TabsTrigger>
           <TabsTrigger value="unread">{t("common.unread")} <Badge variant="secondary" className="ml-2 h-5">{unread.length}</Badge></TabsTrigger>
           <TabsTrigger value="resolved">{t("common.resolved")} <Badge variant="secondary" className="ml-2 h-5">{resolved.length}</Badge></TabsTrigger>
+          <TabsTrigger value="voice">Voice <Badge variant="secondary" className="ml-2 h-5">{voiceItems.filter((item) => item.status === "new").length}</Badge></TabsTrigger>
         </TabsList>
+
+        <TabsContent value="voice" className="mt-5">
+          <VoiceInboxPanel items={voiceItems} userId={user?.id} onChanged={() => setVoiceItems(getVoiceInboxItems())} />
+        </TabsContent>
 
         {(["all", "unread", "resolved"] as const).map((tab) => {
           const list = tab === "all" ? data : tab === "unread" ? unread : resolved;
@@ -110,6 +131,155 @@ function InboxPage() {
           );
         })}
       </Tabs>
+    </div>
+  );
+}
+
+function VoiceInboxPanel({
+  items,
+  userId,
+  onChanged,
+}: {
+  items: VoiceInboxItem[];
+  userId?: string;
+  onChanged: () => void;
+}) {
+  const qc = useQueryClient();
+  const active = items.filter((item) => item.status === "new");
+  const processed = items.filter((item) => item.status !== "new");
+
+  const markProcessed = (item: VoiceInboxItem) => {
+    updateVoiceInboxItem(item.id, { status: "processed", processedAt: new Date().toISOString() });
+    onChanged();
+  };
+
+  const remove = (item: VoiceInboxItem) => {
+    deleteVoiceInboxItem(item.id);
+    onChanged();
+  };
+
+  const createTask = async (item: VoiceInboxItem) => {
+    if (!userId) {
+      toast.error("Sign in required");
+      return;
+    }
+    const { error } = await supabase.from("tasks").insert({
+      title: item.title,
+      description: `Captured by voice: ${item.raw}`,
+      status: "todo",
+      priority: item.kind === "risk" ? "high" : "medium",
+      created_by: userId,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    updateVoiceInboxItem(item.id, { status: "processed", processedAt: new Date().toISOString() });
+    await qc.invalidateQueries({ queryKey: ["tasks"] });
+    onChanged();
+    toast.success("Task created from Voice Inbox");
+  };
+
+  const createProject = async (item: VoiceInboxItem) => {
+    if (!userId) {
+      toast.error("Sign in required");
+      return;
+    }
+    const base = item.title || "voice-project";
+    const slug = `${base.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${Math.random().toString(36).slice(2, 6)}`;
+    const { error } = await supabase.from("projects").insert({
+      name: item.title,
+      slug,
+      description: `Captured by voice: ${item.raw}`,
+      status: "planning",
+      priority: "medium",
+      created_by: userId,
+      owner_id: userId,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    updateVoiceInboxItem(item.id, { status: "processed", processedAt: new Date().toISOString() });
+    await qc.invalidateQueries({ queryKey: ["projects"] });
+    onChanged();
+    toast.success("Project created from Voice Inbox");
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-2xl border border-border surface-aurora shimmer-border ring-accent-soft p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              <Mic className="size-4 text-accent" />
+              Voice Inbox
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Fast capture for thoughts, tasks, projects, reminders, and risks. Keep it simple: review, create, or close.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={processed.length === 0}
+            onClick={() => {
+              clearProcessedVoiceInboxItems();
+              onChanged();
+            }}
+          >
+            Clear processed
+          </Button>
+        </div>
+      </div>
+
+      {active.length === 0 ? (
+        <EmptyState
+          icon={InboxIcon}
+          title="No voice captures"
+          description="Use the floating microphone, say or type a thought, then save it to the inbox."
+        />
+      ) : (
+        <div className="space-y-3">
+          {active.map((item) => (
+            <div key={item.id} className="rounded-2xl border border-border bg-card p-4 transition-colors hover:border-accent/35">
+              <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <div className="mb-1 flex flex-wrap items-center gap-2">
+                    <Badge variant="outline" className="capitalize">{item.kind}</Badge>
+                    <Badge variant="secondary" className="capitalize">{item.confidence}</Badge>
+                    <span className="text-[11px] text-muted-foreground">{new Date(item.createdAt).toLocaleString()}</span>
+                  </div>
+                  <div className="text-sm font-semibold">{item.title}</div>
+                  <p className="mt-1 text-xs text-muted-foreground">{item.summary}</p>
+                </div>
+              </div>
+
+              <div className="mb-3 rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
+                {item.raw}
+              </div>
+
+              <div className="flex flex-wrap justify-end gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => createTask(item)} className="gap-1.5">
+                  <ListChecks className="size-4" />
+                  Create task
+                </Button>
+                <Button type="button" variant="outline" size="sm" onClick={() => createProject(item)} className="gap-1.5">
+                  <FolderKanban className="size-4" />
+                  Create project
+                </Button>
+                <Button type="button" variant="ghost" size="sm" onClick={() => markProcessed(item)}>
+                  Done
+                </Button>
+                <Button type="button" variant="ghost" size="icon" onClick={() => remove(item)} aria-label="Remove voice capture">
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
