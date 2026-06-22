@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { BrandWordmark } from "@/components/icons/compass-icons";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { PublicFooter } from "@/components/public-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getPublicLearningTopic, publicLearningTopics } from "@/lib/public-learning";
 
@@ -154,84 +155,5 @@ function PublicHeader() {
         </Link>
       </nav>
     </header>
-  );
-}
-
-function PublicFooter() {
-  return (
-    <footer className="border-t border-slate-900/8 bg-[#edf7f4] px-5 py-8 text-sm text-slate-600 dark:border-white/10 dark:bg-[#0b171b] dark:text-white/58 md:px-8">
-      <div className="mx-auto grid w-full max-w-7xl gap-8 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
-        <div>
-          <BrandWordmark size={28} />
-          <p className="mt-3 max-w-sm text-sm leading-6">
-            A personal command center for projects, life tasks, voice capture, decisions, and future
-            AI assistance.
-          </p>
-        </div>
-        <FooterColumn
-          title="Learning"
-          links={[
-            ["Voice capture", "voice-capture"],
-            ["Review queue", "review-queue"],
-            ["Next action", "next-action"],
-            ["Risk tracking", "risk-tracking"],
-          ]}
-        />
-        <FooterColumn
-          title="Product"
-          links={[
-            ["Intelligence layer", "intelligence-layer"],
-            ["Operating picture", "operating-picture"],
-            ["Projects", "projects"],
-            ["Automation", "automation-readiness"],
-          ]}
-        />
-        <FooterColumn
-          title="Company"
-          links={[
-            ["FAQ", "faq"],
-            ["Legal", "legal"],
-            ["Security", "security"],
-            ["Principles", "principles"],
-          ]}
-        />
-      </div>
-      <div className="mx-auto mt-8 flex w-full max-w-7xl flex-col gap-2 border-t border-slate-900/8 pt-5 text-xs text-slate-500 dark:border-white/10 dark:text-white/42 sm:flex-row sm:items-center sm:justify-between">
-        <span>Copyright © {new Date().getFullYear()} 1inow Inc. All rights reserved.</span>
-        <span>1inow.com</span>
-      </div>
-    </footer>
-  );
-}
-
-function FooterColumn({ title, links }: { title: string; links: Array<[string, string]> }) {
-  return (
-    <div>
-      <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-white/42">
-        {title}
-      </h2>
-      <div className="space-y-2">
-        {links.map(([label, slug]) =>
-          slug === "principles" ? (
-            <Link
-              key={slug}
-              to="/principles/strategic-vs-tactical"
-              className="block hover:text-slate-950 dark:hover:text-white"
-            >
-              {label}
-            </Link>
-          ) : (
-            <Link
-              key={slug}
-              to="/learn/$slug"
-              params={{ slug }}
-              className="block hover:text-slate-950 dark:hover:text-white"
-            >
-              {label}
-            </Link>
-          ),
-        )}
-      </div>
-    </div>
   );
 }

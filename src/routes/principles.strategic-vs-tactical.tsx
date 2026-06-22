@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { BrandWordmark } from "@/components/icons/compass-icons";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { PublicFooter } from "@/components/public-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const CANONICAL = "https://1inow.com/principles/strategic-vs-tactical";
@@ -294,12 +295,7 @@ function StrategicVsTacticalPage() {
         </footer>
       </article>
 
-      <footer className="border-t border-slate-900/8 bg-[#edf7f4] px-5 py-5 text-xs text-slate-500 dark:border-white/10 dark:bg-[#0b171b] dark:text-white/48 md:px-8">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <span>Copyright © {new Date().getFullYear()} 1inow Inc. All rights reserved.</span>
-          <span>1inow.com</span>
-        </div>
-      </footer>
+      <PublicFooter />
     </main>
   );
 }
