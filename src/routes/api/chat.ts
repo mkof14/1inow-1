@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { getChatProviderState } from "@/lib/connection-providers.server";
 
 export const Route = createFileRoute("/api/chat")({
   server: {
@@ -10,9 +11,15 @@ export const Route = createFileRoute("/api/chat")({
           return new Response("Invalid JSON", { status: 400 });
         }
 
+        const service = getChatProviderState();
+
         return Response.json({
-          message: "AI service is not connected yet.",
-          disabled: true,
+          message: service.message,
+          disabled: service.disabled,
+          provider: service.provider,
+          status: service.status,
+          capabilities: service.capabilities,
+          nextStep: service.nextStep,
         });
       },
     },

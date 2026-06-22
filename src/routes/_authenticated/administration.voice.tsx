@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -9,7 +9,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { MicIndicator } from "@/components/voice/mic-indicator";
-import { Mic, Volume2, Keyboard, Save, Loader2, Play, Square, Radio, Wand2, Activity } from "lucide-react";
+import { Mic, Volume2, Keyboard, Save, Loader2, Play, Square, Radio, Wand2, Activity, Bot, PlugZap, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchSystemSettings, updateSystemSetting, type SystemSetting } from "@/lib/admin-queries";
@@ -50,6 +50,68 @@ const TTS_VOICES = [
   { id: "verse", label: "Verse — narrator" },
 ];
 
+const AI_PROVIDER_OPTIONS = [
+  { id: "disabled", label: "Disabled", note: "No external AI calls. Safe production default." },
+  { id: "openai", label: "OpenAI", note: "Future chat, planning, voice command reasoning, and summaries." },
+  { id: "anthropic", label: "Anthropic", note: "Future reasoning and long-context work." },
+  { id: "gemini", label: "Gemini", note: "Future multimodal and Google ecosystem workflows." },
+  { id: "internal", label: "Internal gateway", note: "Future controlled router across approved models." },
+];
+
+const STT_PROVIDER_OPTIONS = [
+  { id: "browser", label: "Browser", note: "Uses supported browser speech recognition. No server secret." },
+  { id: "disabled", label: "Disabled", note: "Server transcription remains unavailable." },
+  { id: "openai", label: "OpenAI", note: "Future server transcription endpoint." },
+  { id: "google", label: "Google Speech", note: "Future cloud STT option." },
+  { id: "azure", label: "Azure Speech", note: "Future enterprise STT/TTS option." },
+];
+
+const TTS_PROVIDER_OPTIONS = [
+  { id: "disabled", label: "Disabled", note: "No server voice synthesis. Safe production default." },
+  { id: "browser", label: "Browser", note: "Future client speech synthesis fallback." },
+  { id: "openai", label: "OpenAI", note: "Future server TTS endpoint." },
+  { id: "elevenlabs", label: "ElevenLabs", note: "Future high-quality voice option." },
+  { id: "azure", label: "Azure Speech", note: "Future enterprise TTS option." },
+];
+
+function ProviderSelect({
+  title,
+  icon,
+  value,
+  options,
+  onChange,
+}: {
+  title: string;
+  icon: ReactNode;
+  value: string;
+  options: Array<{ id: string; label: string; note: string }>;
+  onChange: (value: string) => void;
+}) {
+  const selected = options.find((option) => option.id === value) ?? options[0];
+
+  return (
+    <div className="rounded-lg border bg-card p-3">
+      <Label className="flex items-center gap-2">
+        {icon}
+        {title}
+      </Label>
+      <Select value={selected.id} onValueChange={onChange}>
+        <SelectTrigger className="mt-2">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option.id} value={option.id}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <p className="mt-2 min-h-8 text-xs text-muted-foreground">{selected.note}</p>
+    </div>
+  );
+}
+
 function loadUserPrefs(): UserVoicePrefs {
   if (typeof window === "undefined") return defaults;
   try {
@@ -71,11 +133,21 @@ function VoicePage() {
   const [globalEnabled, setGlobalEnabled] = useState(true);
   const [requirePermission, setRequirePermission] = useState(true);
   const [defaultSttLang, setDefaultSttLang] = useState("en");
+  const [aiProvider, setAiProvider] = useState("disabled");
+  const [sttProvider, setSttProvider] = useState("browser");
+  const [ttsProvider, setTtsProvider] = useState("disabled");
+  const [modelRouterEnabled, setModelRouterEnabled] = useState(false);
+  const [aiAuditEnabled, setAiAuditEnabled] = useState(true);
 
   useEffect(() => {
     setGlobalEnabled(Boolean(getSetting("voice.enabled", true)));
     setRequirePermission(Boolean(getSetting("voice.require_permission", true)));
     setDefaultSttLang(String(getSetting("voice.default_stt_lang", "en")));
+    setAiProvider(String(getSetting("ai.provider", "disabled")));
+    setSttProvider(String(getSetting("voice.stt_provider", "browser")));
+    setTtsProvider(String(getSetting("voice.tts_provider", "disabled")));
+    setModelRouterEnabled(Boolean(getSetting("ai.model_router_enabled", false)));
+    setAiAuditEnabled(Boolean(getSetting("ai.audit_logging_enabled", true)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.length]);
 
@@ -262,6 +334,95 @@ function VoicePage() {
           Professional microphone, speech, and text-to-speech configuration. Global settings apply org-wide.
         </p>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <PlugZap className="size-4 text-accent" /> Connection options
+          </CardTitle>
+          <CardDescription>
+            Prepared provider switches for future AI, speech-to-text, and text-to-speech integrations.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="grid gap-3 md:grid-cols-3">
+            <ProviderSelect
+              title="AI brain"
+              icon={<Bot className="size-4 text-accent" />}
+              value={aiProvider}
+              options={AI_PROVIDER_OPTIONS}
+              onChange={(v) => {
+                setAiProvider(v);
+                update.mutate({ key: "ai.provider", value: v });
+              }}
+            />
+            <ProviderSelect
+              title="Speech-to-text"
+              icon={<Radio className="size-4 text-accent" />}
+              value={sttProvider}
+              options={STT_PROVIDER_OPTIONS}
+              onChange={(v) => {
+                setSttProvider(v);
+                update.mutate({ key: "voice.stt_provider", value: v });
+              }}
+            />
+            <ProviderSelect
+              title="Text-to-speech"
+              icon={<Volume2 className="size-4 text-accent" />}
+              value={ttsProvider}
+              options={TTS_PROVIDER_OPTIONS}
+              onChange={(v) => {
+                setTtsProvider(v);
+                update.mutate({ key: "voice.tts_provider", value: v });
+              }}
+            />
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="flex items-center justify-between rounded-lg border bg-muted/20 p-3">
+              <div>
+                <Label className="flex items-center gap-2">
+                  <PlugZap className="size-3.5 text-accent" />
+                  Model router
+                </Label>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Future routing across approved AI providers. No runtime calls are enabled yet.
+                </p>
+              </div>
+              <Switch
+                checked={modelRouterEnabled}
+                onCheckedChange={(v) => {
+                  setModelRouterEnabled(v);
+                  update.mutate({ key: "ai.model_router_enabled", value: v });
+                }}
+              />
+            </div>
+            <div className="flex items-center justify-between rounded-lg border bg-muted/20 p-3">
+              <div>
+                <Label className="flex items-center gap-2">
+                  <ShieldCheck className="size-3.5 text-accent" />
+                  AI audit logging
+                </Label>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Future trace for prompts, actions, approvals, and provider decisions.
+                </p>
+              </div>
+              <Switch
+                checked={aiAuditEnabled}
+                onCheckedChange={(v) => {
+                  setAiAuditEnabled(v);
+                  update.mutate({ key: "ai.audit_logging_enabled", value: v });
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-dashed bg-background/60 p-3 text-xs text-muted-foreground">
+            These controls store approved connection intent only. Provider secrets must be added later in private deployment
+            environment variables, never in the repository.
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
