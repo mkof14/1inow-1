@@ -21,7 +21,6 @@ import {
   Sun,
   Plus,
   Search,
-  Twitter,
   Linkedin,
   Github,
   Youtube,
@@ -461,13 +460,13 @@ export function AppShell({ children }: { children: ReactNode }) {
 
                 <div className="flex items-center gap-4">
                   <a
-                    href="https://twitter.com"
+                    href="https://x.com"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-muted-foreground hover:text-foreground transition-colors"
-                    aria-label="Twitter"
+                    aria-label="X"
                   >
-                    <Twitter className="size-4" />
+                    <span className="text-sm font-black leading-none">X</span>
                   </a>
                   <a
                     href="https://linkedin.com"
