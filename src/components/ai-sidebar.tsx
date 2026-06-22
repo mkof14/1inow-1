@@ -3,7 +3,19 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { X, Maximize2, Minimize2, Mic, MicOff, Volume2, VolumeX, Send, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
+import {
+  X,
+  Maximize2,
+  Minimize2,
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX,
+  Send,
+  ChevronRight,
+  ChevronLeft,
+  Loader2,
+} from "lucide-react";
 import { BrandMark } from "@/components/icons/compass-mark";
 import { StudioMeter } from "@/components/voice/studio-meter";
 import { cn } from "@/lib/utils";
@@ -37,11 +49,18 @@ function makeTransport(getCtx: () => unknown, getLang: () => string) {
   });
 }
 
-export function AiSidebar({ open, mode, onModeChange, onClose }: {
+export function AiSidebar({
+  open,
+  mode,
+  onModeChange,
+  onClose,
+  onOpenVoiceCommand,
+}: {
   open: boolean;
   mode: Mode;
   onModeChange: (m: Mode) => void;
   onClose: () => void;
+  onOpenVoiceCommand?: () => void;
 }) {
   const { t, lang } = useI18n();
   const langRef = useRef(lang);
@@ -50,7 +69,12 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
   const { context } = useAiPageContext();
   const ctxRef = useRef(context);
   ctxRef.current = context;
-  const [transport] = useState(() => makeTransport(() => ctxRef.current, () => langRef.current));
+  const [transport] = useState(() =>
+    makeTransport(
+      () => ctxRef.current,
+      () => langRef.current,
+    ),
+  );
 
   // Restore chat history (kept for 7 days in this browser).
   const HISTORY_KEY = "1inow:ai:history:v1";
@@ -66,25 +90,29 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
         return [];
       }
       return Array.isArray(parsed.messages) ? parsed.messages : [];
-    } catch { return []; }
+    } catch {
+      return [];
+    }
   })();
 
-  const { messages, sendMessage, status, setMessages } = useChat({ transport, messages: initialMessages });
+  const { messages, sendMessage, status, setMessages } = useChat({
+    transport,
+    messages: initialMessages,
+  });
 
   // Persist on change, debounced to next tick.
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (status === "streaming" || status === "submitted") return;
     try {
-      window.localStorage.setItem(
-        HISTORY_KEY,
-        JSON.stringify({ savedAt: Date.now(), messages }),
-      );
+      window.localStorage.setItem(HISTORY_KEY, JSON.stringify({ savedAt: Date.now(), messages }));
     } catch {}
   }, [messages, status]);
 
   const clearHistory = useCallback(() => {
-    try { window.localStorage.removeItem(HISTORY_KEY); } catch {}
+    try {
+      window.localStorage.removeItem(HISTORY_KEY);
+    } catch {}
     setMessages([]);
     spokenIdsRef.current = new Set();
   }, [setMessages]);
@@ -100,7 +128,9 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const stopMic = useCallback(() => {
-    try { recogRef.current?.stop?.(); } catch {}
+    try {
+      recogRef.current?.stop?.();
+    } catch {}
     recogRef.current = null;
     setListening(false);
     micStream?.getTracks().forEach((t) => t.stop());
@@ -119,8 +149,7 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
       setMicStream(stream);
 
       // Optional Web Speech recognition (Chrome/Edge/Safari).
-      const SR: any =
-        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const SR: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (SR) {
         const rec = new SR();
         rec.continuous = true;
@@ -139,7 +168,10 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
         rec.onend = () => setListening(false);
         rec.onerror = () => setListening(false);
         recogRef.current = rec;
-        try { rec.start(); setListening(true); } catch {}
+        try {
+          rec.start();
+          setListening(true);
+        } catch {}
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Microphone permission denied";
@@ -150,9 +182,13 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
   // Cleanup on unmount / close
   useEffect(() => {
     return () => {
-      try { recogRef.current?.stop?.(); } catch {}
+      try {
+        recogRef.current?.stop?.();
+      } catch {}
       micStream?.getTracks().forEach((t) => t.stop());
-      try { audioRef.current?.pause(); } catch {}
+      try {
+        audioRef.current?.pause();
+      } catch {}
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -164,7 +200,10 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
     if (!last || last.role !== "assistant") return;
     if (status === "streaming" || status === "submitted") return;
     if (spokenIdsRef.current.has(last.id)) return;
-    const text = last.parts.map((p) => (p.type === "text" ? p.text : "")).join("").trim();
+    const text = last.parts
+      .map((p) => (p.type === "text" ? p.text : ""))
+      .join("")
+      .trim();
     if (!text) return;
     spokenIdsRef.current.add(last.id);
 
@@ -181,7 +220,9 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
         const blob = await res.blob();
         if (cancelled) return;
         blobUrl = URL.createObjectURL(blob);
-        try { audioRef.current?.pause(); } catch {}
+        try {
+          audioRef.current?.pause();
+        } catch {}
         const a = new Audio(blobUrl);
         audioRef.current = a;
         a.play().catch(() => {});
@@ -196,7 +237,11 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
   const toggleSpeaker = () => {
     setSpeakerOn((v) => {
       const next = !v;
-      if (!next) { try { audioRef.current?.pause(); } catch {} }
+      if (!next) {
+        try {
+          audioRef.current?.pause();
+        } catch {}
+      }
       return next;
     });
   };
@@ -212,19 +257,23 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, status]);
 
-  const submit = useCallback((text: string) => {
-    const v = text.trim();
-    if (!v || status === "streaming" || status === "submitted") return;
-    sendMessage({ text: v });
-    setInput("");
-  }, [sendMessage, status]);
+  const submit = useCallback(
+    (text: string) => {
+      const v = text.trim();
+      if (!v || status === "streaming" || status === "submitted") return;
+      sendMessage({ text: v });
+      setInput("");
+    },
+    [sendMessage, status],
+  );
 
   if (!open) return null;
   const loading = status === "streaming" || status === "submitted";
 
-  const containerCls = mode === "floating"
-    ? "fixed inset-x-2 bottom-20 top-16 sm:inset-x-auto sm:right-4 sm:bottom-20 sm:top-20 sm:w-[420px] max-w-[calc(100vw-1rem)] z-40 rounded-2xl border border-border shadow-2xl bg-card flex flex-col overflow-hidden"
-    : "hidden lg:flex w-[380px] shrink-0 sticky top-0 h-screen border-l border-border bg-card flex-col";
+  const containerCls =
+    mode === "floating"
+      ? "fixed inset-x-2 bottom-20 top-16 sm:inset-x-auto sm:right-4 sm:bottom-20 sm:top-20 sm:w-[420px] max-w-[calc(100vw-1rem)] z-40 rounded-2xl border border-border shadow-2xl bg-card flex flex-col overflow-hidden"
+      : "hidden lg:flex w-[380px] shrink-0 sticky top-0 h-screen border-l border-border bg-card flex-col";
 
   return (
     <aside className={containerCls}>
@@ -234,8 +283,8 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
             <BrandMark className="size-4" />
           </div>
           <div className="leading-tight">
-            <div className="text-sm font-medium">{t("ai.title")}</div>
-            <div className="text-[10px] text-muted-foreground">{t("ai.subtitle")}</div>
+            <div className="text-sm font-medium">1inow AI + Voice</div>
+            <div className="text-[10px] text-muted-foreground">Assistant, voice, commands</div>
           </div>
         </div>
         <div className="flex items-center gap-0.5">
@@ -258,8 +307,17 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
           >
             {speakerOn ? <Volume2 className="size-3.5" /> : <VolumeX className="size-3.5" />}
           </Button>
-          <Button variant="ghost" size="icon" className="size-7" onClick={() => onModeChange(mode === "floating" ? "docked" : "floating")}>
-            {mode === "floating" ? <Minimize2 className="size-3.5" /> : <Maximize2 className="size-3.5" />}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7"
+            onClick={() => onModeChange(mode === "floating" ? "docked" : "floating")}
+          >
+            {mode === "floating" ? (
+              <Minimize2 className="size-3.5" />
+            ) : (
+              <Maximize2 className="size-3.5" />
+            )}
           </Button>
           <Button variant="ghost" size="icon" className="size-7" onClick={onClose}>
             <X className="size-3.5" />
@@ -276,10 +334,30 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
                 {t("ai.welcomeHint")}
               </p>
             </div>
+            {onOpenVoiceCommand && (
+              <button
+                type="button"
+                onClick={onOpenVoiceCommand}
+                className="w-full rounded-xl border border-accent/25 bg-accent/10 p-3 text-left transition-colors hover:border-accent/45 hover:bg-accent/15"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-medium text-foreground">Voice Command Center</div>
+                    <div className="mt-1 text-[12px] text-muted-foreground">
+                      Speak or type commands: create tasks, open projects, review risks.
+                    </div>
+                  </div>
+                  <Mic className="size-4 shrink-0 text-accent" />
+                </div>
+              </button>
+            )}
             <div className="space-y-1.5">
               {SUGGESTIONS.map((s) => (
-                <button key={s} onClick={() => submit(s)}
-                  className="w-full text-left text-[13px] px-3 py-2 rounded-lg border border-border bg-background hover:border-accent/40 hover:bg-accent/5 transition">
+                <button
+                  key={s}
+                  onClick={() => submit(s)}
+                  className="w-full text-left text-[13px] px-3 py-2 rounded-lg border border-border bg-background hover:border-accent/40 hover:bg-accent/5 transition"
+                >
                   {s}
                 </button>
               ))}
@@ -290,7 +368,9 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
           <Bubble
             key={m.id}
             message={m}
-            streaming={idx === messages.length - 1 && (status === "streaming" || status === "submitted")}
+            streaming={
+              idx === messages.length - 1 && (status === "streaming" || status === "submitted")
+            }
           />
         ))}
         {status === "submitted" && (
@@ -301,7 +381,10 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
       </div>
 
       <form
-        onSubmit={(e) => { e.preventDefault(); submit(input); }}
+        onSubmit={(e) => {
+          e.preventDefault();
+          submit(input);
+        }}
         className="border-t border-border p-3 space-y-2"
       >
         {(micStream || micError) && (
@@ -314,7 +397,9 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
               </span>
             )}
             {micError && (
-              <span className="text-[10px] text-destructive truncate max-w-[140px]">{micError}</span>
+              <span className="text-[10px] text-destructive truncate max-w-[140px]">
+                {micError}
+              </span>
             )}
           </div>
         )}
@@ -323,7 +408,10 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(input); }
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                submit(input);
+              }
             }}
             placeholder={t("ai.placeholder")}
             rows={2}
@@ -334,13 +422,21 @@ export function AiSidebar({ open, mode, onModeChange, onClose }: {
               type="button"
               variant={micStream ? "default" : "outline"}
               size="icon"
-              className={cn("size-9 rounded-full", micStream && "bg-accent text-accent-foreground hover:bg-accent/90")}
+              className={cn(
+                "size-9 rounded-full",
+                micStream && "bg-accent text-accent-foreground hover:bg-accent/90",
+              )}
               title={micStream ? "Stop mic" : "Start mic"}
               onClick={micStream ? stopMic : startMic}
             >
               {micStream ? <Mic className="size-3.5" /> : <MicOff className="size-3.5" />}
             </Button>
-            <Button type="submit" size="icon" className="size-9 rounded-full" disabled={loading || !input.trim()}>
+            <Button
+              type="submit"
+              size="icon"
+              className="size-9 rounded-full"
+              disabled={loading || !input.trim()}
+            >
               <Send className="size-3.5" />
             </Button>
           </div>
@@ -363,7 +459,10 @@ function Bubble({ message, streaming }: { message: UIMessage; streaming?: boolea
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (isUser) { setShown(full.length); return; }
+    if (isUser) {
+      setShown(full.length);
+      return;
+    }
     let cancelled = false;
     const tick = () => {
       if (cancelled) return;
@@ -386,10 +485,14 @@ function Bubble({ message, streaming }: { message: UIMessage; streaming?: boolea
 
   return (
     <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
-      <div className={cn(
-        "max-w-[90%] rounded-2xl px-3 py-2 text-[13px] leading-relaxed whitespace-pre-wrap",
-        isUser ? "bg-primary text-primary-foreground" : "bg-muted/60 text-foreground border border-border"
-      )}>
+      <div
+        className={cn(
+          "max-w-[90%] rounded-2xl px-3 py-2 text-[13px] leading-relaxed whitespace-pre-wrap",
+          isUser
+            ? "bg-primary text-primary-foreground"
+            : "bg-muted/60 text-foreground border border-border",
+        )}
+      >
         {display}
         {showCaret && (
           <span className="inline-block w-[2px] h-[1em] align-[-2px] ml-0.5 bg-foreground/70 animate-pulse" />

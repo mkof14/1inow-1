@@ -1,15 +1,41 @@
 import { type ReactNode, useState, useEffect, useMemo } from "react";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { navSections, footerSections, type NavItem } from "@/lib/nav-config";
-import { PortfolioCard, ExecutionNode, IntelligenceBars, TimelinePulse, ShieldLine, GearMark, SignalWave } from "@/components/icons/compass-icons";
+import {
+  PortfolioCard,
+  ExecutionNode,
+  IntelligenceBars,
+  TimelinePulse,
+  ShieldLine,
+  GearMark,
+  SignalWave,
+} from "@/components/icons/compass-icons";
 import { useAuth } from "@/hooks/use-auth";
-import { Activity, ArrowRight, Bell, Moon, Sun, Plus, Search, Twitter, Linkedin, Github, Youtube, Menu, Zap } from "lucide-react";
+import {
+  Activity,
+  ArrowRight,
+  Bell,
+  Moon,
+  Sun,
+  Plus,
+  Search,
+  Twitter,
+  Linkedin,
+  Github,
+  Youtube,
+  Menu,
+  Zap,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useQuery } from "@tanstack/react-query";
 import { fetchNotifications } from "@/lib/wave1";
@@ -37,15 +63,20 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [quickOpen, setQuickOpen] = useState(0);
   const [aiOpen, setAiOpen] = useState(false);
   const [aiMode, setAiMode] = useState<AiSidebarMode>("floating");
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // Close drawer on route change
-  useEffect(() => { setMobileNavOpen(false); }, [pathname]);
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
-      const inField = target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
+      const inField =
+        target &&
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
         e.preventDefault();
         setAiOpen((v) => !v);
@@ -58,9 +89,16 @@ export function AppShell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  useShortcuts(() => setCmdOpen(true), () => setQuickOpen((n) => n + 1));
+  useShortcuts(
+    () => setCmdOpen(true),
+    () => setQuickOpen((n) => n + 1),
+  );
 
-  const { data: notifs = [] } = useQuery({ queryKey: ["notifications"], queryFn: fetchNotifications, enabled: !!user });
+  const { data: notifs = [] } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: fetchNotifications,
+    enabled: !!user,
+  });
   const unread = notifs.filter((n) => !n.read_at).length;
 
   const toggleDark = () => {
@@ -70,7 +108,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   };
 
   const initials = (user?.user_metadata?.full_name || user?.email || "U")
-    .split(/\s|@/)[0].slice(0, 2).toUpperCase();
+    .split(/\s|@/)[0]
+    .slice(0, 2)
+    .toUpperCase();
 
   const navItem = (item: NavItem) => {
     const active = pathname === item.to || pathname.startsWith(item.to + "/");
@@ -86,10 +126,17 @@ export function AppShell({ children }: { children: ReactNode }) {
             : "text-muted-foreground hover:bg-accent/15 hover:text-foreground hover:translate-x-0.5",
         )}
       >
-        <Icon className={cn("size-4 shrink-0 transition-colors group-hover:text-accent", active && "text-accent")} />
+        <Icon
+          className={cn(
+            "size-4 shrink-0 transition-colors group-hover:text-accent",
+            active && "text-accent",
+          )}
+        />
         <span className="flex-1 truncate">{t(`nav.${item.label}`, item.label)}</span>
         {item.to === "/communication" && unread > 0 && (
-          <Badge variant="secondary" className="h-4 min-w-4 px-1 text-[10px]">{unread}</Badge>
+          <Badge variant="secondary" className="h-4 min-w-4 px-1 text-[10px]">
+            {unread}
+          </Badge>
         )}
       </Link>
     );
@@ -97,13 +144,15 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   // Role + context aware quick links pinned at the top of the footer.
   const quickLinks: NavItem[] = [
-    { to: "/projects",  label: "Projects",  icon: PortfolioCard },
-    { to: "/tasks",     label: "Tasks",     icon: ExecutionNode },
-    { to: "/calendar",  label: "Calendar",  icon: TimelinePulse },
-    { to: "/reports",   label: "Reports",   icon: IntelligenceBars },
+    { to: "/projects", label: "Projects", icon: PortfolioCard },
+    { to: "/tasks", label: "Tasks", icon: ExecutionNode },
+    { to: "/calendar", label: "Calendar", icon: TimelinePulse },
+    { to: "/reports", label: "Reports", icon: IntelligenceBars },
     { to: "/communication", label: "Messages", icon: SignalWave },
-    { to: "/settings",  label: "Settings",  icon: GearMark },
-    ...(isAdmin ? [{ to: "/administration", label: "Admin Console", icon: ShieldLine } as NavItem] : []),
+    { to: "/settings", label: "Settings", icon: GearMark },
+    ...(isAdmin
+      ? [{ to: "/administration", label: "Admin Console", icon: ShieldLine } as NavItem]
+      : []),
   ];
   const contextSection = pathname.split("/").filter(Boolean)[0];
   const orderedQuickLinks = [
@@ -122,9 +171,14 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen w-full bg-background text-foreground">
       <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar sticky top-0 h-screen">
-        <Link to="/dashboard" className="px-5 py-6 flex flex-col gap-1 hover:opacity-90 transition-opacity">
+        <Link
+          to="/dashboard"
+          className="px-5 py-6 flex flex-col gap-1 hover:opacity-90 transition-opacity"
+        >
           <BrandWordmark size={28} />
-          <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">1inow.com</div>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            1inow.com
+          </div>
         </Link>
 
         <div className="px-3 pb-2 space-y-2">
@@ -137,14 +191,20 @@ export function AppShell({ children }: { children: ReactNode }) {
                 ? "gradient-compass text-primary-foreground border-transparent shadow-md"
                 : "border-accent/30 bg-accent/5 text-foreground hover:bg-accent/10",
             )}
-            title={t("ai.openTip", "1inow AI")}
+            title="1inow AI + Voice"
           >
             <BrandMark className="size-4 shrink-0" />
-            <span className="flex-1 text-left">1inow AI</span>
-            <kbd className={cn(
-              "text-[10px] font-mono px-1.5 py-0.5 rounded border",
-              aiOpen ? "border-primary-foreground/30 text-primary-foreground/80" : "border-border text-muted-foreground",
-            )}>⌘J</kbd>
+            <span className="flex-1 text-left">AI + Voice</span>
+            <kbd
+              className={cn(
+                "text-[10px] font-mono px-1.5 py-0.5 rounded border",
+                aiOpen
+                  ? "border-primary-foreground/30 text-primary-foreground/80"
+                  : "border-border text-muted-foreground",
+              )}
+            >
+              ⌘J
+            </kbd>
           </button>
           <button
             type="button"
@@ -163,9 +223,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <div className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70">
                 {t(`nav.section.${section.id}`, section.label)}
               </div>
-              <div className="space-y-0.5">
-                {section.items.map(navItem)}
-              </div>
+              <div className="space-y-0.5">{section.items.map(navItem)}</div>
             </div>
           ))}
         </nav>
@@ -176,7 +234,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           <SheetTitle className="sr-only">Navigation</SheetTitle>
           <Link to="/dashboard" className="px-5 py-5 flex flex-col gap-1">
             <BrandWordmark size={26} />
-            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">1inow.com</div>
+            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              1inow.com
+            </div>
           </Link>
           <nav className="flex-1 overflow-y-auto px-2.5 pb-4">
             {navSections.map((section, idx) => (
@@ -184,9 +244,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <div className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70">
                   {t(`nav.section.${section.id}`, section.label)}
                 </div>
-                <div className="space-y-0.5">
-                  {section.items.map(navItem)}
-                </div>
+                <div className="space-y-0.5">{section.items.map(navItem)}</div>
               </div>
             ))}
           </nav>
@@ -218,7 +276,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               >
                 {t("search.placeholder", "Search everything")}
               </button>
-              <kbd className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-mono bg-background px-1.5 py-0.5 rounded border border-border text-muted-foreground">/</kbd>
+              <kbd className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-mono bg-background px-1.5 py-0.5 rounded border border-border text-muted-foreground">
+                /
+              </kbd>
             </div>
           </div>
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
@@ -247,21 +307,33 @@ export function AppShell({ children }: { children: ReactNode }) {
                 aiOpen && "border-accent/50 bg-accent/10 text-accent",
               )}
               onClick={() => setAiOpen((v) => !v)}
-              title={t("ai.openTip", "1inow AI")}
+              title="1inow AI + Voice"
             >
               <BrandMark className="size-4" />
-              <span className="hidden sm:inline">1inow AI</span>
-              <span className="sm:hidden">AI</span>
-              {aiOpen && <span className="absolute top-2 right-2 size-1.5 rounded-full bg-accent" />}
+              <span>AI + Voice</span>
+              {aiOpen && (
+                <span className="absolute top-2 right-2 size-1.5 rounded-full bg-accent" />
+              )}
             </Button>
-            <div className="hidden sm:block"><LanguageSwitcher /></div>
-            <div className="sm:hidden"><LanguageSwitcher compact /></div>
+            <div className="hidden sm:block">
+              <LanguageSwitcher />
+            </div>
+            <div className="sm:hidden">
+              <LanguageSwitcher compact />
+            </div>
             <Button variant="ghost" size="icon" onClick={toggleDark}>
               {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
             </Button>
-            <Button variant="ghost" size="icon" className="relative" onClick={() => navigate({ to: "/inbox" })}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative"
+              onClick={() => navigate({ to: "/inbox" })}
+            >
               <Bell className="size-4" />
-              {unread > 0 && <span className="absolute top-2 right-2 size-1.5 rounded-full bg-accent" />}
+              {unread > 0 && (
+                <span className="absolute top-2 right-2 size-1.5 rounded-full bg-accent" />
+              )}
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -297,104 +369,146 @@ export function AppShell({ children }: { children: ReactNode }) {
             onAsk={() => setAiOpen(true)}
           />
           <div className="min-w-0 w-full flex-1 pb-20 md:pb-0">{children}</div>
-        <footer className="mt-16 border-t border-border">
-          <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
-            <div className="mb-8">
-              <BrandWordmark size={20} />
-            </div>
-            <div className="mb-8">
-              <div className="text-[13px] font-semibold text-foreground mb-3">Quick access</div>
-              <div className="flex flex-wrap gap-2">
-                {orderedQuickLinks.map((l) => {
-                  const Icon = l.icon;
-                  const isCurrent = pathname === l.to || pathname.startsWith(l.to + "/");
-                  return (
-                    <Link
-                      key={l.to}
-                      to={l.to}
-                      className={cn(
-                        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] transition-colors",
-                        isCurrent
-                          ? "border-accent/40 bg-accent/10 text-foreground"
-                          : "border-border bg-background text-muted-foreground hover:border-accent/30 hover:text-foreground",
-                      )}
-                    >
-                      <Icon className="size-3.5" />
-                      <span>{t(`nav.${l.label}`, l.label)}</span>
-                    </Link>
-                  );
-                })}
+          <footer className="mt-16 border-t border-border">
+            <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
+              <div className="mb-8">
+                <BrandWordmark size={20} />
               </div>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 sm:gap-8">
-              {visibleFooterSections.map((section) => (
-                <div key={section.id} className="min-w-0">
-                  <div className="text-[13px] font-semibold text-foreground mb-3">
-                    {t(`nav.section.${section.id}`, section.label)}
-                  </div>
-                  <ul className="space-y-2">
-                    {section.items.filter((i) => !i.adminOnly || isAdmin).map((item) => (
-                      <li key={item.to}>
-                        <Link
-                          to={item.to}
-                          className="text-[13px] text-muted-foreground hover:text-foreground block py-0.5 transition-colors"
-                        >
-                          {t(`nav.${item.label}`, item.label)}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
+              <div className="mb-8">
+                <div className="text-[13px] font-semibold text-foreground mb-3">Quick access</div>
+                <div className="flex flex-wrap gap-2">
+                  {orderedQuickLinks.map((l) => {
+                    const Icon = l.icon;
+                    const isCurrent = pathname === l.to || pathname.startsWith(l.to + "/");
+                    return (
+                      <Link
+                        key={l.to}
+                        to={l.to}
+                        className={cn(
+                          "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] transition-colors",
+                          isCurrent
+                            ? "border-accent/40 bg-accent/10 text-foreground"
+                            : "border-border bg-background text-muted-foreground hover:border-accent/30 hover:text-foreground",
+                        )}
+                      >
+                        <Icon className="size-3.5" />
+                        <span>{t(`nav.${l.label}`, l.label)}</span>
+                      </Link>
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="border-t border-border">
-            <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <span className="text-[12px] text-muted-foreground">
-                Copyright © {new Date().getFullYear()} 1inow Inc. All rights reserved.
-              </span>
-
-              <div className="flex items-center gap-5 text-[12px] text-muted-foreground">
-                <Link to="/legal/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
-                <Link to="/legal/terms" className="hover:text-foreground transition-colors">Terms of Use</Link>
               </div>
-
-              <div className="flex items-center gap-1 -ml-2 sm:ml-0">
-                <LanguageSwitcher />
-                <ThemeToggle showLabel />
-              </div>
-
-              <div className="flex items-center gap-4">
-                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Twitter">
-                  <Twitter className="size-4" />
-                </a>
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="LinkedIn">
-                  <Linkedin className="size-4" />
-                </a>
-                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="GitHub">
-                  <Github className="size-4" />
-                </a>
-                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="YouTube">
-                  <Youtube className="size-4" />
-                </a>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 sm:gap-8">
+                {visibleFooterSections.map((section) => (
+                  <div key={section.id} className="min-w-0">
+                    <div className="text-[13px] font-semibold text-foreground mb-3">
+                      {t(`nav.section.${section.id}`, section.label)}
+                    </div>
+                    <ul className="space-y-2">
+                      {section.items
+                        .filter((i) => !i.adminOnly || isAdmin)
+                        .map((item) => (
+                          <li key={item.to}>
+                            <Link
+                              to={item.to}
+                              className="text-[13px] text-muted-foreground hover:text-foreground block py-0.5 transition-colors"
+                            >
+                              {t(`nav.${item.label}`, item.label)}
+                            </Link>
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
-        </footer>
+
+            <div className="border-t border-border">
+              <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <span className="text-[12px] text-muted-foreground">
+                  Copyright © {new Date().getFullYear()} 1inow Inc. All rights reserved.
+                </span>
+
+                <div className="flex items-center gap-5 text-[12px] text-muted-foreground">
+                  <Link to="/legal/privacy" className="hover:text-foreground transition-colors">
+                    Privacy Policy
+                  </Link>
+                  <Link to="/legal/terms" className="hover:text-foreground transition-colors">
+                    Terms of Use
+                  </Link>
+                </div>
+
+                <div className="flex items-center gap-1 -ml-2 sm:ml-0">
+                  <LanguageSwitcher />
+                  <ThemeToggle showLabel />
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <a
+                    href="https://twitter.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Twitter"
+                  >
+                    <Twitter className="size-4" />
+                  </a>
+                  <a
+                    href="https://linkedin.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="LinkedIn"
+                  >
+                    <Linkedin className="size-4" />
+                  </a>
+                  <a
+                    href="https://github.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="GitHub"
+                  >
+                    <Github className="size-4" />
+                  </a>
+                  <a
+                    href="https://youtube.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="YouTube"
+                  >
+                    <Youtube className="size-4" />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </footer>
         </main>
         <QuickCreate openSignal={quickOpen} />
         <CommandBar open={cmdOpen} onOpenChange={setCmdOpen} />
-        <VoiceCommandCenter />
+        <VoiceCommandCenter open={voiceOpen} onOpenChange={setVoiceOpen} showLauncher={false} />
         <MobileBottomNav />
         <InstallPrompt />
       </div>
 
       {aiMode !== "floating" && aiOpen && (
-        <AiSidebar open={aiOpen} mode="docked" onModeChange={setAiMode} onClose={() => setAiOpen(false)} />
+        <AiSidebar
+          open={aiOpen}
+          mode="docked"
+          onModeChange={setAiMode}
+          onClose={() => setAiOpen(false)}
+          onOpenVoiceCommand={() => setVoiceOpen(true)}
+        />
       )}
       {aiMode === "floating" && aiOpen && (
-        <AiSidebar open={aiOpen} mode="floating" onModeChange={setAiMode} onClose={() => setAiOpen(false)} />
+        <AiSidebar
+          open={aiOpen}
+          mode="floating"
+          onModeChange={setAiMode}
+          onClose={() => setAiOpen(false)}
+          onOpenVoiceCommand={() => setVoiceOpen(true)}
+        />
       )}
     </div>
   );
@@ -490,11 +604,19 @@ function getLiveContext(pathname: string, unread: number) {
   if (pathname.startsWith("/communication") || pathname.startsWith("/inbox")) {
     return {
       status: unread > 0 ? "Attention" : "Clear",
-      next: unread > 0 ? `${unread} unread signal${unread === 1 ? "" : "s"} waiting.` : "No unread signals. Continue from the workspace.",
+      next:
+        unread > 0
+          ? `${unread} unread signal${unread === 1 ? "" : "s"} waiting.`
+          : "No unread signals. Continue from the workspace.",
       signals: ["messages", "decisions", "follow-ups"],
     };
   }
-  if (pathname.startsWith("/intelligence") || pathname.startsWith("/ai") || pathname.startsWith("/brain") || pathname.startsWith("/thinking")) {
+  if (
+    pathname.startsWith("/intelligence") ||
+    pathname.startsWith("/ai") ||
+    pathname.startsWith("/brain") ||
+    pathname.startsWith("/thinking")
+  ) {
     return {
       status: "Thinking",
       next: "Capture context, questions, and rules. AI execution stays intentionally disabled.",

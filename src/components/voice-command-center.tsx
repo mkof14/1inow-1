@@ -50,15 +50,31 @@ type VoicePlan = {
 };
 
 const ROUTES = [
-  { route: "/dashboard", label: "Dashboard", words: ["dashboard", "home", "today", "главная", "домой", "сегодня"] },
+  {
+    route: "/dashboard",
+    label: "Dashboard",
+    words: ["dashboard", "home", "today", "главная", "домой", "сегодня"],
+  },
   { route: "/projects", label: "Projects", words: ["projects", "project", "проекты", "проект"] },
   { route: "/tasks", label: "Tasks", words: ["tasks", "task", "задачи", "задача", "дела"] },
   { route: "/calendar", label: "Calendar", words: ["calendar", "календарь", "расписание"] },
-  { route: "/inbox", label: "Inbox", words: ["inbox", "notifications", "уведомления", "инбокс", "входящие"] },
-  { route: "/communication", label: "Communication", words: ["messages", "communication", "chat", "сообщения", "коммуникации", "чат"] },
+  {
+    route: "/inbox",
+    label: "Inbox",
+    words: ["inbox", "notifications", "уведомления", "инбокс", "входящие"],
+  },
+  {
+    route: "/communication",
+    label: "Communication",
+    words: ["messages", "communication", "chat", "сообщения", "коммуникации", "чат"],
+  },
   { route: "/people", label: "People", words: ["people", "contacts", "люди", "контакты"] },
   { route: "/reports", label: "Reports", words: ["reports", "отчеты", "аналитика"] },
-  { route: "/intelligence", label: "Intelligence", words: ["intelligence", "brain", "интеллект", "мозг"] },
+  {
+    route: "/intelligence",
+    label: "Intelligence",
+    words: ["intelligence", "brain", "интеллект", "мозг"],
+  },
   { route: "/ai", label: "Advisor", words: ["advisor", "assistant", "помощник", "ассистент"] },
   { route: "/administration", label: "Admin", words: ["admin", "админ", "администрирование"] },
   { route: "/settings", label: "Settings", words: ["settings", "настройки"] },
@@ -75,10 +91,18 @@ const EXAMPLES = [
   "Найди договор",
 ];
 
-export function VoiceCommandCenter() {
+export function VoiceCommandCenter({
+  open: controlledOpen,
+  onOpenChange,
+  showLauncher = true,
+}: {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  showLauncher?: boolean;
+}) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [listening, setListening] = useState(false);
   const [busy, setBusy] = useState(false);
   const [text, setText] = useState("");
@@ -92,6 +116,8 @@ export function VoiceCommandCenter() {
     }
   });
   const recognitionRef = useRef<any>(null);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
 
   useEffect(() => {
     try {
@@ -100,7 +126,9 @@ export function VoiceCommandCenter() {
   }, [history]);
 
   const stopListening = useCallback(() => {
-    try { recognitionRef.current?.stop?.(); } catch {}
+    try {
+      recognitionRef.current?.stop?.();
+    } catch {}
     recognitionRef.current = null;
     setListening(false);
   }, []);
@@ -141,12 +169,15 @@ export function VoiceCommandCenter() {
 
   useEffect(() => () => stopListening(), [stopListening]);
 
-  const quickCommands = useMemo(() => [
-    { label: "Today", icon: CalendarDays, text: "What is important today?" },
-    { label: "Risks", icon: AlertTriangle, text: "Show risks" },
-    { label: "New task", icon: CheckSquare, text: "Create task " },
-    { label: "New project", icon: FolderKanban, text: "Create project " },
-  ], []);
+  const quickCommands = useMemo(
+    () => [
+      { label: "Today", icon: CalendarDays, text: "What is important today?" },
+      { label: "Risks", icon: AlertTriangle, text: "Show risks" },
+      { label: "New task", icon: CheckSquare, text: "Create task " },
+      { label: "New project", icon: FolderKanban, text: "Create project " },
+    ],
+    [],
+  );
 
   const analyze = (value = text) => {
     const next = parseVoiceCommand(value);
@@ -157,7 +188,12 @@ export function VoiceCommandCenter() {
     if (!plan) return;
     setBusy(true);
     try {
-      if (plan.intent === "open_route" || plan.intent === "show_today" || plan.intent === "show_risks" || plan.intent === "search") {
+      if (
+        plan.intent === "open_route" ||
+        plan.intent === "show_today" ||
+        plan.intent === "show_risks" ||
+        plan.intent === "search"
+      ) {
         navigate({ to: (plan.route ?? "/dashboard") as any });
         remember(plan);
         setOpen(false);
@@ -180,7 +216,10 @@ export function VoiceCommandCenter() {
         toast.success("Task created from voice command");
       } else if (plan.intent === "create_project") {
         const base = plan.title ?? "new-project";
-        const slug = `${base.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${Math.random().toString(36).slice(2, 6)}`;
+        const slug = `${base
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "")}-${Math.random().toString(36).slice(2, 6)}`;
         const { error } = await supabase.from("projects").insert({
           name: plan.title,
           slug,
@@ -208,7 +247,9 @@ export function VoiceCommandCenter() {
   };
 
   const remember = (done: VoicePlan) => {
-    setHistory((items) => [done, ...items.filter((item) => item.summary !== done.summary)].slice(0, 6));
+    setHistory((items) =>
+      [done, ...items.filter((item) => item.summary !== done.summary)].slice(0, 6),
+    );
   };
 
   const captureToInbox = () => {
@@ -229,23 +270,31 @@ export function VoiceCommandCenter() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="fixed bottom-32 right-5 z-30 grid size-11 place-items-center rounded-full border border-accent/30 bg-card text-accent shadow-lg transition-all hover:-translate-y-0.5 hover:border-accent/50 md:bottom-20"
-        aria-label="Open voice commands"
-        title="Voice commands"
-      >
-        <Mic className="size-5" />
-        <span className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-accent live-dot" />
-      </button>
+      {showLauncher && (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="fixed bottom-32 right-5 z-30 grid size-11 place-items-center rounded-full border border-accent/30 bg-card text-accent shadow-lg transition-all hover:-translate-y-0.5 hover:border-accent/50 md:bottom-20"
+          aria-label="Open voice commands"
+          title="Voice commands"
+        >
+          <Mic className="size-5" />
+          <span className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-accent live-dot" />
+        </button>
+      )}
 
-      <Dialog open={open} onOpenChange={(value) => { setOpen(value); if (!value) stopListening(); }}>
+      <Dialog
+        open={open}
+        onOpenChange={(value) => {
+          setOpen(value);
+          if (!value) stopListening();
+        }}
+      >
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Radio className="size-5 text-accent" />
-              Voice Command Center
+              1inow AI + Voice Command Center
             </DialogTitle>
           </DialogHeader>
 
@@ -255,14 +304,18 @@ export function VoiceCommandCenter() {
                 <div>
                   <div className="text-sm font-semibold">Say or type what you want 1inow to do</div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Local intent parser first. External AI, STT, and TTS services remain disconnected.
+                    Local intent parser first. External AI, STT, and TTS services remain
+                    disconnected.
                   </p>
                 </div>
                 <Button
                   type="button"
                   variant={listening ? "default" : "outline"}
                   size="sm"
-                  className={cn("gap-2", listening && "bg-accent text-accent-foreground hover:bg-accent/90")}
+                  className={cn(
+                    "gap-2",
+                    listening && "bg-accent text-accent-foreground hover:bg-accent/90",
+                  )}
                   onClick={listening ? stopListening : startListening}
                 >
                   {listening ? <Mic className="size-4" /> : <MicOff className="size-4" />}
@@ -296,7 +349,8 @@ export function VoiceCommandCenter() {
               </div>
               <div className="mt-3 flex items-center justify-between gap-3">
                 <div className="text-[11px] text-muted-foreground">
-                  Supports navigation, create task/project drafts, today brief, risk review, search, notes/reminders drafts.
+                  Supports navigation, create task/project drafts, today brief, risk review, search,
+                  notes/reminders drafts.
                 </div>
                 <Button type="button" size="sm" onClick={() => analyze()} disabled={!text.trim()}>
                   Understand
@@ -305,7 +359,13 @@ export function VoiceCommandCenter() {
             </div>
 
             {plan && (
-              <VoicePlanPreview plan={plan} busy={busy} onCancel={() => setPlan(null)} onCapture={captureToInbox} onConfirm={execute} />
+              <VoicePlanPreview
+                plan={plan}
+                busy={busy}
+                onCancel={() => setPlan(null)}
+                onCapture={captureToInbox}
+                onConfirm={execute}
+              />
             )}
 
             <div className="grid gap-3 md:grid-cols-2">
@@ -339,9 +399,14 @@ export function VoiceCommandCenter() {
                 {history.length ? (
                   <div className="space-y-1.5">
                     {history.map((item) => (
-                      <div key={`${item.intent}-${item.summary}`} className="rounded-lg border border-border/70 px-2 py-1.5">
+                      <div
+                        key={`${item.intent}-${item.summary}`}
+                        className="rounded-lg border border-border/70 px-2 py-1.5"
+                      >
                         <div className="truncate text-xs font-medium">{item.label}</div>
-                        <div className="truncate text-[11px] text-muted-foreground">{item.summary}</div>
+                        <div className="truncate text-[11px] text-muted-foreground">
+                          {item.summary}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -374,7 +439,9 @@ function VoicePlanPreview({
     <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
-          <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">I understood this as</div>
+          <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            I understood this as
+          </div>
           <div className="mt-1 text-base font-semibold">{plan.label}</div>
           <p className="mt-1 text-sm text-muted-foreground">{plan.summary}</p>
         </div>
@@ -385,7 +452,9 @@ function VoicePlanPreview({
         <div className="mb-3 rounded-xl border border-border bg-card/70 p-3">
           <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">Draft</div>
           <div className="mt-1 text-sm font-medium">{plan.title}</div>
-          {plan.description && <div className="mt-1 text-xs text-muted-foreground">{plan.description}</div>}
+          {plan.description && (
+            <div className="mt-1 text-xs text-muted-foreground">{plan.description}</div>
+          )}
         </div>
       )}
 
@@ -414,7 +483,11 @@ function VoicePlanPreview({
           Save to inbox
         </Button>
         <Button type="button" onClick={plan.executable ? onConfirm : onCapture} disabled={busy}>
-          {busy ? <Loader2 className="mr-1.5 size-4 animate-spin" /> : <ArrowRight className="mr-1.5 size-4" />}
+          {busy ? (
+            <Loader2 className="mr-1.5 size-4 animate-spin" />
+          ) : (
+            <ArrowRight className="mr-1.5 size-4" />
+          )}
           {plan.executable ? "Confirm action" : "Save draft"}
         </Button>
       </div>
@@ -434,12 +507,17 @@ function mapPlanToInboxKind(intent: VoiceIntent): VoiceInboxKind {
 }
 
 function ConfidenceBadge({ value }: { value: VoicePlan["confidence"] }) {
-  const className = value === "high"
-    ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-700"
-    : value === "medium"
-      ? "border-amber-500/25 bg-amber-500/10 text-amber-700"
-      : "border-border bg-muted text-muted-foreground";
-  return <span className={`shrink-0 rounded-full border px-2 py-1 text-[11px] font-medium ${className}`}>{value}</span>;
+  const className =
+    value === "high"
+      ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-700"
+      : value === "medium"
+        ? "border-amber-500/25 bg-amber-500/10 text-amber-700"
+        : "border-border bg-muted text-muted-foreground";
+  return (
+    <span className={`shrink-0 rounded-full border px-2 py-1 text-[11px] font-medium ${className}`}>
+      {value}
+    </span>
+  );
 }
 
 function parseVoiceCommand(raw: string): VoicePlan {
@@ -448,46 +526,102 @@ function parseVoiceCommand(raw: string): VoicePlan {
 
   if (!text) return unknownPlan(text, "No command text was provided.");
 
-  const createTaskMatch = matchCreate(lower, ["create task", "new task", "add task", "создай задачу", "добавь задачу", "новая задача"]);
+  const createTaskMatch = matchCreate(lower, [
+    "create task",
+    "new task",
+    "add task",
+    "создай задачу",
+    "добавь задачу",
+    "новая задача",
+  ]);
   if (createTaskMatch) {
     const title = cleanupTitle(text.slice(createTaskMatch.length));
     return {
       intent: "create_task",
       label: "Create task",
-      summary: title ? `Create a task named "${title}".` : "Create a task draft. Add a title before confirming.",
+      summary: title
+        ? `Create a task named "${title}".`
+        : "Create a task draft. Add a title before confirming.",
       title: title || undefined,
       description: inferDomainDescription(lower),
       confidence: title ? "high" : "low",
-      evidence: ["Matched create task phrase", "Execution requires explicit confirmation", "Source: local voice intent parser"],
+      evidence: [
+        "Matched create task phrase",
+        "Execution requires explicit confirmation",
+        "Source: local voice intent parser",
+      ],
       executable: Boolean(title),
     };
   }
 
-  const createProjectMatch = matchCreate(lower, ["create project", "new project", "add project", "создай проект", "добавь проект", "новый проект"]);
+  const createProjectMatch = matchCreate(lower, [
+    "create project",
+    "new project",
+    "add project",
+    "создай проект",
+    "добавь проект",
+    "новый проект",
+  ]);
   if (createProjectMatch) {
     const title = cleanupTitle(text.slice(createProjectMatch.length));
     return {
       intent: "create_project",
       label: "Create project",
-      summary: title ? `Create a project named "${title}".` : "Create a project draft. Add a name before confirming.",
+      summary: title
+        ? `Create a project named "${title}".`
+        : "Create a project draft. Add a name before confirming.",
       title: title || undefined,
       description: inferDomainDescription(lower),
       confidence: title ? "high" : "low",
-      evidence: ["Matched create project phrase", "Execution requires explicit confirmation", "Source: local voice intent parser"],
+      evidence: [
+        "Matched create project phrase",
+        "Execution requires explicit confirmation",
+        "Source: local voice intent parser",
+      ],
       executable: Boolean(title),
     };
   }
 
   if (includesAny(lower, ["show risks", "risks", "риск", "риски", "покажи риски"])) {
-    return routePlan("show_risks", "Show risks", "Open Projects risk view context.", "/projects", "high", ["Matched risk phrase", "Best current risk surface is Projects + Daily Command Center"]);
+    return routePlan(
+      "show_risks",
+      "Show risks",
+      "Open Projects risk view context.",
+      "/projects",
+      "high",
+      ["Matched risk phrase", "Best current risk surface is Projects + Daily Command Center"],
+    );
   }
 
-  if (includesAny(lower, ["what today", "today important", "what is important today", "что сегодня", "что важно", "сегодня важно"])) {
-    return routePlan("show_today", "Show today's command center", "Open Dashboard for today focus, risk, decisions, and suggested actions.", "/dashboard", "high", ["Matched today/focus phrase", "Dashboard contains Daily Command Center"]);
+  if (
+    includesAny(lower, [
+      "what today",
+      "today important",
+      "what is important today",
+      "что сегодня",
+      "что важно",
+      "сегодня важно",
+    ])
+  ) {
+    return routePlan(
+      "show_today",
+      "Show today's command center",
+      "Open Dashboard for today focus, risk, decisions, and suggested actions.",
+      "/dashboard",
+      "high",
+      ["Matched today/focus phrase", "Dashboard contains Daily Command Center"],
+    );
   }
 
   if (includesAny(lower, ["search", "find", "найди", "поиск"])) {
-    return routePlan("search", "Open search", "Open Dashboard. Use global search from the top bar or slash shortcut.", "/dashboard", "medium", ["Matched search phrase", "Global command/search is available in app shell"]);
+    return routePlan(
+      "search",
+      "Open search",
+      "Open Dashboard. Use global search from the top bar or slash shortcut.",
+      "/dashboard",
+      "medium",
+      ["Matched search phrase", "Global command/search is available in app shell"],
+    );
   }
 
   if (includesAny(lower, ["note", "заметка", "запиши"])) {
@@ -497,7 +631,10 @@ function parseVoiceCommand(raw: string): VoicePlan {
       summary: "Notes are drafted here. Dedicated note creation is not connected yet.",
       title: cleanupTitle(text.replace(/^(note|заметка|запиши)/i, "")) || text,
       confidence: "medium",
-      evidence: ["Matched note phrase", "Notes route exists, but write flow is not connected in voice center yet"],
+      evidence: [
+        "Matched note phrase",
+        "Notes route exists, but write flow is not connected in voice center yet",
+      ],
       executable: false,
     };
   }
@@ -506,7 +643,8 @@ function parseVoiceCommand(raw: string): VoicePlan {
     return {
       intent: "draft_reminder",
       label: "Draft reminder",
-      summary: "Reminder intent detected. Reminder execution needs a dedicated reminders data flow later.",
+      summary:
+        "Reminder intent detected. Reminder execution needs a dedicated reminders data flow later.",
       title: text,
       confidence: "medium",
       evidence: ["Matched reminder phrase", "No production reminder execution is connected yet"],
@@ -514,15 +652,35 @@ function parseVoiceCommand(raw: string): VoicePlan {
     };
   }
 
-  const route = ROUTES.find((item) => includesAny(lower, ["open " + item.label.toLowerCase(), "go " + item.label.toLowerCase(), ...item.words]));
+  const route = ROUTES.find((item) =>
+    includesAny(lower, [
+      "open " + item.label.toLowerCase(),
+      "go " + item.label.toLowerCase(),
+      ...item.words,
+    ]),
+  );
   if (route) {
-    return routePlan("open_route", `Open ${route.label}`, `Navigate to ${route.label}.`, route.route, "high", [`Matched route keywords: ${route.words.slice(0, 3).join(", ")}`, "Source: local route map"]);
+    return routePlan(
+      "open_route",
+      `Open ${route.label}`,
+      `Navigate to ${route.label}.`,
+      route.route,
+      "high",
+      [`Matched route keywords: ${route.words.slice(0, 3).join(", ")}`, "Source: local route map"],
+    );
   }
 
   return unknownPlan(text, "I can draft this, but I need a clearer command before executing.");
 }
 
-function routePlan(intent: VoiceIntent, label: string, summary: string, route: string, confidence: VoicePlan["confidence"], evidence: string[]): VoicePlan {
+function routePlan(
+  intent: VoiceIntent,
+  label: string,
+  summary: string,
+  route: string,
+  confidence: VoicePlan["confidence"],
+  evidence: string[],
+): VoicePlan {
   return { intent, label, summary, route, confidence, evidence, executable: true };
 }
 
@@ -533,13 +691,20 @@ function unknownPlan(text: string, summary: string): VoicePlan {
     summary,
     title: text || undefined,
     confidence: "low",
-    evidence: ["No supported local intent matched", "Try create task, create project, open page, show today, or show risks"],
+    evidence: [
+      "No supported local intent matched",
+      "Try create task, create project, open page, show today, or show risks",
+    ],
     executable: false,
   };
 }
 
 function normalize(value: string) {
-  return value.toLowerCase().replace(/[.,!?;:]+/g, " ").replace(/\s+/g, " ").trim();
+  return value
+    .toLowerCase()
+    .replace(/[.,!?;:]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function includesAny(value: string, words: string[]) {
