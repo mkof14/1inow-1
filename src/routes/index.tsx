@@ -14,7 +14,6 @@ import {
   Workflow,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { BrandMark } from "@/components/icons/compass-mark";
 import { BrandWordmark } from "@/components/icons/compass-icons";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useI18n } from "@/lib/i18n";
@@ -79,6 +78,11 @@ const landingCopy = {
       ["Open tasks", "14"],
       ["Active projects", "8"],
     ],
+    visuals: [
+      ["Capture", "Voice thoughts become usable signals."],
+      ["Organize", "Projects, tasks, and priorities stay visible."],
+      ["Move", "The next useful action is always close."],
+    ],
     modules: [
       [
         "Voice first",
@@ -127,6 +131,11 @@ const landingCopy = {
       ["Открытые задачи", "14"],
       ["Активные проекты", "8"],
     ],
+    visuals: [
+      ["Фиксируйте", "Голосовые мысли становятся полезными сигналами."],
+      ["Организуйте", "Проекты, задачи и приоритеты остаются на виду."],
+      ["Двигайтесь", "Следующее полезное действие всегда рядом."],
+    ],
     modules: [
       [
         "Сначала голос",
@@ -174,6 +183,11 @@ const landingCopy = {
       ["Голосові записи", "5"],
       ["Відкриті задачі", "14"],
       ["Активні проєкти", "8"],
+    ],
+    visuals: [
+      ["Фіксуйте", "Голосові думки стають корисними сигналами."],
+      ["Організуйте", "Проєкти, задачі і пріоритети залишаються видимими."],
+      ["Рухайтесь", "Наступна корисна дія завжди поруч."],
     ],
     modules: [
       [
@@ -224,6 +238,11 @@ const landingCopy = {
       ["Tareas abiertas", "14"],
       ["Proyectos activos", "8"],
     ],
+    visuals: [
+      ["Captura", "Las ideas de voz se convierten en señales útiles."],
+      ["Organiza", "Proyectos, tareas y prioridades siguen visibles."],
+      ["Avanza", "La siguiente acción útil siempre está cerca."],
+    ],
     modules: [
       [
         "Voz primero",
@@ -273,6 +292,11 @@ const landingCopy = {
       ["Offene Aufgaben", "14"],
       ["Aktive Projekte", "8"],
     ],
+    visuals: [
+      ["Erfassen", "Sprachgedanken werden zu nutzbaren Signalen."],
+      ["Ordnen", "Projekte, Aufgaben und Prioritaten bleiben sichtbar."],
+      ["Bewegen", "Der nachste nutzliche Schritt bleibt nah."],
+    ],
     modules: [
       [
         "Sprache zuerst",
@@ -304,13 +328,16 @@ function LandingPage() {
     <main className="min-h-screen overflow-hidden bg-[#f7faf8] text-slate-950 dark:bg-[#061014] dark:text-white">
       <section className="relative min-h-[92vh] bg-[linear-gradient(135deg,#f7faf8_0%,#e8fff6_32%,#eaf4ff_64%,#fff7e7_100%)] dark:bg-[linear-gradient(135deg,#061014_0%,#0d2830_38%,#10203b_72%,#211a0f_100%)]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(20,184,166,0.28),transparent_30%),radial-gradient(circle_at_82%_15%,rgba(59,130,246,0.22),transparent_28%),radial-gradient(circle_at_68%_78%,rgba(245,158,11,0.2),transparent_34%)]" />
+        <div className="pointer-events-none absolute left-[6%] top-28 hidden rotate-[-7deg] rounded-[2rem] border border-white/60 bg-white/45 p-3 shadow-2xl shadow-teal-900/10 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06] lg:block">
+          <img src="/icons/icon-512.png" alt="" className="size-24 rounded-[1.45rem]" />
+        </div>
+        <div className="pointer-events-none absolute right-[7%] top-28 hidden rotate-[8deg] rounded-[2rem] border border-white/60 bg-white/42 p-3 shadow-2xl shadow-blue-900/10 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.055] xl:block">
+          <img src="/icons/icon-1024.png" alt="" className="size-28 rounded-[1.55rem]" />
+        </div>
         <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-b from-transparent to-[#f7faf8] dark:to-[#061014]" />
 
         <header className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-5 md:px-8">
           <Link to="/" className="flex items-center gap-3">
-            <span className="grid size-12 place-items-center rounded-2xl bg-slate-950 text-white shadow-lg shadow-teal-500/20 dark:bg-white dark:text-slate-950">
-              <BrandMark className="size-7" />
-            </span>
             <span className="flex flex-col leading-none">
               <BrandWordmark size={34} />
               <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-white/55">
@@ -348,7 +375,7 @@ function LandingPage() {
               <span className="size-2 rounded-full bg-teal-500 shadow-[0_0_18px_rgba(20,184,166,0.75)]" />
               {c.eyebrow}
             </div>
-            <h1 className="max-w-5xl text-5xl font-semibold leading-[0.96] tracking-tight text-slate-950 dark:text-white md:text-7xl lg:text-8xl">
+            <h1 className="max-w-5xl text-4xl font-semibold leading-[1.03] tracking-tight text-slate-950 dark:text-white md:text-5xl lg:text-6xl">
               {c.title}
             </h1>
             <p className="mt-7 max-w-2xl text-base leading-8 text-slate-600 dark:text-white/70 md:text-xl">
@@ -373,6 +400,32 @@ function LandingPage() {
           </div>
 
           <HeroDashboard copy={c} />
+        </div>
+      </section>
+
+      <section className="relative bg-[#f7faf8] px-5 pb-8 dark:bg-[#061014] md:px-8">
+        <div className="mx-auto grid w-full max-w-7xl gap-4 md:grid-cols-3">
+          {c.visuals.map(([title, text], index) => (
+            <div
+              key={title}
+              className="overflow-hidden rounded-3xl border border-slate-900/8 bg-white/72 shadow-xl shadow-slate-950/5 dark:border-white/10 dark:bg-white/[0.055]"
+            >
+              <div className="relative h-36 bg-gradient-to-br from-teal-400/18 via-blue-400/12 to-amber-300/20">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.75),transparent_34%),radial-gradient(circle_at_74%_68%,rgba(20,184,166,0.24),transparent_34%)] dark:bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.12),transparent_34%),radial-gradient(circle_at_74%_68%,rgba(20,184,166,0.22),transparent_34%)]" />
+                <img
+                  src={
+                    ["/icons/icon-192.png", "/icons/icon-512.png", "/icons/icon-1024.png"][index]
+                  }
+                  alt=""
+                  className="absolute left-1/2 top-1/2 size-20 -translate-x-1/2 -translate-y-1/2 rounded-[1.35rem] shadow-2xl"
+                />
+              </div>
+              <div className="p-5">
+                <h2 className="text-sm font-semibold text-slate-950 dark:text-white">{title}</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-white/62">{text}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -421,6 +474,13 @@ function LandingPage() {
           </Link>
         </div>
       </section>
+
+      <footer className="border-t border-slate-900/8 bg-[#edf7f4] px-5 py-5 text-xs text-slate-500 dark:border-white/10 dark:bg-[#0b171b] dark:text-white/48 md:px-8">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <span>Copyright © {new Date().getFullYear()} 1inow Inc. All rights reserved.</span>
+          <span>1inow.com</span>
+        </div>
+      </footer>
     </main>
   );
 }
