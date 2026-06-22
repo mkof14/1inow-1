@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { FOUNDER_EMAIL, isFounderModeEnabled } from "@/lib/founder-mode";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -22,15 +23,22 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const googleEnabled = import.meta.env.VITE_ENABLE_GOOGLE_AUTH === "true";
+  const founderMode = isFounderModeEnabled();
 
   useEffect(() => {
+    if (founderMode) {
+      setHasSession(true);
+      setSessionReady(true);
+      return;
+    }
+
     supabase.auth.getSession().then(({ data }) => {
       setHasSession(Boolean(data.session));
       setSessionReady(true);
     });
-  }, []);
+  }, [founderMode]);
 
-  if (sessionReady && hasSession) {
+  if (founderMode || (sessionReady && hasSession)) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -72,7 +80,9 @@ function AuthPage() {
           <BrandWordmark size={30} />
           <div>
             <CardTitle>Sign in</CardTitle>
-            <CardDescription>Use your Supabase account to access 1inow.</CardDescription>
+            <CardDescription>
+              Use your Supabase account to access 1inow. Local founder mode uses {FOUNDER_EMAIL}.
+            </CardDescription>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
