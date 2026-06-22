@@ -25,6 +25,7 @@ import { AiSidebar, type AiSidebarMode } from "@/components/ai-sidebar";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { InstallPrompt } from "@/components/install-prompt";
+import { VoiceCommandCenter } from "@/components/voice-command-center";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -384,6 +385,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
         <QuickCreate openSignal={quickOpen} />
         <CommandBar open={cmdOpen} onOpenChange={setCmdOpen} />
+        <VoiceCommandCenter />
         <MobileBottomNav />
         <InstallPrompt />
       </div>
