@@ -2,7 +2,11 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { ensureCurrentProfile } from "@/lib/profile-bootstrap";
-import { FOUNDER_USER, isFounderModeEnabled } from "@/lib/founder-mode";
+import {
+  disableFounderModeForSession,
+  FOUNDER_USER,
+  isFounderModeEnabled,
+} from "@/lib/founder-mode";
 
 interface AuthContextValue {
   session: Session | null;
@@ -82,6 +86,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     isAdmin,
     signOut: async () => {
+      if (founderMode) {
+        disableFounderModeForSession();
+      }
       await supabase.auth.signOut();
     },
   };

@@ -7,7 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { FOUNDER_EMAIL, isFounderModeEnabled } from "@/lib/founder-mode";
+import {
+  FOUNDER_EMAIL,
+  isFounderModeEnabled,
+  restoreFounderModeForSession,
+} from "@/lib/founder-mode";
 import { ArrowLeft, ArrowRight, CheckCircle2, ShieldCheck, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
@@ -81,6 +85,7 @@ function AuthPage() {
   };
 
   const enterFounderWorkspace = async () => {
+    restoreFounderModeForSession();
     toast.success(`Local founder access: ${FOUNDER_EMAIL}`);
     await navigate({ to: "/dashboard", replace: true });
   };

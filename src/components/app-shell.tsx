@@ -15,6 +15,8 @@ import {
   Activity,
   ArrowRight,
   Bell,
+  Home,
+  LogOut,
   Moon,
   Sun,
   Plus,
@@ -55,7 +57,7 @@ import { VoiceCommandCenter } from "@/components/voice-command-center";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { user, isAdmin } = useAuth() as any;
+  const { user, isAdmin, signOut } = useAuth() as any;
   const navigate = useNavigate();
   const t = useT();
   const [dark, setDark] = useState(false);
@@ -105,6 +107,11 @@ export function AppShell({ children }: { children: ReactNode }) {
     const next = !dark;
     setDark(next);
     document.documentElement.classList.toggle("dark", next);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    await navigate({ to: "/" });
   };
 
   const initials = (user?.user_metadata?.full_name || user?.email || "U")
@@ -351,8 +358,17 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <DropdownMenuItem onClick={() => setQuickOpen((n) => n + 1)} className="sm:hidden">
                   {t("common.create", "Create")}
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate({ to: "/" })}>
+                  <Home className="mr-2 size-4" />
+                  Public Home
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate({ to: "/settings" })}>
                   {t("common.settings", "Settings")}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut}>
+                  <LogOut className="mr-2 size-4" />
+                  {t("common.signOut", "Sign out")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
