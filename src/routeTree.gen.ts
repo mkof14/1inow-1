@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrinciplesStrategicVsTacticalRouteImport } from './routes/principles.strategic-vs-tactical'
+import { Route as LearnSlugRouteImport } from './routes/learn.$slug'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
@@ -85,6 +86,11 @@ const PrinciplesStrategicVsTacticalRoute =
     path: '/principles/strategic-vs-tactical',
     getParentRoute: () => rootRouteImport,
   } as any)
+const LearnSlugRoute = LearnSlugRouteImport.update({
+  id: '/learn/$slug',
+  path: '/learn/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiTtsRoute = ApiTtsRouteImport.update({
   id: '/api/tts',
   path: '/api/tts',
@@ -361,6 +367,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
+  '/learn/$slug': typeof LearnSlugRoute
   '/principles/strategic-vs-tactical': typeof PrinciplesStrategicVsTacticalRoute
   '/administration/audit': typeof AuthenticatedAdministrationAuditRoute
   '/administration/downloads': typeof AuthenticatedAdministrationDownloadsRoute
@@ -411,6 +418,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
+  '/learn/$slug': typeof LearnSlugRoute
   '/principles/strategic-vs-tactical': typeof PrinciplesStrategicVsTacticalRoute
   '/administration/audit': typeof AuthenticatedAdministrationAuditRoute
   '/administration/downloads': typeof AuthenticatedAdministrationDownloadsRoute
@@ -464,6 +472,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
+  '/learn/$slug': typeof LearnSlugRoute
   '/principles/strategic-vs-tactical': typeof PrinciplesStrategicVsTacticalRoute
   '/_authenticated/administration/audit': typeof AuthenticatedAdministrationAuditRoute
   '/_authenticated/administration/downloads': typeof AuthenticatedAdministrationDownloadsRoute
@@ -517,6 +526,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/stt'
     | '/api/tts'
+    | '/learn/$slug'
     | '/principles/strategic-vs-tactical'
     | '/administration/audit'
     | '/administration/downloads'
@@ -567,6 +577,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/stt'
     | '/api/tts'
+    | '/learn/$slug'
     | '/principles/strategic-vs-tactical'
     | '/administration/audit'
     | '/administration/downloads'
@@ -619,6 +630,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/stt'
     | '/api/tts'
+    | '/learn/$slug'
     | '/principles/strategic-vs-tactical'
     | '/_authenticated/administration/audit'
     | '/_authenticated/administration/downloads'
@@ -648,6 +660,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
+  LearnSlugRoute: typeof LearnSlugRoute
   PrinciplesStrategicVsTacticalRoute: typeof PrinciplesStrategicVsTacticalRoute
 }
 
@@ -686,6 +699,13 @@ declare module '@tanstack/react-router' {
       path: '/principles/strategic-vs-tactical'
       fullPath: '/principles/strategic-vs-tactical'
       preLoaderRoute: typeof PrinciplesStrategicVsTacticalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/learn/$slug': {
+      id: '/learn/$slug'
+      path: '/learn/$slug'
+      fullPath: '/learn/$slug'
+      preLoaderRoute: typeof LearnSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/tts': {
@@ -1131,6 +1151,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
+  LearnSlugRoute: LearnSlugRoute,
   PrinciplesStrategicVsTacticalRoute: PrinciplesStrategicVsTacticalRoute,
 }
 export const routeTree = rootRouteImport

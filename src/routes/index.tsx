@@ -319,6 +319,9 @@ const landingCopy = {
 };
 
 const moduleIcons = [Mic, FolderKanban, CalendarCheck2, ShieldCheck];
+const moduleTopicSlugs = ["voice-capture", "projects", "operating-picture", "intelligence-layer"];
+const signalTopicSlugs = ["voice-capture", "review-queue", "next-action", "risk-tracking"];
+const metricTopicSlugs = ["voice-capture", "next-action", "projects"];
 
 function LandingPage() {
   const { lang } = useI18n();
@@ -432,8 +435,10 @@ function LandingPage() {
           {c.modules.map(([title, text], index) => {
             const Icon = moduleIcons[index] ?? Sparkles;
             return (
-              <article
+              <Link
                 key={title}
+                to="/learn/$slug"
+                params={{ slug: moduleTopicSlugs[index] }}
                 className="group rounded-2xl border border-slate-900/8 bg-white/72 p-5 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-xl hover:shadow-teal-900/5 dark:border-white/10 dark:bg-white/[0.055] dark:hover:bg-white/[0.08]"
               >
                 <div className="mb-5 grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-teal-500/16 via-blue-500/12 to-amber-400/16 text-teal-700 dark:text-teal-200">
@@ -443,7 +448,7 @@ function LandingPage() {
                   {title}
                 </h2>
                 <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-white/62">{text}</p>
-              </article>
+              </Link>
             );
           })}
         </div>
@@ -473,8 +478,44 @@ function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-slate-900/8 bg-[#edf7f4] px-5 py-5 text-xs text-slate-500 dark:border-white/10 dark:bg-[#0b171b] dark:text-white/48 md:px-8">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <footer className="border-t border-slate-900/8 bg-[#edf7f4] px-5 py-8 text-sm text-slate-600 dark:border-white/10 dark:bg-[#0b171b] dark:text-white/58 md:px-8">
+        <div className="mx-auto grid w-full max-w-7xl gap-8 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+          <div>
+            <BrandWordmark size={28} />
+            <p className="mt-3 max-w-sm text-sm leading-6">
+              A personal command center for projects, life tasks, voice capture, decisions, and
+              future AI assistance.
+            </p>
+          </div>
+          <FooterColumn
+            title="Learning"
+            links={[
+              ["Voice capture", "voice-capture"],
+              ["Review queue", "review-queue"],
+              ["Next action", "next-action"],
+              ["Risk tracking", "risk-tracking"],
+            ]}
+          />
+          <FooterColumn
+            title="Product"
+            links={[
+              ["Intelligence layer", "intelligence-layer"],
+              ["Operating picture", "operating-picture"],
+              ["Projects", "projects"],
+              ["Automation", "automation-readiness"],
+            ]}
+          />
+          <FooterColumn
+            title="Company"
+            links={[
+              ["FAQ", "faq"],
+              ["Legal", "legal"],
+              ["Security", "security"],
+              ["Principles", "principles"],
+            ]}
+          />
+        </div>
+        <div className="mx-auto mt-8 flex w-full max-w-7xl flex-col gap-2 border-t border-slate-900/8 pt-5 text-xs text-slate-500 dark:border-white/10 dark:text-white/42 sm:flex-row sm:items-center sm:justify-between">
           <span>Copyright © {new Date().getFullYear()} 1inow Inc. All rights reserved.</span>
           <span>1inow.com</span>
         </div>
@@ -507,7 +548,11 @@ function HeroDashboard({ copy: c }: { copy: (typeof landingCopy)["en"] }) {
 
         <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
           <div className="space-y-3">
-            <div className="rounded-3xl border border-slate-900/8 bg-slate-950 p-4 text-white shadow-xl dark:border-white/10">
+            <Link
+              to="/learn/$slug"
+              params={{ slug: "operating-picture" }}
+              className="block rounded-3xl border border-slate-900/8 bg-slate-950 p-4 text-white shadow-xl transition-transform hover:-translate-y-0.5 hover:shadow-2xl dark:border-white/10"
+            >
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <div className="text-xs uppercase tracking-[0.18em] text-white/45">
@@ -527,12 +572,14 @@ function HeroDashboard({ copy: c }: { copy: (typeof landingCopy)["en"] }) {
                   </div>
                 ))}
               </div>
-            </div>
+            </Link>
 
             {c.signals.map((signal, index) => (
-              <div
+              <Link
                 key={signal}
-                className="flex items-center gap-3 rounded-2xl border border-slate-900/8 bg-white/78 p-3 dark:border-white/10 dark:bg-white/[0.055]"
+                to="/learn/$slug"
+                params={{ slug: signalTopicSlugs[index] }}
+                className="flex items-center gap-3 rounded-2xl border border-slate-900/8 bg-white/78 p-3 transition-transform hover:-translate-y-0.5 hover:shadow-lg dark:border-white/10 dark:bg-white/[0.055]"
               >
                 <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-teal-500/18 to-blue-500/14 text-xs font-semibold text-teal-700 dark:text-teal-200">
                   {index + 1}
@@ -541,31 +588,39 @@ function HeroDashboard({ copy: c }: { copy: (typeof landingCopy)["en"] }) {
                   {signal}
                 </span>
                 <CheckCircle2 className="size-4 shrink-0 text-teal-500" />
-              </div>
+              </Link>
             ))}
           </div>
 
           <div className="space-y-4">
-            <div className="rounded-3xl border border-slate-900/8 bg-white/78 p-4 dark:border-white/10 dark:bg-white/[0.055]">
-              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-950 dark:text-white">
-                <Workflow className="size-4 text-blue-500" />
-                {c.insightTitle}
-              </div>
-              <p className="text-xs leading-5 text-slate-600 dark:text-white/58">{c.insightText}</p>
+            <div className="rounded-3xl border border-slate-900/8 bg-white/78 p-4 transition-transform hover:-translate-y-0.5 hover:shadow-lg dark:border-white/10 dark:bg-white/[0.055]">
+              <Link to="/learn/$slug" params={{ slug: "intelligence-layer" }} className="block">
+                <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-950 dark:text-white">
+                  <Workflow className="size-4 text-blue-500" />
+                  {c.insightTitle}
+                </div>
+                <p className="text-xs leading-5 text-slate-600 dark:text-white/58">
+                  {c.insightText}
+                </p>
+              </Link>
               <div className="mt-4 space-y-2">
-                {c.metrics.map(([label, value]) => (
-                  <Metric key={label} label={label} value={value} />
+                {c.metrics.map(([label, value], index) => (
+                  <Metric key={label} label={label} value={value} slug={metricTopicSlugs[index]} />
                 ))}
               </div>
             </div>
 
-            <div className="rounded-3xl border border-slate-900/8 bg-gradient-to-br from-amber-300/24 via-white/72 to-teal-300/18 p-4 dark:border-white/10 dark:from-amber-300/12 dark:via-white/[0.055] dark:to-teal-300/10">
+            <Link
+              to="/learn/$slug"
+              params={{ slug: "obvious-system" }}
+              className="block rounded-3xl border border-slate-900/8 bg-gradient-to-br from-amber-300/24 via-white/72 to-teal-300/18 p-4 transition-transform hover:-translate-y-0.5 hover:shadow-lg dark:border-white/10 dark:from-amber-300/12 dark:via-white/[0.055] dark:to-teal-300/10"
+            >
               <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-950 dark:text-white">
                 <Layers3 className="size-4 text-amber-600 dark:text-amber-300" />
                 {c.proofTitle}
               </div>
               <p className="text-xs leading-5 text-slate-600 dark:text-white/62">{c.proofText}</p>
-            </div>
+            </Link>
           </div>
         </div>
       </div>
@@ -573,14 +628,51 @@ function HeroDashboard({ copy: c }: { copy: (typeof landingCopy)["en"] }) {
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function Metric({ label, value, slug }: { label: string; value: string; slug: string }) {
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-slate-900/8 bg-white/70 px-3 py-2 dark:border-white/10 dark:bg-white/[0.055]">
+    <Link
+      to="/learn/$slug"
+      params={{ slug }}
+      onClick={(event) => event.stopPropagation()}
+      className="flex items-center justify-between rounded-2xl border border-slate-900/8 bg-white/70 px-3 py-2 transition-colors hover:bg-white dark:border-white/10 dark:bg-white/[0.055] dark:hover:bg-white/[0.08]"
+    >
       <span className="inline-flex min-w-0 items-center gap-2 text-xs text-slate-600 dark:text-white/58">
         <Clock3 className="size-3.5 shrink-0 text-teal-500" />
         <span className="truncate">{label}</span>
       </span>
       <span className="text-sm font-semibold text-slate-950 dark:text-white">{value}</span>
+    </Link>
+  );
+}
+
+function FooterColumn({ title, links }: { title: string; links: Array<[string, string]> }) {
+  return (
+    <div>
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-white/42">
+        {title}
+      </h2>
+      <div className="space-y-2">
+        {links.map(([label, slug]) =>
+          slug === "principles" ? (
+            <Link
+              key={slug}
+              to="/principles/strategic-vs-tactical"
+              className="block hover:text-slate-950 dark:hover:text-white"
+            >
+              {label}
+            </Link>
+          ) : (
+            <Link
+              key={slug}
+              to="/learn/$slug"
+              params={{ slug }}
+              className="block hover:text-slate-950 dark:hover:text-white"
+            >
+              {label}
+            </Link>
+          ),
+        )}
+      </div>
     </div>
   );
 }

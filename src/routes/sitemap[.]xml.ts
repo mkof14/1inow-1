@@ -2,6 +2,20 @@ import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
 
 const BASE_URL = "https://1inow.com";
+const LEARNING_PATHS = [
+  "/learn/voice-capture",
+  "/learn/review-queue",
+  "/learn/next-action",
+  "/learn/risk-tracking",
+  "/learn/intelligence-layer",
+  "/learn/operating-picture",
+  "/learn/obvious-system",
+  "/learn/faq",
+  "/learn/legal",
+  "/learn/security",
+  "/learn/projects",
+  "/learn/automation-readiness",
+];
 
 interface SitemapEntry {
   path: string;
@@ -16,6 +30,11 @@ export const Route = createFileRoute("/sitemap.xml")({
         const entries: SitemapEntry[] = [
           { path: "/", changefreq: "weekly", priority: "1.0" },
           { path: "/principles/strategic-vs-tactical", changefreq: "monthly", priority: "0.7" },
+          ...LEARNING_PATHS.map((path) => ({
+            path,
+            changefreq: "monthly" as const,
+            priority: "0.6",
+          })),
         ];
 
         const urls = entries.map((e) =>
