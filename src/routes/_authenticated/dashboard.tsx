@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchDecisions, fetchProjects, fetchTasks, fetchProfiles } from "@/lib/queries";
 import { fetchNotifications } from "@/lib/wave1";
 import { useAuth } from "@/hooks/use-auth";
-import { AlertTriangle, Bell, CheckCircle2, Clock, CalendarDays, FolderKanban, Hourglass, MessageSquare, ListChecks, Plus, ArrowRight, Sparkles, Target, TrendingUp } from "lucide-react";
+import { AlertTriangle, Bell, CheckCircle2, Clock, CalendarDays, FolderKanban, Hourglass, Info, MessageSquare, ListChecks, Plus, ArrowRight, Sparkles, Target, TrendingUp } from "lucide-react";
 import { BrandMark } from "@/components/icons/compass-mark";
 import { BrandMark as BrandRing } from "@/components/icons/compass-icons";
 import { buildAttention, buildToday, buildWaitingFor, detectOpenLoops, scoreProject } from "@/lib/brain";
@@ -97,21 +97,51 @@ function HomePage() {
   const unreadNotifications = (notifs.data ?? []).filter((n: any) => !n.read_at);
   const suggestedActions = [
     overdueTasks.length
-      ? { label: `Clear ${overdueTasks.length} overdue task${overdueTasks.length === 1 ? "" : "s"}`, href: "/tasks", reason: "Time risk" }
+      ? {
+          label: `Clear ${overdueTasks.length} overdue task${overdueTasks.length === 1 ? "" : "s"}`,
+          href: "/tasks",
+          reason: "Time risk",
+          confidence: "high",
+          evidence: [`${overdueTasks.length} open task${overdueTasks.length === 1 ? "" : "s"} with due dates before today`, "Source: tasks.due_date + tasks.status"],
+        }
       : null,
     pendingDecisions.length
-      ? { label: `Decide ${pendingDecisions.length} pending item${pendingDecisions.length === 1 ? "" : "s"}`, href: "/approvals", reason: "Decision queue" }
+      ? {
+          label: `Decide ${pendingDecisions.length} pending item${pendingDecisions.length === 1 ? "" : "s"}`,
+          href: "/approvals",
+          reason: "Decision queue",
+          confidence: "high",
+          evidence: [`${pendingDecisions.length} decision${pendingDecisions.length === 1 ? "" : "s"} with pending/review status`, "Source: decisions.status"],
+        }
       : null,
     projectRisks.length
-      ? { label: `Review ${projectRisks.length} project risk${projectRisks.length === 1 ? "" : "s"}`, href: "/projects", reason: "Portfolio health" }
+      ? {
+          label: `Review ${projectRisks.length} project risk${projectRisks.length === 1 ? "" : "s"}`,
+          href: "/projects",
+          reason: "Portfolio health",
+          confidence: "medium",
+          evidence: [`${projectRisks.length} project${projectRisks.length === 1 ? "" : "s"} scored below healthy`, "Source: project status, updated_at, owner_id, task due dates"],
+        }
       : null,
     unreadNotifications.length
-      ? { label: `Read ${unreadNotifications.length} new signal${unreadNotifications.length === 1 ? "" : "s"}`, href: "/inbox", reason: "Fresh updates" }
+      ? {
+          label: `Read ${unreadNotifications.length} new signal${unreadNotifications.length === 1 ? "" : "s"}`,
+          href: "/inbox",
+          reason: "Fresh updates",
+          confidence: "high",
+          evidence: [`${unreadNotifications.length} notification${unreadNotifications.length === 1 ? "" : "s"} without read_at`, "Source: notifications.read_at"],
+        }
       : null,
     !openTasks.length
-      ? { label: "Create the next useful action", href: "/projects", reason: "No open work" }
+      ? {
+          label: "Create the next useful action",
+          href: "/projects",
+          reason: "No open work",
+          confidence: "medium",
+          evidence: ["No open tasks detected", "Source: tasks.status"],
+        }
       : null,
-  ].filter(Boolean) as { label: string; href: string; reason: string }[];
+  ].filter(Boolean) as CommandAction[];
   const aiHighlights: string[] = [
     activeProjects.length
       ? `${activeProjects.length} active project${activeProjects.length === 1 ? "" : "s"} in motion.`
@@ -448,7 +478,7 @@ function DailyCommandCenter({
   waitingBuckets: { label: string; items: { id: string; title: string; hint: string; href?: string }[] }[];
   openLoops: { refId: string; title: string; hint: string; href?: string }[];
   pendingDecisions: any[];
-  suggestedActions: { label: string; href: string; reason: string }[];
+  suggestedActions: CommandAction[];
   stats: { open: number; done: number; overdue: number; activeProjects: number };
 }) {
   const waitingTotal = waitingBuckets.reduce((sum, bucket) => sum + bucket.items.length, 0);
@@ -608,13 +638,21 @@ function DailyCommandCenter({
   );
 }
 
-function ActionSequence({ actions }: { actions: { label: string; href: string; reason: string }[] }) {
+type CommandAction = {
+  label: string;
+  href: string;
+  reason: string;
+  confidence: "high" | "medium" | "low";
+  evidence: string[];
+};
+
+function ActionSequence({ actions }: { actions: CommandAction[] }) {
   const steps = actions.length
     ? actions.slice(0, 3)
     : [
-        { label: "Review the board", href: "/tasks", reason: "No urgent signals detected" },
-        { label: "Plan one next outcome", href: "/projects", reason: "Keep the system fresh" },
-        { label: "Check the inbox", href: "/inbox", reason: "Confirm no fresh signals" },
+        { label: "Review the board", href: "/tasks", reason: "No urgent signals detected", confidence: "medium" as const, evidence: ["No overdue, pending, or unread signal was prioritized", "Source: local dashboard heuristics"] },
+        { label: "Plan one next outcome", href: "/projects", reason: "Keep the system fresh", confidence: "medium" as const, evidence: ["Healthy systems still need a next outcome", "Source: project/task counts"] },
+        { label: "Check the inbox", href: "/inbox", reason: "Confirm no fresh signals", confidence: "low" as const, evidence: ["Inbox state can change during the day", "Source: notifications query"] },
       ];
 
   return (
@@ -630,20 +668,22 @@ function ActionSequence({ actions }: { actions: { label: string; href: string; r
       </div>
       <div className="grid gap-2 md:grid-cols-3">
         {steps.map((step, index) => (
-          <Link
+          <div
             key={`${step.href}-${step.label}`}
-            to={step.href as any}
-            className="group flex items-start gap-3 rounded-xl border border-border bg-background/60 p-3 transition-colors hover:border-accent/35 hover:bg-accent/5"
+            className="rounded-xl border border-border bg-background/60 p-3 transition-colors hover:border-accent/35 hover:bg-accent/5"
           >
-            <span className="grid size-6 shrink-0 place-items-center rounded-full bg-accent/10 text-[11px] font-semibold text-accent">
-              {index + 1}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-medium group-hover:text-accent">{step.label}</span>
-              <span className="block truncate text-[11px] text-muted-foreground">{step.reason}</span>
-            </span>
-            <ArrowRight className="mt-1 size-3.5 shrink-0 text-muted-foreground group-hover:text-accent" />
-          </Link>
+            <Link to={step.href as any} className="group flex items-start gap-3">
+              <span className="grid size-6 shrink-0 place-items-center rounded-full bg-accent/10 text-[11px] font-semibold text-accent">
+                {index + 1}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-medium group-hover:text-accent">{step.label}</span>
+                <span className="block truncate text-[11px] text-muted-foreground">{step.reason}</span>
+              </span>
+              <ArrowRight className="mt-1 size-3.5 shrink-0 text-muted-foreground group-hover:text-accent" />
+            </Link>
+            <WhyThis confidence={step.confidence} evidence={step.evidence} />
+          </div>
         ))}
       </div>
     </div>
@@ -702,6 +742,36 @@ function CommandItem({ href, title, meta, tone = "default" }: { href: string; ti
         <span className="block truncate text-[11px] text-muted-foreground">{meta}</span>
       </span>
     </Link>
+  );
+}
+
+function WhyThis({ confidence, evidence }: { confidence: CommandAction["confidence"]; evidence: string[] }) {
+  const confidenceClass = confidence === "high"
+    ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-700"
+    : confidence === "medium"
+      ? "border-amber-500/25 bg-amber-500/10 text-amber-700"
+      : "border-border bg-muted text-muted-foreground";
+
+  return (
+    <details className="mt-2 rounded-lg border border-border/70 bg-card/50 px-2.5 py-2">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-[11px] text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5">
+          <Info className="size-3.5" />
+          Why this
+        </span>
+        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${confidenceClass}`}>
+          {confidence} confidence
+        </span>
+      </summary>
+      <ul className="mt-2 space-y-1 border-t border-border/60 pt-2">
+        {evidence.map((line) => (
+          <li key={line} className="flex gap-2 text-[11px] leading-snug text-muted-foreground">
+            <span className="mt-1 size-1 shrink-0 rounded-full bg-accent" />
+            <span>{line}</span>
+          </li>
+        ))}
+      </ul>
+    </details>
   );
 }
 
