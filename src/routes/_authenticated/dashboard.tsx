@@ -474,6 +474,8 @@ function DailyCommandCenter({
         </div>
       </div>
 
+      <ActionSequence actions={suggestedActions} />
+
       <div className="grid gap-4 lg:grid-cols-3">
         <CommandPanel
           icon={<Target className="size-4" />}
@@ -603,6 +605,48 @@ function DailyCommandCenter({
         </CommandPanel>
       </div>
     </section>
+  );
+}
+
+function ActionSequence({ actions }: { actions: { label: string; href: string; reason: string }[] }) {
+  const steps = actions.length
+    ? actions.slice(0, 3)
+    : [
+        { label: "Review the board", href: "/tasks", reason: "No urgent signals detected" },
+        { label: "Plan one next outcome", href: "/projects", reason: "Keep the system fresh" },
+        { label: "Check the inbox", href: "/inbox", reason: "Confirm no fresh signals" },
+      ];
+
+  return (
+    <div className="mb-4 rounded-2xl border border-border bg-card/70 p-3">
+      <div className="mb-2 flex items-center gap-2 px-1">
+        <div className="grid size-7 place-items-center rounded-lg bg-accent/10 text-accent">
+          <ListChecks className="size-3.5" />
+        </div>
+        <div>
+          <div className="text-sm font-semibold tracking-tight">Recommended sequence</div>
+          <div className="text-[11px] text-muted-foreground">A simple order for the next operating pass.</div>
+        </div>
+      </div>
+      <div className="grid gap-2 md:grid-cols-3">
+        {steps.map((step, index) => (
+          <Link
+            key={`${step.href}-${step.label}`}
+            to={step.href as any}
+            className="group flex items-start gap-3 rounded-xl border border-border bg-background/60 p-3 transition-colors hover:border-accent/35 hover:bg-accent/5"
+          >
+            <span className="grid size-6 shrink-0 place-items-center rounded-full bg-accent/10 text-[11px] font-semibold text-accent">
+              {index + 1}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-medium group-hover:text-accent">{step.label}</span>
+              <span className="block truncate text-[11px] text-muted-foreground">{step.reason}</span>
+            </span>
+            <ArrowRight className="mt-1 size-3.5 shrink-0 text-muted-foreground group-hover:text-accent" />
+          </Link>
+        ))}
+      </div>
+    </div>
   );
 }
 
