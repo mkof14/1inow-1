@@ -328,12 +328,6 @@ function LandingPage() {
     <main className="min-h-screen overflow-hidden bg-[#f7faf8] text-slate-950 dark:bg-[#061014] dark:text-white">
       <section className="relative min-h-[92vh] bg-[linear-gradient(135deg,#f7faf8_0%,#e8fff6_32%,#eaf4ff_64%,#fff7e7_100%)] dark:bg-[linear-gradient(135deg,#061014_0%,#0d2830_38%,#10203b_72%,#211a0f_100%)]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(20,184,166,0.28),transparent_30%),radial-gradient(circle_at_82%_15%,rgba(59,130,246,0.22),transparent_28%),radial-gradient(circle_at_68%_78%,rgba(245,158,11,0.2),transparent_34%)]" />
-        <div className="pointer-events-none absolute left-[6%] top-28 hidden rotate-[-7deg] rounded-[2rem] border border-white/60 bg-white/45 p-3 shadow-2xl shadow-teal-900/10 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06] lg:block">
-          <img src="/icons/icon-512.png" alt="" className="size-24 rounded-[1.45rem]" />
-        </div>
-        <div className="pointer-events-none absolute right-[7%] top-28 hidden rotate-[8deg] rounded-[2rem] border border-white/60 bg-white/42 p-3 shadow-2xl shadow-blue-900/10 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.055] xl:block">
-          <img src="/icons/icon-1024.png" alt="" className="size-28 rounded-[1.55rem]" />
-        </div>
         <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-b from-transparent to-[#f7faf8] dark:to-[#061014]" />
 
         <header className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-5 md:px-8">
@@ -410,15 +404,19 @@ function LandingPage() {
               key={title}
               className="overflow-hidden rounded-3xl border border-slate-900/8 bg-white/72 shadow-xl shadow-slate-950/5 dark:border-white/10 dark:bg-white/[0.055]"
             >
-              <div className="relative h-36 bg-gradient-to-br from-teal-400/18 via-blue-400/12 to-amber-300/20">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.75),transparent_34%),radial-gradient(circle_at_74%_68%,rgba(20,184,166,0.24),transparent_34%)] dark:bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.12),transparent_34%),radial-gradient(circle_at_74%_68%,rgba(20,184,166,0.22),transparent_34%)]" />
+              <div className="relative h-48 overflow-hidden bg-slate-100 dark:bg-slate-900">
                 <img
                   src={
-                    ["/icons/icon-192.png", "/icons/icon-512.png", "/icons/icon-1024.png"][index]
+                    [
+                      "/marketing/voice-capture.jpg",
+                      "/marketing/project-organization.jpg",
+                      "/marketing/execution-momentum.jpg",
+                    ][index]
                   }
                   alt=""
-                  className="absolute left-1/2 top-1/2 size-20 -translate-x-1/2 -translate-y-1/2 rounded-[1.35rem] shadow-2xl"
+                  className="h-full w-full object-cover transition-transform duration-500 hover:scale-[1.03]"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/18 via-transparent to-white/8" />
               </div>
               <div className="p-5">
                 <h2 className="text-sm font-semibold text-slate-950 dark:text-white">{title}</h2>

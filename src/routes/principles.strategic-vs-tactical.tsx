@@ -1,4 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowRight } from "lucide-react";
+import { BrandWordmark } from "@/components/icons/compass-icons";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const CANONICAL = "https://1inow.com/principles/strategic-vs-tactical";
 
@@ -116,30 +120,69 @@ export const Route = createFileRoute("/principles/strategic-vs-tactical")({
 
 function StrategicVsTacticalPage() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <article className="mx-auto max-w-3xl px-6 py-16">
+    <main className="min-h-screen overflow-hidden bg-[#f7faf8] text-slate-950 dark:bg-[#061014] dark:text-white">
+      <section className="relative bg-[linear-gradient(135deg,#f7faf8_0%,#e8fff6_36%,#eaf4ff_72%,#fff7e7_100%)] dark:bg-[linear-gradient(135deg,#061014_0%,#0d2830_42%,#10203b_76%,#211a0f_100%)]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(20,184,166,0.22),transparent_30%),radial-gradient(circle_at_82%_15%,rgba(59,130,246,0.18),transparent_28%)]" />
+        <header className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-5 md:px-8">
+          <Link to="/" className="flex items-center gap-3">
+            <span className="flex flex-col leading-none">
+              <BrandWordmark size={34} />
+              <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-white/55">
+                command system
+              </span>
+            </span>
+          </Link>
+
+          <nav className="flex items-center gap-1 sm:gap-2">
+            <div className="hidden sm:block">
+              <LanguageSwitcher />
+            </div>
+            <div className="sm:hidden">
+              <LanguageSwitcher compact />
+            </div>
+            <ThemeToggle className="rounded-xl bg-white/55 shadow-sm ring-1 ring-slate-900/5 backdrop-blur dark:bg-white/8 dark:ring-white/10" />
+            <Link
+              to="/"
+              className="hidden rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:text-slate-950 dark:text-white/68 dark:hover:text-white md:inline-flex"
+            >
+              Home
+            </Link>
+            <Link
+              to="/auth"
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-slate-950/10 transition-transform hover:-translate-y-0.5 dark:bg-white dark:text-slate-950 sm:px-4"
+            >
+              Sign in
+              <ArrowRight className="hidden size-3.5 sm:block" />
+            </Link>
+          </nav>
+        </header>
+
+        <div className="relative z-10 mx-auto max-w-4xl px-6 pb-12 pt-8 md:px-8 md:pb-16 md:pt-14">
+          <p className="mb-4 inline-flex items-center rounded-full border border-teal-500/20 bg-white/62 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/8 dark:text-white/70">
+            Principles
+          </p>
+          <h1 className="text-4xl font-semibold tracking-tight text-slate-950 dark:text-white md:text-6xl">
+            Strategic vs Tactical Planning for Investment Teams
+          </h1>
+          <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600 dark:text-white/70 md:text-xl">
+            Two planning layers, one operating system. How to separate long-horizon direction from
+            short-horizon execution — and keep them connected.
+          </p>
+        </div>
+      </section>
+
+      <article className="mx-auto max-w-3xl px-6 py-12 md:py-16">
         <nav aria-label="Breadcrumb" className="mb-8 text-sm text-muted-foreground">
-          <Link to="/" className="hover:text-foreground">Home</Link>
+          <Link to="/" className="hover:text-foreground">
+            Home
+          </Link>
           <span className="mx-2">/</span>
           <span>Principles</span>
           <span className="mx-2">/</span>
           <span className="text-foreground">Strategic vs Tactical</span>
         </nav>
 
-        <header className="mb-12">
-          <p className="mb-3 text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            Principles
-          </p>
-          <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
-            Strategic vs Tactical Planning for Investment Teams
-          </h1>
-          <p className="mt-5 text-lg text-muted-foreground">
-            Two planning layers, one operating system. How to separate long-horizon direction
-            from short-horizon execution — and keep them connected.
-          </p>
-        </header>
-
-        <section className="prose prose-invert max-w-none">
+        <section className="max-w-none">
           <h2 className="mt-12 text-2xl font-semibold">The two layers, side by side</h2>
           <div className="my-6 overflow-x-auto rounded-lg border border-border">
             <table className="w-full border-collapse text-sm">
@@ -171,31 +214,31 @@ function StrategicVsTacticalPage() {
 
           <h2 className="mt-12 text-2xl font-semibold">Why teams confuse the two</h2>
           <p className="mt-4 text-muted-foreground">
-            Most investment teams over-index on tactics. Weekly IC meetings fill the calendar,
-            deal memos accumulate, and the strategic layer becomes an offsite deck nobody opens
-            again until next year. The reverse failure mode is rarer but just as costly:
-            beautiful strategy that never translates into a sized position or a hired operator.
+            Most investment teams over-index on tactics. Weekly IC meetings fill the calendar, deal
+            memos accumulate, and the strategic layer becomes an offsite deck nobody opens again
+            until next year. The reverse failure mode is rarer but just as costly: beautiful
+            strategy that never translates into a sized position or a hired operator.
           </p>
 
           <h2 className="mt-12 text-2xl font-semibold">A working definition</h2>
           <ul className="mt-4 space-y-3 text-muted-foreground">
             <li>
-              <strong className="text-foreground">Strategic</strong> decisions change what you
-              are — mandate, geography, stage, check size, team shape.
+              <strong className="text-foreground">Strategic</strong> decisions change what you are —
+              mandate, geography, stage, check size, team shape.
             </li>
             <li>
-              <strong className="text-foreground">Tactical</strong> decisions change what you
-              do this week — which call to take, which check to write, which portfolio
-              company gets the next hour.
+              <strong className="text-foreground">Tactical</strong> decisions change what you do
+              this week — which call to take, which check to write, which portfolio company gets the
+              next hour.
             </li>
           </ul>
 
           <h2 className="mt-12 text-2xl font-semibold">Connecting the layers</h2>
           <p className="mt-4 text-muted-foreground">
             Every tactical decision should be traceable to a strategic commitment, and every
-            strategic commitment should be observable in the tactical record. If your thesis
-            says "infrastructure for AI-native back offices," your last 20 first meetings
-            should reflect it. If they don't, one of the two layers is lying.
+            strategic commitment should be observable in the tactical record. If your thesis says
+            "infrastructure for AI-native back offices," your last 20 first meetings should reflect
+            it. If they don't, one of the two layers is lying.
           </p>
 
           <h2 className="mt-12 text-2xl font-semibold">How 1inow operationalizes both</h2>
@@ -205,8 +248,8 @@ function StrategicVsTacticalPage() {
               direction as living documents, not slides.
             </li>
             <li>
-              <strong className="text-foreground">Decisions</strong> log every tactical move
-              with a link back to the thesis it serves.
+              <strong className="text-foreground">Decisions</strong> log every tactical move with a
+              link back to the thesis it serves.
             </li>
             <li>
               <strong className="text-foreground">Portfolio & people</strong> surface where
@@ -234,8 +277,8 @@ function StrategicVsTacticalPage() {
             <div>
               <dt className="font-medium text-foreground">How often should each be reviewed?</dt>
               <dd className="mt-2 text-muted-foreground">
-                Strategy annually with a mid-year checkpoint; tactics weekly in IC and monthly
-                at the portfolio level.
+                Strategy annually with a mid-year checkpoint; tactics weekly in IC and monthly at
+                the portfolio level.
               </dd>
             </div>
           </dl>
@@ -250,6 +293,13 @@ function StrategicVsTacticalPage() {
           </Link>
         </footer>
       </article>
+
+      <footer className="border-t border-slate-900/8 bg-[#edf7f4] px-5 py-5 text-xs text-slate-500 dark:border-white/10 dark:bg-[#0b171b] dark:text-white/48 md:px-8">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <span>Copyright © {new Date().getFullYear()} 1inow Inc. All rights reserved.</span>
+          <span>1inow.com</span>
+        </div>
+      </footer>
     </main>
   );
 }
