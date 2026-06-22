@@ -14,6 +14,8 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrinciplesStrategicVsTacticalRouteImport } from './routes/principles.strategic-vs-tactical'
+import { Route as LegalTermsRouteImport } from './routes/legal.terms'
+import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as LearnSlugRouteImport } from './routes/learn.$slug'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
@@ -46,8 +48,6 @@ import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdministrationIndexRouteImport } from './routes/_authenticated/administration.index'
 import { Route as AuthenticatedProjects1inowRouteImport } from './routes/_authenticated/projects.1inow'
 import { Route as AuthenticatedProjectsSlugRouteImport } from './routes/_authenticated/projects.$slug'
-import { Route as AuthenticatedLegalTermsRouteImport } from './routes/_authenticated/legal.terms'
-import { Route as AuthenticatedLegalPrivacyRouteImport } from './routes/_authenticated/legal.privacy'
 import { Route as AuthenticatedHelpLearningRouteImport } from './routes/_authenticated/help.learning'
 import { Route as AuthenticatedHelpFaqRouteImport } from './routes/_authenticated/help.faq'
 import { Route as AuthenticatedAdministrationVoiceRouteImport } from './routes/_authenticated/administration.voice'
@@ -86,6 +86,16 @@ const PrinciplesStrategicVsTacticalRoute =
     path: '/principles/strategic-vs-tactical',
     getParentRoute: () => rootRouteImport,
   } as any)
+const LegalTermsRoute = LegalTermsRouteImport.update({
+  id: '/legal/terms',
+  path: '/legal/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
+  id: '/legal/privacy',
+  path: '/legal/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LearnSlugRoute = LearnSlugRouteImport.update({
   id: '/learn/$slug',
   path: '/learn/$slug',
@@ -253,17 +263,6 @@ const AuthenticatedProjectsSlugRoute =
     path: '/projects/$slug',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedLegalTermsRoute = AuthenticatedLegalTermsRouteImport.update({
-  id: '/legal/terms',
-  path: '/legal/terms',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedLegalPrivacyRoute =
-  AuthenticatedLegalPrivacyRouteImport.update({
-    id: '/legal/privacy',
-    path: '/legal/privacy',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedHelpLearningRoute =
   AuthenticatedHelpLearningRouteImport.update({
     id: '/help/learning',
@@ -368,6 +367,8 @@ export interface FileRoutesByFullPath {
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/learn/$slug': typeof LearnSlugRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
   '/principles/strategic-vs-tactical': typeof PrinciplesStrategicVsTacticalRoute
   '/administration/audit': typeof AuthenticatedAdministrationAuditRoute
   '/administration/downloads': typeof AuthenticatedAdministrationDownloadsRoute
@@ -381,8 +382,6 @@ export interface FileRoutesByFullPath {
   '/administration/voice': typeof AuthenticatedAdministrationVoiceRoute
   '/help/faq': typeof AuthenticatedHelpFaqRoute
   '/help/learning': typeof AuthenticatedHelpLearningRoute
-  '/legal/privacy': typeof AuthenticatedLegalPrivacyRoute
-  '/legal/terms': typeof AuthenticatedLegalTermsRoute
   '/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/projects/1inow': typeof AuthenticatedProjects1inowRoute
   '/administration/': typeof AuthenticatedAdministrationIndexRoute
@@ -419,6 +418,8 @@ export interface FileRoutesByTo {
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/learn/$slug': typeof LearnSlugRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
   '/principles/strategic-vs-tactical': typeof PrinciplesStrategicVsTacticalRoute
   '/administration/audit': typeof AuthenticatedAdministrationAuditRoute
   '/administration/downloads': typeof AuthenticatedAdministrationDownloadsRoute
@@ -432,8 +433,6 @@ export interface FileRoutesByTo {
   '/administration/voice': typeof AuthenticatedAdministrationVoiceRoute
   '/help/faq': typeof AuthenticatedHelpFaqRoute
   '/help/learning': typeof AuthenticatedHelpLearningRoute
-  '/legal/privacy': typeof AuthenticatedLegalPrivacyRoute
-  '/legal/terms': typeof AuthenticatedLegalTermsRoute
   '/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/projects/1inow': typeof AuthenticatedProjects1inowRoute
   '/administration': typeof AuthenticatedAdministrationIndexRoute
@@ -473,6 +472,8 @@ export interface FileRoutesById {
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/learn/$slug': typeof LearnSlugRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
   '/principles/strategic-vs-tactical': typeof PrinciplesStrategicVsTacticalRoute
   '/_authenticated/administration/audit': typeof AuthenticatedAdministrationAuditRoute
   '/_authenticated/administration/downloads': typeof AuthenticatedAdministrationDownloadsRoute
@@ -486,8 +487,6 @@ export interface FileRoutesById {
   '/_authenticated/administration/voice': typeof AuthenticatedAdministrationVoiceRoute
   '/_authenticated/help/faq': typeof AuthenticatedHelpFaqRoute
   '/_authenticated/help/learning': typeof AuthenticatedHelpLearningRoute
-  '/_authenticated/legal/privacy': typeof AuthenticatedLegalPrivacyRoute
-  '/_authenticated/legal/terms': typeof AuthenticatedLegalTermsRoute
   '/_authenticated/projects/$slug': typeof AuthenticatedProjectsSlugRoute
   '/_authenticated/projects/1inow': typeof AuthenticatedProjects1inowRoute
   '/_authenticated/administration/': typeof AuthenticatedAdministrationIndexRoute
@@ -527,6 +526,8 @@ export interface FileRouteTypes {
     | '/api/stt'
     | '/api/tts'
     | '/learn/$slug'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/principles/strategic-vs-tactical'
     | '/administration/audit'
     | '/administration/downloads'
@@ -540,8 +541,6 @@ export interface FileRouteTypes {
     | '/administration/voice'
     | '/help/faq'
     | '/help/learning'
-    | '/legal/privacy'
-    | '/legal/terms'
     | '/projects/$slug'
     | '/projects/1inow'
     | '/administration/'
@@ -578,6 +577,8 @@ export interface FileRouteTypes {
     | '/api/stt'
     | '/api/tts'
     | '/learn/$slug'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/principles/strategic-vs-tactical'
     | '/administration/audit'
     | '/administration/downloads'
@@ -591,8 +592,6 @@ export interface FileRouteTypes {
     | '/administration/voice'
     | '/help/faq'
     | '/help/learning'
-    | '/legal/privacy'
-    | '/legal/terms'
     | '/projects/$slug'
     | '/projects/1inow'
     | '/administration'
@@ -631,6 +630,8 @@ export interface FileRouteTypes {
     | '/api/stt'
     | '/api/tts'
     | '/learn/$slug'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/principles/strategic-vs-tactical'
     | '/_authenticated/administration/audit'
     | '/_authenticated/administration/downloads'
@@ -644,8 +645,6 @@ export interface FileRouteTypes {
     | '/_authenticated/administration/voice'
     | '/_authenticated/help/faq'
     | '/_authenticated/help/learning'
-    | '/_authenticated/legal/privacy'
-    | '/_authenticated/legal/terms'
     | '/_authenticated/projects/$slug'
     | '/_authenticated/projects/1inow'
     | '/_authenticated/administration/'
@@ -661,6 +660,8 @@ export interface RootRouteChildren {
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
   LearnSlugRoute: typeof LearnSlugRoute
+  LegalPrivacyRoute: typeof LegalPrivacyRoute
+  LegalTermsRoute: typeof LegalTermsRoute
   PrinciplesStrategicVsTacticalRoute: typeof PrinciplesStrategicVsTacticalRoute
 }
 
@@ -699,6 +700,20 @@ declare module '@tanstack/react-router' {
       path: '/principles/strategic-vs-tactical'
       fullPath: '/principles/strategic-vs-tactical'
       preLoaderRoute: typeof PrinciplesStrategicVsTacticalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/terms': {
+      id: '/legal/terms'
+      path: '/legal/terms'
+      fullPath: '/legal/terms'
+      preLoaderRoute: typeof LegalTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/privacy': {
+      id: '/legal/privacy'
+      path: '/legal/privacy'
+      fullPath: '/legal/privacy'
+      preLoaderRoute: typeof LegalPrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/learn/$slug': {
@@ -925,20 +940,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsSlugRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/legal/terms': {
-      id: '/_authenticated/legal/terms'
-      path: '/legal/terms'
-      fullPath: '/legal/terms'
-      preLoaderRoute: typeof AuthenticatedLegalTermsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/legal/privacy': {
-      id: '/_authenticated/legal/privacy'
-      path: '/legal/privacy'
-      fullPath: '/legal/privacy'
-      preLoaderRoute: typeof AuthenticatedLegalPrivacyRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/help/learning': {
       id: '/_authenticated/help/learning'
       path: '/help/learning'
@@ -1098,8 +1099,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedThinkingRoute: typeof AuthenticatedThinkingRoute
   AuthenticatedHelpFaqRoute: typeof AuthenticatedHelpFaqRoute
   AuthenticatedHelpLearningRoute: typeof AuthenticatedHelpLearningRoute
-  AuthenticatedLegalPrivacyRoute: typeof AuthenticatedLegalPrivacyRoute
-  AuthenticatedLegalTermsRoute: typeof AuthenticatedLegalTermsRoute
   AuthenticatedProjectsSlugRoute: typeof AuthenticatedProjectsSlugRoute
   AuthenticatedProjects1inowRoute: typeof AuthenticatedProjects1inowRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
@@ -1133,8 +1132,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedThinkingRoute: AuthenticatedThinkingRoute,
   AuthenticatedHelpFaqRoute: AuthenticatedHelpFaqRoute,
   AuthenticatedHelpLearningRoute: AuthenticatedHelpLearningRoute,
-  AuthenticatedLegalPrivacyRoute: AuthenticatedLegalPrivacyRoute,
-  AuthenticatedLegalTermsRoute: AuthenticatedLegalTermsRoute,
   AuthenticatedProjectsSlugRoute: AuthenticatedProjectsSlugRoute,
   AuthenticatedProjects1inowRoute: AuthenticatedProjects1inowRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
@@ -1152,6 +1149,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
   LearnSlugRoute: LearnSlugRoute,
+  LegalPrivacyRoute: LegalPrivacyRoute,
+  LegalTermsRoute: LegalTermsRoute,
   PrinciplesStrategicVsTacticalRoute: PrinciplesStrategicVsTacticalRoute,
 }
 export const routeTree = rootRouteImport

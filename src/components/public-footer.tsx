@@ -39,6 +39,8 @@ const footerCopy = {
         links: [
           ["FAQ", "faq"],
           ["Legal", "legal"],
+          ["Privacy Policy", "privacy-policy"],
+          ["Terms of Use", "terms-of-use"],
           ["Security", "security"],
           ["Principles", "principles"],
         ],
@@ -78,6 +80,8 @@ const footerCopy = {
         links: [
           ["FAQ", "faq"],
           ["Legal", "legal"],
+          ["Политика конфиденциальности", "privacy-policy"],
+          ["Условия использования", "terms-of-use"],
           ["Безопасность", "security"],
           ["Принципы", "principles"],
         ],
@@ -117,6 +121,8 @@ const footerCopy = {
         links: [
           ["FAQ", "faq"],
           ["Legal", "legal"],
+          ["Політика конфіденційності", "privacy-policy"],
+          ["Умови використання", "terms-of-use"],
           ["Безпека", "security"],
           ["Принципи", "principles"],
         ],
@@ -156,6 +162,8 @@ const footerCopy = {
         links: [
           ["FAQ", "faq"],
           ["Legal", "legal"],
+          ["Política de privacidad", "privacy-policy"],
+          ["Términos de uso", "terms-of-use"],
           ["Seguridad", "security"],
           ["Principios", "principles"],
         ],
@@ -195,6 +203,8 @@ const footerCopy = {
         links: [
           ["FAQ", "faq"],
           ["Legal", "legal"],
+          ["Datenschutzerklärung", "privacy-policy"],
+          ["Nutzungsbedingungen", "terms-of-use"],
           ["Sicherheit", "security"],
           ["Prinzipien", "principles"],
         ],
@@ -312,6 +322,22 @@ function FooterColumn({ title, links }: { title: string; links: Array<string[]> 
             <Link
               key={slug}
               to="/principles/strategic-vs-tactical"
+              className="block hover:text-slate-950 dark:hover:text-white"
+            >
+              {label}
+            </Link>
+          ) : slug === "privacy-policy" ? (
+            <Link
+              key={slug}
+              to="/legal/privacy"
+              className="block hover:text-slate-950 dark:hover:text-white"
+            >
+              {label}
+            </Link>
+          ) : slug === "terms-of-use" ? (
+            <Link
+              key={slug}
+              to="/legal/terms"
               className="block hover:text-slate-950 dark:hover:text-white"
             >
               {label}
