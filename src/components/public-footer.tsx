@@ -28,6 +28,7 @@ const footerCopy = {
       {
         title: "Product",
         links: [
+          ["How it works", "how-it-works-page"],
           ["Intelligence layer", "intelligence-layer"],
           ["Operating picture", "operating-picture"],
           ["Projects", "projects"],
@@ -41,8 +42,17 @@ const footerCopy = {
           ["Legal", "legal"],
           ["Privacy Policy", "privacy-policy"],
           ["Terms of Use", "terms-of-use"],
-          ["Security", "security"],
+          ["Security & Trust", "security-trust-page"],
           ["Principles", "principles"],
+        ],
+      },
+      {
+        title: "Site map",
+        links: [
+          ["Roadmap", "roadmap-page"],
+          ["Security", "security"],
+          ["Contact", "contact"],
+          ["Open workspace", "auth"],
         ],
       },
     ],
@@ -69,6 +79,7 @@ const footerCopy = {
       {
         title: "Продукт",
         links: [
+          ["Как это работает", "how-it-works-page"],
           ["Интеллектуальный слой", "intelligence-layer"],
           ["Картина дня", "operating-picture"],
           ["Проекты", "projects"],
@@ -82,8 +93,17 @@ const footerCopy = {
           ["Legal", "legal"],
           ["Политика конфиденциальности", "privacy-policy"],
           ["Условия использования", "terms-of-use"],
-          ["Безопасность", "security"],
+          ["Безопасность и доверие", "security-trust-page"],
           ["Принципы", "principles"],
+        ],
+      },
+      {
+        title: "Карта сайта",
+        links: [
+          ["Roadmap", "roadmap-page"],
+          ["Безопасность", "security"],
+          ["Контакт", "contact"],
+          ["Открыть систему", "auth"],
         ],
       },
     ],
@@ -110,6 +130,7 @@ const footerCopy = {
       {
         title: "Продукт",
         links: [
+          ["Як це працює", "how-it-works-page"],
           ["Інтелектуальний шар", "intelligence-layer"],
           ["Картина дня", "operating-picture"],
           ["Проєкти", "projects"],
@@ -123,8 +144,17 @@ const footerCopy = {
           ["Legal", "legal"],
           ["Політика конфіденційності", "privacy-policy"],
           ["Умови використання", "terms-of-use"],
-          ["Безпека", "security"],
+          ["Безпека і довіра", "security-trust-page"],
           ["Принципи", "principles"],
+        ],
+      },
+      {
+        title: "Карта сайту",
+        links: [
+          ["Roadmap", "roadmap-page"],
+          ["Безпека", "security"],
+          ["Контакт", "contact"],
+          ["Відкрити систему", "auth"],
         ],
       },
     ],
@@ -151,6 +181,7 @@ const footerCopy = {
       {
         title: "Producto",
         links: [
+          ["Cómo funciona", "how-it-works-page"],
           ["Capa inteligente", "intelligence-layer"],
           ["Vista operativa", "operating-picture"],
           ["Proyectos", "projects"],
@@ -164,8 +195,17 @@ const footerCopy = {
           ["Legal", "legal"],
           ["Política de privacidad", "privacy-policy"],
           ["Términos de uso", "terms-of-use"],
-          ["Seguridad", "security"],
+          ["Seguridad y confianza", "security-trust-page"],
           ["Principios", "principles"],
+        ],
+      },
+      {
+        title: "Mapa del sitio",
+        links: [
+          ["Roadmap", "roadmap-page"],
+          ["Seguridad", "security"],
+          ["Contacto", "contact"],
+          ["Abrir espacio", "auth"],
         ],
       },
     ],
@@ -192,6 +232,7 @@ const footerCopy = {
       {
         title: "Produkt",
         links: [
+          ["Wie es funktioniert", "how-it-works-page"],
           ["Intelligenzschicht", "intelligence-layer"],
           ["Tagesbild", "operating-picture"],
           ["Projekte", "projects"],
@@ -205,8 +246,17 @@ const footerCopy = {
           ["Legal", "legal"],
           ["Datenschutzerklärung", "privacy-policy"],
           ["Nutzungsbedingungen", "terms-of-use"],
-          ["Sicherheit", "security"],
+          ["Security & Trust", "security-trust-page"],
           ["Prinzipien", "principles"],
+        ],
+      },
+      {
+        title: "Sitemap",
+        links: [
+          ["Roadmap", "roadmap-page"],
+          ["Sicherheit", "security"],
+          ["Kontakt", "contact"],
+          ["Workspace öffnen", "auth"],
         ],
       },
     ],
@@ -228,7 +278,7 @@ export function PublicFooter() {
     <footer className="relative overflow-hidden border-t border-slate-900/8 bg-[linear-gradient(135deg,#edf7f4_0%,#f8fbff_46%,#fff7e4_100%)] px-5 py-8 text-sm text-slate-600 dark:border-white/10 dark:bg-[linear-gradient(135deg,#071216_0%,#0d1e27_48%,#17140b_100%)] dark:text-white/58 md:px-8">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-teal-400 via-sky-400 to-amber-300" />
       <div className="absolute -right-20 -top-20 size-56 rounded-full bg-teal-300/18 blur-3xl dark:bg-teal-300/10" />
-      <div className="mx-auto grid w-full max-w-7xl gap-8 lg:grid-cols-[1.2fr_1fr_1fr_1fr_1.25fr]">
+      <div className="mx-auto grid w-full max-w-7xl gap-8 lg:grid-cols-[1.1fr_0.82fr_0.9fr_0.95fr_0.82fr_1.18fr]">
         <div>
           <BrandWordmark size={30} />
           <p className="mt-3 max-w-sm text-sm leading-6">{copy.description}</p>
@@ -326,6 +376,30 @@ function FooterColumn({ title, links }: { title: string; links: Array<string[]> 
             >
               {label}
             </Link>
+          ) : slug === "how-it-works-page" ? (
+            <Link
+              key={slug}
+              to="/how-it-works"
+              className="block hover:text-slate-950 dark:hover:text-white"
+            >
+              {label}
+            </Link>
+          ) : slug === "security-trust-page" ? (
+            <Link
+              key={slug}
+              to="/security-trust"
+              className="block hover:text-slate-950 dark:hover:text-white"
+            >
+              {label}
+            </Link>
+          ) : slug === "roadmap-page" ? (
+            <Link
+              key={slug}
+              to="/roadmap"
+              className="block hover:text-slate-950 dark:hover:text-white"
+            >
+              {label}
+            </Link>
           ) : slug === "privacy-policy" ? (
             <Link
               key={slug}
@@ -342,6 +416,22 @@ function FooterColumn({ title, links }: { title: string; links: Array<string[]> 
             >
               {label}
             </Link>
+          ) : slug === "auth" ? (
+            <Link
+              key={slug}
+              to="/auth"
+              className="block hover:text-slate-950 dark:hover:text-white"
+            >
+              {label}
+            </Link>
+          ) : slug === "contact" ? (
+            <a
+              key={slug}
+              href="mailto:dnainform@gmail.com"
+              className="block hover:text-slate-950 dark:hover:text-white"
+            >
+              {label}
+            </a>
           ) : (
             <Link
               key={slug}

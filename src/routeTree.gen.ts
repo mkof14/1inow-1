@@ -10,6 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SecurityTrustRouteImport } from './routes/security-trust'
+import { Route as RoadmapRouteImport } from './routes/roadmap'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -64,6 +67,21 @@ import { Route as AuthenticatedAdministrationAuditRouteImport } from './routes/_
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecurityTrustRoute = SecurityTrustRouteImport.update({
+  id: '/security-trust',
+  path: '/security-trust',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RoadmapRoute = RoadmapRouteImport.update({
+  id: '/roadmap',
+  path: '/roadmap',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -338,6 +356,9 @@ const AuthenticatedAdministrationAuditRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/roadmap': typeof RoadmapRoute
+  '/security-trust': typeof SecurityTrustRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/administration': typeof AuthenticatedAdministrationRouteWithChildren
   '/ai': typeof AuthenticatedAiRoute
@@ -390,6 +411,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/roadmap': typeof RoadmapRoute
+  '/security-trust': typeof SecurityTrustRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/ai': typeof AuthenticatedAiRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
@@ -443,6 +467,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/roadmap': typeof RoadmapRoute
+  '/security-trust': typeof SecurityTrustRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/administration': typeof AuthenticatedAdministrationRouteWithChildren
   '/_authenticated/ai': typeof AuthenticatedAiRoute
@@ -497,6 +524,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/how-it-works'
+    | '/roadmap'
+    | '/security-trust'
     | '/sitemap.xml'
     | '/administration'
     | '/ai'
@@ -549,6 +579,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/how-it-works'
+    | '/roadmap'
+    | '/security-trust'
     | '/sitemap.xml'
     | '/ai'
     | '/approvals'
@@ -601,6 +634,9 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/how-it-works'
+    | '/roadmap'
+    | '/security-trust'
     | '/sitemap.xml'
     | '/_authenticated/administration'
     | '/_authenticated/ai'
@@ -655,6 +691,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  HowItWorksRoute: typeof HowItWorksRoute
+  RoadmapRoute: typeof RoadmapRoute
+  SecurityTrustRoute: typeof SecurityTrustRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiSttRoute: typeof ApiSttRoute
@@ -672,6 +711,27 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/security-trust': {
+      id: '/security-trust'
+      path: '/security-trust'
+      fullPath: '/security-trust'
+      preLoaderRoute: typeof SecurityTrustRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/roadmap': {
+      id: '/roadmap'
+      path: '/roadmap'
+      fullPath: '/roadmap'
+      preLoaderRoute: typeof RoadmapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -1144,6 +1204,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  HowItWorksRoute: HowItWorksRoute,
+  RoadmapRoute: RoadmapRoute,
+  SecurityTrustRoute: SecurityTrustRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiChatRoute: ApiChatRoute,
   ApiSttRoute: ApiSttRoute,
