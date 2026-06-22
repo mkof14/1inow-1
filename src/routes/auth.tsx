@@ -12,7 +12,15 @@ import {
   isFounderModeEnabled,
   restoreFounderModeForSession,
 } from "@/lib/founder-mode";
-import { ArrowLeft, ArrowRight, CheckCircle2, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Fingerprint,
+  LockKeyhole,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -91,10 +99,17 @@ function AuthPage() {
   };
 
   return (
-    <main className="grid min-h-screen bg-background text-foreground lg:grid-cols-[1.05fr_0.95fr]">
-      <section className="relative hidden overflow-hidden border-r border-border bg-[#07111f] text-white lg:block">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(6,182,212,0.26),transparent_32%),radial-gradient(circle_at_78%_18%,rgba(34,197,94,0.18),transparent_26%),linear-gradient(135deg,rgba(255,255,255,0.08),transparent_40%)]" />
-        <div className="relative flex h-full flex-col justify-between p-10">
+    <main className="grid min-h-screen bg-[linear-gradient(135deg,#f7faf8_0%,#e8fff6_34%,#eaf4ff_72%,#fff7e7_100%)] text-foreground dark:bg-[linear-gradient(135deg,#061014_0%,#0d2830_42%,#10203b_76%,#211a0f_100%)] lg:grid-cols-[1.08fr_0.92fr]">
+      <section className="relative hidden overflow-hidden border-r border-white/10 bg-[#07111f] text-white lg:block">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_18%,rgba(20,184,166,0.32),transparent_32%),radial-gradient(circle_at_80%_16%,rgba(59,130,246,0.24),transparent_28%),radial-gradient(circle_at_64%_82%,rgba(245,158,11,0.18),transparent_32%)]" />
+        <img
+          src="/marketing/project-organization.jpg"
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover opacity-28 mix-blend-screen"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#061014]/92 via-[#07111f]/82 to-[#061014]/94" />
+
+        <div className="relative flex h-full min-h-screen flex-col justify-between p-10">
           <Link
             to="/"
             className="inline-flex w-fit items-center gap-2 text-sm text-white/70 transition-colors hover:text-white"
@@ -105,19 +120,41 @@ function AuthPage() {
 
           <div className="max-w-xl">
             <div className="mb-8">
-              <BrandWordmark size={38} />
+              <BrandWordmark size={58} />
             </div>
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-cyan-100">
               <Sparkles className="size-3.5" />
               Personal command system
             </div>
-            <h1 className="font-display text-5xl font-semibold leading-[1.02] tracking-tight">
+            <h1 className="text-5xl font-semibold leading-[1.02] tracking-tight xl:text-6xl">
               One secure entry into projects, tasks, decisions, and daily execution.
             </h1>
             <p className="mt-5 max-w-lg text-sm leading-6 text-white/68">
               1inow keeps the workspace focused: portfolio context, personal priorities, voice
               capture, and operational signals in one controlled system.
             </p>
+
+            <div className="mt-8 overflow-hidden rounded-[2rem] border border-white/12 bg-white/[0.07] p-3 shadow-2xl shadow-black/30 backdrop-blur-xl">
+              <img
+                src="/marketing/voice-capture.jpg"
+                alt=""
+                className="h-52 w-full rounded-[1.4rem] object-cover"
+              />
+              <div className="grid grid-cols-3 gap-2 pt-3">
+                {[
+                  ["Voice", "capture"],
+                  ["Projects", "clarity"],
+                  ["Signals", "control"],
+                ].map(([label, value]) => (
+                  <div key={label} className="rounded-2xl bg-white/[0.07] px-3 py-2">
+                    <div className="text-[10px] uppercase tracking-[0.16em] text-white/42">
+                      {label}
+                    </div>
+                    <div className="mt-1 text-sm font-semibold text-white/86">{value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="grid max-w-xl gap-3">
@@ -138,23 +175,42 @@ function AuthPage() {
         </div>
       </section>
 
-      <section className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-6">
+      <section className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-8 sm:px-6">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(20,184,166,0.18),transparent_30%),radial-gradient(circle_at_20%_80%,rgba(59,130,246,0.16),transparent_32%)] dark:bg-[radial-gradient(circle_at_78%_18%,rgba(20,184,166,0.12),transparent_30%),radial-gradient(circle_at_20%_80%,rgba(59,130,246,0.12),transparent_32%)]" />
         <div className="w-full max-w-md">
           <Link
             to="/"
-            className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground lg:hidden"
+            className="relative z-10 mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground lg:hidden"
           >
             <ArrowLeft className="size-4" />
             Public site
           </Link>
 
-          <Card className="border-border/80 shadow-[0_24px_80px_-42px_color-mix(in_oklab,var(--foreground)_45%,transparent)]">
-            <CardHeader className="space-y-5">
+          <Card className="relative z-10 overflow-hidden border-white/70 bg-white/82 shadow-[0_32px_100px_-48px_color-mix(in_oklab,var(--foreground)_58%,transparent)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06]">
+            <div className="h-2 bg-gradient-to-r from-teal-400 via-blue-400 to-amber-300" />
+            <CardHeader className="space-y-6">
               <div className="flex items-center justify-between gap-3">
-                <BrandWordmark size={34} />
+                <BrandWordmark size={48} />
                 <div className="rounded-full border border-border bg-muted/50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                   Secure access
                 </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  [LockKeyhole, "Secure"],
+                  [Fingerprint, "Founder"],
+                  [ShieldCheck, "Control"],
+                ].map(([Icon, label]) => (
+                  <div
+                    key={label as string}
+                    className="rounded-2xl border border-border/70 bg-background/70 p-3 text-center"
+                  >
+                    <Icon className="mx-auto size-4 text-accent" />
+                    <div className="mt-2 text-[11px] font-semibold text-muted-foreground">
+                      {label as string}
+                    </div>
+                  </div>
+                ))}
               </div>
               <div>
                 <CardTitle className="text-2xl">Sign in to 1inow</CardTitle>
