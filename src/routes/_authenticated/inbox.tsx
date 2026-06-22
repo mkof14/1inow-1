@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchNotifications, markNotification, markAllRead } from "@/lib/wave1";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Check, CheckCheck, FolderKanban, Inbox as InboxIcon, ListChecks, Mic, Trash2 } from "lucide-react";
 import { EmptyState, PageSkeleton } from "@/components/empty-state";
@@ -19,8 +21,11 @@ import {
   subscribeVoiceInbox,
   updateVoiceInboxItem,
   type VoiceInboxItem,
+  type VoiceInboxKind,
 } from "@/lib/voice-intake";
 import { toast } from "sonner";
+
+const VOICE_KIND_OPTIONS: VoiceInboxKind[] = ["task", "project", "note", "reminder", "risk", "search", "navigation", "unknown"];
 
 export const Route = createFileRoute("/_authenticated/inbox")({
   component: InboxPage,
@@ -251,7 +256,34 @@ function VoiceInboxPanel({
                     <Badge variant="secondary" className="capitalize">{item.confidence}</Badge>
                     <span className="text-[11px] text-muted-foreground">{new Date(item.createdAt).toLocaleString()}</span>
                   </div>
-                  <div className="text-sm font-semibold">{item.title}</div>
+                  <div className="grid gap-2 sm:grid-cols-[1fr_150px]">
+                    <Input
+                      value={item.title}
+                      onChange={(event) => {
+                        updateVoiceInboxItem(item.id, { title: event.target.value });
+                        onChanged();
+                      }}
+                      aria-label="Voice capture title"
+                    />
+                    <Select
+                      value={item.kind}
+                      onValueChange={(value) => {
+                        updateVoiceInboxItem(item.id, { kind: value as VoiceInboxKind });
+                        onChanged();
+                      }}
+                    >
+                      <SelectTrigger aria-label="Voice capture type">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {VOICE_KIND_OPTIONS.map((kind) => (
+                          <SelectItem key={kind} value={kind} className="capitalize">
+                            {kind}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <p className="mt-1 text-xs text-muted-foreground">{item.summary}</p>
                 </div>
               </div>
