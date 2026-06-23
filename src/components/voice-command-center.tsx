@@ -17,6 +17,7 @@ import {
   Search,
   ShieldCheck,
   Sparkles,
+  Volume2,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,13 @@ type VoicePlan = {
   quickReplies?: string[];
   advice?: string[];
   executable: boolean;
+};
+
+type VoicePerspective = {
+  persona: "Operator" | "Auditor";
+  role: string;
+  voice: string;
+  text: string;
 };
 
 const ROUTES = [
@@ -466,6 +474,8 @@ function VoicePlanPreview({
   onConfirm: () => void;
   onClarify: (answer: string) => void;
 }) {
+  const perspectives = buildVoicePerspectives(plan);
+
   return (
     <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
       <div className="mb-3 flex items-start justify-between gap-3">
@@ -528,6 +538,49 @@ function VoicePlanPreview({
         </div>
       ) : null}
 
+      <div className="mb-3 rounded-xl border border-violet-500/20 bg-violet-500/10 p-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.14em] text-violet-700 dark:text-violet-300">
+              Two-assistant review
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Two roles separate execution from risk, so the command is easier to hear, filter, and
+              trust.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="shrink-0 gap-1.5"
+            onClick={() => speakVoicePerspectives(perspectives)}
+          >
+            <Volume2 className="size-3.5" />
+            Speak both
+          </Button>
+        </div>
+        <div className="mt-3 grid gap-2 md:grid-cols-2">
+          {perspectives.map((item) => (
+            <div
+              key={item.persona}
+              className="rounded-xl border border-violet-500/20 bg-background/75 p-3"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-xs font-semibold">{item.persona}</div>
+                <div className="rounded-full bg-violet-500/10 px-2 py-0.5 text-[10px] font-medium text-violet-700 dark:text-violet-300">
+                  {item.voice}
+                </div>
+              </div>
+              <div className="mt-1 text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                {item.role}
+              </div>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="mb-4 rounded-xl border border-border bg-card/70 p-3">
         <div className="mb-2 flex items-center gap-1.5 text-xs font-medium">
           <Search className="size-3.5 text-accent" />
@@ -588,6 +641,64 @@ function ConfidenceBadge({ value }: { value: VoicePlan["confidence"] }) {
       {value}
     </span>
   );
+}
+
+function buildVoicePerspectives(plan: VoicePlan): VoicePerspective[] {
+  const operatorText = plan.question
+    ? `I can help, but I need one clarification before action: ${plan.question}`
+    : plan.executable
+      ? `This is ready to execute after confirmation: ${plan.summary}`
+      : `This should stay as a safe draft for now: ${plan.summary}`;
+
+  const auditorText =
+    plan.confidence === "low"
+      ? "Confidence is low. I would not execute this yet. Save it, clarify it, or convert it into a cleaner task."
+      : plan.intent === "create_task"
+        ? "Check deadline, project, and owner. A task without context can become noise."
+        : plan.intent === "create_project"
+          ? "Check outcome and first action. A project without a next task will not move."
+          : plan.intent === "show_risks"
+            ? "Risk review is useful now. Do not create new work before checking blockers and owners."
+            : plan.intent === "show_today"
+              ? "Good moment for focus. Choose one important move, not a long list."
+              : "This looks safe. It does not change data unless you explicitly confirm the action.";
+
+  return [
+    {
+      persona: "Operator",
+      role: "Action and momentum",
+      voice: "clear voice",
+      text: operatorText,
+    },
+    {
+      persona: "Auditor",
+      role: "Risk and meaning filter",
+      voice: "careful voice",
+      text: auditorText,
+    },
+  ];
+}
+
+function speakVoicePerspectives(perspectives: VoicePerspective[]) {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+    toast.message("Browser speech synthesis is not available.");
+    return;
+  }
+
+  const synth = window.speechSynthesis;
+  synth.cancel();
+  const voices = synth.getVoices();
+  const firstVoice = voices[0];
+  const secondVoice = voices.find((voice) => voice.name !== firstVoice?.name) ?? voices[1];
+
+  perspectives.forEach((item, index) => {
+    const utterance = new SpeechSynthesisUtterance(`${item.persona}. ${item.text}`);
+    utterance.voice = index === 0 ? (firstVoice ?? null) : (secondVoice ?? firstVoice ?? null);
+    utterance.rate = index === 0 ? 1.02 : 0.94;
+    utterance.pitch = index === 0 ? 1.06 : 0.88;
+    utterance.volume = 1;
+    synth.speak(utterance);
+  });
 }
 
 function parseVoiceCommand(raw: string): VoicePlan {
