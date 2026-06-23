@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { BrandWordmark } from "@/components/icons/compass-icons";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { PublicAssistantPersonas } from "@/components/public-assistant-personas";
 import { PublicFooter } from "@/components/public-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useI18n } from "@/lib/i18n";
@@ -185,6 +186,8 @@ function LearningPage() {
           </div>
         </div>
       </section>
+
+      <PublicAssistantPersonas />
 
       <PublicFooter />
     </main>

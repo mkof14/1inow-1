@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { BrandWordmark } from "@/components/icons/compass-icons";
+import { PublicAssistantPersonas } from "@/components/public-assistant-personas";
 import { PublicFooter } from "@/components/public-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useI18n } from "@/lib/i18n";
@@ -545,55 +546,7 @@ function LandingPage() {
         </div>
       </section>
 
-      <section className="bg-[#f7faf8] px-5 pb-20 dark:bg-[#061014] md:px-8">
-        <div className="mx-auto grid w-full max-w-7xl gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
-          <div className="max-w-xl">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-teal-500/20 bg-white/62 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-teal-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/8 dark:text-teal-200">
-              <Sparkles className="size-3.5" />
-              {c.assistantEyebrow}
-            </div>
-            <h2 className="text-3xl font-semibold leading-tight tracking-tight text-slate-950 dark:text-white md:text-4xl">
-              {c.assistantTitle}
-            </h2>
-            <p className="mt-4 text-base leading-7 text-slate-600 dark:text-white/64">
-              {c.assistantText}
-            </p>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            {c.assistants.map(([name, role, text, focus], index) => (
-              <div
-                key={name}
-                className="group overflow-hidden rounded-[1.75rem] border border-slate-900/8 bg-white/76 shadow-xl shadow-slate-950/5 transition-transform hover:-translate-y-1 dark:border-white/10 dark:bg-white/[0.055]"
-              >
-                <div className="relative h-64 overflow-hidden bg-slate-100 dark:bg-slate-900">
-                  <img
-                    src={index === 0 ? "/assistants/nova.jpg" : "/assistants/vera.jpg"}
-                    alt=""
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/54 via-slate-950/6 to-transparent" />
-                  <div className="absolute bottom-5 left-5 right-5">
-                    <div className="text-3xl font-semibold tracking-tight text-white">{name}</div>
-                    <div className="mt-1 text-sm font-medium text-white/76">{role}</div>
-                  </div>
-                </div>
-                <div className="p-5">
-                  <p className="text-sm leading-6 text-slate-600 dark:text-white/64">{text}</p>
-                  <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-teal-500/10 px-3 py-1.5 text-xs font-semibold text-teal-700 dark:text-teal-200">
-                    {index === 0 ? (
-                      <ArrowRight className="size-3.5" />
-                    ) : (
-                      <ShieldCheck className="size-3.5" />
-                    )}
-                    {focus}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <PublicAssistantPersonas />
 
       <section className="bg-[linear-gradient(180deg,#f7faf8_0%,#edf7f4_100%)] px-5 pb-20 dark:bg-[linear-gradient(180deg,#061014_0%,#0b171b_100%)] md:px-8">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 rounded-[2rem] border border-slate-900/8 bg-white/72 p-6 shadow-2xl shadow-slate-950/5 backdrop-blur dark:border-white/10 dark:bg-white/[0.06] md:flex-row md:items-center md:justify-between md:p-8">

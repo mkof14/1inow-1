@@ -29,6 +29,7 @@ const footerCopy = {
         title: "Product",
         links: [
           ["How it works", "how-it-works-page"],
+          ["Nova + Vera", "nova-vera"],
           ["Intelligence layer", "intelligence-layer"],
           ["Operating picture", "operating-picture"],
           ["Projects", "projects"],
@@ -80,6 +81,7 @@ const footerCopy = {
         title: "Продукт",
         links: [
           ["Как это работает", "how-it-works-page"],
+          ["Nova + Vera", "nova-vera"],
           ["Интеллектуальный слой", "intelligence-layer"],
           ["Картина дня", "operating-picture"],
           ["Проекты", "projects"],
@@ -131,6 +133,7 @@ const footerCopy = {
         title: "Продукт",
         links: [
           ["Як це працює", "how-it-works-page"],
+          ["Nova + Vera", "nova-vera"],
           ["Інтелектуальний шар", "intelligence-layer"],
           ["Картина дня", "operating-picture"],
           ["Проєкти", "projects"],
@@ -182,6 +185,7 @@ const footerCopy = {
         title: "Producto",
         links: [
           ["Cómo funciona", "how-it-works-page"],
+          ["Nova + Vera", "nova-vera"],
           ["Capa inteligente", "intelligence-layer"],
           ["Vista operativa", "operating-picture"],
           ["Proyectos", "projects"],
@@ -233,6 +237,7 @@ const footerCopy = {
         title: "Produkt",
         links: [
           ["Wie es funktioniert", "how-it-works-page"],
+          ["Nova + Vera", "nova-vera"],
           ["Intelligenzschicht", "intelligence-layer"],
           ["Tagesbild", "operating-picture"],
           ["Projekte", "projects"],
@@ -424,6 +429,14 @@ function FooterColumn({ title, links }: { title: string; links: Array<string[]> 
             >
               {label}
             </Link>
+          ) : slug === "nova-vera" ? (
+            <a
+              key={slug}
+              href="/#nova-vera"
+              className="block hover:text-slate-950 dark:hover:text-white"
+            >
+              {label}
+            </a>
           ) : slug === "contact" ? (
             <a
               key={slug}

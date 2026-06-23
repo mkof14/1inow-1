@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, FileText, ShieldCheck } from "lucide-react";
 import { BrandWordmark } from "@/components/icons/compass-icons";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { PublicAssistantPersonas } from "@/components/public-assistant-personas";
 import { PublicFooter } from "@/components/public-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useI18n } from "@/lib/i18n";
@@ -170,6 +171,8 @@ export function PublicLegalPage({
           </aside>
         </div>
       </section>
+
+      <PublicAssistantPersonas />
 
       <PublicFooter />
     </main>
