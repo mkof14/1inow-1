@@ -46,6 +46,9 @@ type VoicePlan = {
   description?: string;
   confidence: "high" | "medium" | "low";
   evidence: string[];
+  question?: string;
+  quickReplies?: string[];
+  advice?: string[];
   executable: boolean;
 };
 
@@ -87,6 +90,10 @@ const EXAMPLES = [
   "Открой проекты",
   "Покажи риски",
   "Что сегодня важно",
+  "Что мне делать дальше?",
+  "Разбери мой день",
+  "Запиши мысль про новый проект",
+  "Напомни мне завтра проверить документы",
   "Open inbox",
   "Найди договор",
 ];
@@ -182,6 +189,27 @@ export function VoiceCommandCenter({
   const analyze = (value = text) => {
     const next = parseVoiceCommand(value);
     setPlan(next);
+  };
+
+  const answerClarification = (answer: string) => {
+    const lowerAnswer = answer.toLowerCase();
+    const current = text.trim();
+    const nextText =
+      lowerAnswer.includes("turn into task") || lowerAnswer.includes("review project")
+        ? `Create task ${current}`
+        : lowerAnswer.includes("create project") ||
+            lowerAnswer.includes("new business project") ||
+            lowerAnswer.includes("home project") ||
+            lowerAnswer.includes("digitalinvest project") ||
+            lowerAnswer.includes("personal project")
+          ? `Create project ${current || answer}`
+          : lowerAnswer.includes("save as note") || lowerAnswer.includes("keep as note")
+            ? `Note ${current}`
+            : lowerAnswer.includes("show today")
+              ? "What is important today?"
+              : [current, answer.trim()].filter(Boolean).join(" ");
+    setText(nextText);
+    setPlan(parseVoiceCommand(nextText));
   };
 
   const execute = async () => {
@@ -304,8 +332,8 @@ export function VoiceCommandCenter({
                 <div>
                   <div className="text-sm font-semibold">Say or type what you want 1inow to do</div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Local intent parser first. External AI, STT, and TTS services remain
-                    disconnected.
+                    Local assistant logic first: it can ask, clarify, suggest, draft, and execute
+                    safe commands. External AI, STT, and TTS services remain disconnected.
                   </p>
                 </div>
                 <Button
@@ -349,8 +377,8 @@ export function VoiceCommandCenter({
               </div>
               <div className="mt-3 flex items-center justify-between gap-3">
                 <div className="text-[11px] text-muted-foreground">
-                  Supports navigation, create task/project drafts, today brief, risk review, search,
-                  notes/reminders drafts.
+                  Supports navigation, task/project creation, today brief, risk review, search,
+                  notes/reminders drafts, and clarification questions.
                 </div>
                 <Button type="button" size="sm" onClick={() => analyze()} disabled={!text.trim()}>
                   Understand
@@ -365,6 +393,7 @@ export function VoiceCommandCenter({
                 onCancel={() => setPlan(null)}
                 onCapture={captureToInbox}
                 onConfirm={execute}
+                onClarify={answerClarification}
               />
             )}
 
@@ -428,19 +457,21 @@ function VoicePlanPreview({
   onCancel,
   onCapture,
   onConfirm,
+  onClarify,
 }: {
   plan: VoicePlan;
   busy: boolean;
   onCancel: () => void;
   onCapture: () => void;
   onConfirm: () => void;
+  onClarify: (answer: string) => void;
 }) {
   return (
     <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
           <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-            I understood this as
+            Assistant understood
           </div>
           <div className="mt-1 text-base font-semibold">{plan.label}</div>
           <p className="mt-1 text-sm text-muted-foreground">{plan.summary}</p>
@@ -457,6 +488,45 @@ function VoicePlanPreview({
           )}
         </div>
       )}
+
+      {plan.question && (
+        <div className="mb-3 rounded-xl border border-amber-500/25 bg-amber-500/10 p-3">
+          <div className="text-[11px] uppercase tracking-[0.14em] text-amber-700 dark:text-amber-300">
+            I need to clarify
+          </div>
+          <div className="mt-1 text-sm font-medium">{plan.question}</div>
+          {plan.quickReplies?.length ? (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {plan.quickReplies.map((reply) => (
+                <button
+                  key={reply}
+                  type="button"
+                  onClick={() => onClarify(reply)}
+                  className="rounded-full border border-amber-500/25 bg-background/80 px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-amber-500/50 hover:bg-amber-500/10"
+                >
+                  {reply}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      )}
+
+      {plan.advice?.length ? (
+        <div className="mb-3 rounded-xl border border-teal-500/20 bg-teal-500/10 p-3">
+          <div className="text-[11px] uppercase tracking-[0.14em] text-teal-700 dark:text-teal-300">
+            Assistant advice
+          </div>
+          <ul className="mt-2 space-y-1">
+            {plan.advice.map((item) => (
+              <li key={item} className="flex gap-2 text-xs text-muted-foreground">
+                <span className="mt-1.5 size-1 shrink-0 rounded-full bg-teal-500" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       <div className="mb-4 rounded-xl border border-border bg-card/70 p-3">
         <div className="mb-2 flex items-center gap-1.5 text-xs font-medium">
@@ -488,7 +558,7 @@ function VoicePlanPreview({
           ) : (
             <ArrowRight className="mr-1.5 size-4" />
           )}
-          {plan.executable ? "Confirm action" : "Save draft"}
+          {plan.executable ? "Confirm action" : plan.question ? "Save unresolved" : "Save draft"}
         </Button>
       </div>
     </div>
@@ -533,6 +603,9 @@ function parseVoiceCommand(raw: string): VoicePlan {
     "создай задачу",
     "добавь задачу",
     "новая задача",
+    "мне нужно",
+    "надо",
+    "нужно",
   ]);
   if (createTaskMatch) {
     const title = cleanupTitle(text.slice(createTaskMatch.length));
@@ -541,7 +614,7 @@ function parseVoiceCommand(raw: string): VoicePlan {
       label: "Create task",
       summary: title
         ? `Create a task named "${title}".`
-        : "Create a task draft. Add a title before confirming.",
+        : "I can create a task, but I need the actual task title first.",
       title: title || undefined,
       description: inferDomainDescription(lower),
       confidence: title ? "high" : "low",
@@ -549,6 +622,14 @@ function parseVoiceCommand(raw: string): VoicePlan {
         "Matched create task phrase",
         "Execution requires explicit confirmation",
         "Source: local voice intent parser",
+      ],
+      question: title ? undefined : "What exactly should the task be?",
+      quickReplies: title
+        ? undefined
+        : ["Call someone", "Prepare documents", "Buy something", "Review project"],
+      advice: [
+        "If this has a deadline, include today, tomorrow, or a date in the command.",
+        "If it belongs to a project, mention the project name.",
       ],
       executable: Boolean(title),
     };
@@ -569,7 +650,7 @@ function parseVoiceCommand(raw: string): VoicePlan {
       label: "Create project",
       summary: title
         ? `Create a project named "${title}".`
-        : "Create a project draft. Add a name before confirming.",
+        : "I can create a project, but I need a project name first.",
       title: title || undefined,
       description: inferDomainDescription(lower),
       confidence: title ? "high" : "low",
@@ -578,8 +659,50 @@ function parseVoiceCommand(raw: string): VoicePlan {
         "Execution requires explicit confirmation",
         "Source: local voice intent parser",
       ],
+      question: title ? undefined : "What should this project be called?",
+      quickReplies: title
+        ? undefined
+        : ["New business project", "Home project", "DigitalInvest project", "Personal project"],
+      advice: [
+        "A useful project needs a clear outcome, owner, and next action.",
+        "After creation, add the first task so the project does not stay empty.",
+      ],
       executable: Boolean(title),
     };
+  }
+
+  if (
+    includesAny(lower, [
+      "what should i do",
+      "what do i do",
+      "next step",
+      "what next",
+      "help me",
+      "помоги",
+      "что мне делать",
+      "что дальше",
+      "следующий шаг",
+      "разбери день",
+      "разбери мой день",
+      "план на день",
+    ])
+  ) {
+    return routePlan(
+      "show_today",
+      "Review today's priorities",
+      "Open Dashboard for a practical daily brief: focus, risks, waiting items, and next actions.",
+      "/dashboard",
+      "high",
+      [
+        "Matched help/today planning phrase",
+        "Dashboard and System Brain already derive today focus from existing data",
+      ],
+      [
+        "Start with the highest-risk or overdue item, not the easiest item.",
+        "If the day is unclear, save raw thoughts to Voice Inbox first.",
+        "Use System Brain when you want a deeper project and waiting review.",
+      ],
+    );
   }
 
   if (includesAny(lower, ["show risks", "risks", "риск", "риски", "покажи риски"])) {
@@ -590,6 +713,10 @@ function parseVoiceCommand(raw: string): VoicePlan {
       "/projects",
       "high",
       ["Matched risk phrase", "Best current risk surface is Projects + Daily Command Center"],
+      [
+        "Review risks before creating more work.",
+        "A risk should be attached to a project and have an owner or next action.",
+      ],
     );
   }
 
@@ -610,6 +737,10 @@ function parseVoiceCommand(raw: string): VoicePlan {
       "/dashboard",
       "high",
       ["Matched today/focus phrase", "Dashboard contains Daily Command Center"],
+      [
+        "Use today view to choose one concrete next move.",
+        "If something feels unclear, ask the assistant to save it as a voice inbox item.",
+      ],
     );
   }
 
@@ -621,33 +752,67 @@ function parseVoiceCommand(raw: string): VoicePlan {
       "/dashboard",
       "medium",
       ["Matched search phrase", "Global command/search is available in app shell"],
+      ["Search is currently routed to the app shell/global search surface."],
     );
   }
 
-  if (includesAny(lower, ["note", "заметка", "запиши"])) {
+  if (includesAny(lower, ["note", "idea", "remember", "заметка", "идея", "запиши", "мысль"])) {
+    const title = cleanupTitle(
+      text.replace(/^(note|idea|remember|заметка|идея|запиши|мысль)/i, ""),
+    );
     return {
       intent: "draft_note",
       label: "Draft note",
       summary: "Notes are drafted here. Dedicated note creation is not connected yet.",
-      title: cleanupTitle(text.replace(/^(note|заметка|запиши)/i, "")) || text,
+      title: title || text,
       confidence: "medium",
       evidence: [
         "Matched note phrase",
         "Notes route exists, but write flow is not connected in voice center yet",
+      ],
+      question: "Should this stay as a note, become a task, or attach to a project?",
+      quickReplies: ["Keep as note", "Turn into task", "Attach to project", "Ask me later"],
+      advice: [
+        "Good notes preserve context. Good tasks include a verb and a next action.",
+        "If this affects an active project, mention the project name next time.",
       ],
       executable: false,
     };
   }
 
   if (includesAny(lower, ["remind", "reminder", "напомни", "напоминание"])) {
+    const hasTimeSignal = includesAny(lower, [
+      "today",
+      "tomorrow",
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "сегодня",
+      "завтра",
+      "понедельник",
+      "вторник",
+      "среду",
+      "четверг",
+      "пятницу",
+      "субботу",
+      "воскресенье",
+    ]);
     return {
       intent: "draft_reminder",
       label: "Draft reminder",
       summary:
         "Reminder intent detected. Reminder execution needs a dedicated reminders data flow later.",
       title: text,
-      confidence: "medium",
+      confidence: hasTimeSignal ? "medium" : "low",
       evidence: ["Matched reminder phrase", "No production reminder execution is connected yet"],
+      question: hasTimeSignal ? undefined : "When should I remind you?",
+      quickReplies: hasTimeSignal ? undefined : ["Today", "Tomorrow", "This week", "Ask me later"],
+      advice: [
+        "Reminder execution is not connected yet, so I can safely save this as a draft.",
+        "Use a specific time later when reminders are connected.",
+      ],
       executable: false,
     };
   }
@@ -667,6 +832,7 @@ function parseVoiceCommand(raw: string): VoicePlan {
       route.route,
       "high",
       [`Matched route keywords: ${route.words.slice(0, 3).join(", ")}`, "Source: local route map"],
+      [`Opening ${route.label} is a safe command and does not change data.`],
     );
   }
 
@@ -680,8 +846,9 @@ function routePlan(
   route: string,
   confidence: VoicePlan["confidence"],
   evidence: string[],
+  advice?: string[],
 ): VoicePlan {
-  return { intent, label, summary, route, confidence, evidence, executable: true };
+  return { intent, label, summary, route, confidence, evidence, advice, executable: true };
 }
 
 function unknownPlan(text: string, summary: string): VoicePlan {
@@ -694,6 +861,12 @@ function unknownPlan(text: string, summary: string): VoicePlan {
     evidence: [
       "No supported local intent matched",
       "Try create task, create project, open page, show today, or show risks",
+    ],
+    question: "What should I do with this?",
+    quickReplies: ["Save as note", "Turn into task", "Create project", "Show today"],
+    advice: [
+      "When unsure, I will save the thought instead of inventing an action.",
+      "For execution, say a clear verb: create, open, show, find, remind, or save.",
     ],
     executable: false,
   };
