@@ -39,21 +39,26 @@ const publicInfoPages: Record<PublicInfoKind, Record<PublicInfoLang, PublicInfoP
         },
         {
           marker: "02",
+          title: "Import conversations",
+          text: "Meeting recordings, phone calls, recorder files, and transcripts can enter the same review flow.",
+        },
+        {
+          marker: "03",
           title: "Understand",
           text: "The system keeps context visible: project, owner, urgency, priority, and open question.",
         },
         {
-          marker: "03",
+          marker: "04",
           title: "Organize",
           text: "Inputs become projects, tasks, decisions, reminders, comments, or archived noise.",
         },
         {
-          marker: "04",
+          marker: "05",
           title: "Execute",
           text: "The next useful action is made visible so work can move without rethinking everything.",
         },
         {
-          marker: "05",
+          marker: "06",
           title: "Review",
           text: "Daily and weekly review keeps priorities, risks, and decisions aligned.",
         },
@@ -66,6 +71,10 @@ const publicInfoPages: Record<PublicInfoKind, Record<PublicInfoLang, PublicInfoP
         {
           title: "Voice-ready",
           text: "Voice workflows are prepared, while speech services remain disconnected until approval.",
+        },
+        {
+          title: "Conversation-ready",
+          text: "Uploads from meetings, calls, and recorders can become summaries, decisions, risks, and tasks after approved processing.",
         },
         {
           title: "AI-ready, not AI-dependent",
@@ -92,21 +101,26 @@ const publicInfoPages: Record<PublicInfoKind, Record<PublicInfoLang, PublicInfoP
         },
         {
           marker: "02",
+          title: "Импорт разговоров",
+          text: "Записи встреч, телефонные разговоры, диктофонные файлы и транскрипты попадают в тот же поток разбора.",
+        },
+        {
+          marker: "03",
           title: "Понимание",
           text: "Система держит контекст видимым: проект, владелец, срочность, приоритет и открытый вопрос.",
         },
         {
-          marker: "03",
+          marker: "04",
           title: "Организация",
           text: "Входящие превращаются в проекты, задачи, решения, напоминания, комментарии или архивный шум.",
         },
         {
-          marker: "04",
+          marker: "05",
           title: "Исполнение",
           text: "Следующее полезное действие видно сразу, чтобы двигаться без повторного обдумывания всего проекта.",
         },
         {
-          marker: "05",
+          marker: "06",
           title: "Ревью",
           text: "Ежедневный и недельный обзор удерживает приоритеты, риски и решения в одной логике.",
         },
@@ -119,6 +133,10 @@ const publicInfoPages: Record<PublicInfoKind, Record<PublicInfoLang, PublicInfoP
         {
           title: "Готово к голосу",
           text: "Голосовые сценарии подготовлены, но speech-сервисы не подключены до отдельного approval.",
+        },
+        {
+          title: "Готово к разговорам",
+          text: "Uploads встреч, звонков и диктофонов смогут превращаться в саммари, решения, риски и задачи после утвержденной обработки.",
         },
         {
           title: "Готово к AI, но не зависит от AI",
@@ -145,21 +163,26 @@ const publicInfoPages: Record<PublicInfoKind, Record<PublicInfoLang, PublicInfoP
         },
         {
           marker: "02",
+          title: "Імпорт розмов",
+          text: "Записи зустрічей, телефонні дзвінки, диктофонні файли і транскрипти потрапляють у той самий потік огляду.",
+        },
+        {
+          marker: "03",
           title: "Розуміння",
           text: "Система тримає контекст видимим: проєкт, власник, терміновість, пріоритет і відкрите питання.",
         },
         {
-          marker: "03",
+          marker: "04",
           title: "Організація",
           text: "Вхідні стають проєктами, задачами, рішеннями, нагадуваннями, коментарями або архівним шумом.",
         },
         {
-          marker: "04",
+          marker: "05",
           title: "Виконання",
           text: "Наступна корисна дія видима одразу, щоб рухатися без повторного осмислення всього проєкту.",
         },
         {
-          marker: "05",
+          marker: "06",
           title: "Огляд",
           text: "Щоденний і тижневий огляд тримає пріоритети, ризики і рішення в одній логіці.",
         },
@@ -172,6 +195,10 @@ const publicInfoPages: Record<PublicInfoKind, Record<PublicInfoLang, PublicInfoP
         {
           title: "Готово до голосу",
           text: "Голосові сценарії підготовлені, але speech-сервіси не підключені до approval.",
+        },
+        {
+          title: "Готово до розмов",
+          text: "Uploads зустрічей, дзвінків і диктофонів зможуть ставати summary, рішеннями, ризиками і задачами після затвердженої обробки.",
         },
         {
           title: "Готово до AI, але не залежить від AI",
@@ -198,21 +225,26 @@ const publicInfoPages: Record<PublicInfoKind, Record<PublicInfoLang, PublicInfoP
         },
         {
           marker: "02",
+          title: "Importar conversaciones",
+          text: "Grabaciones de reuniones, llamadas, archivos de grabadoras y transcripciones entran al mismo flujo de revisión.",
+        },
+        {
+          marker: "03",
           title: "Entender",
           text: "El sistema mantiene visible el contexto: proyecto, responsable, urgencia, prioridad y pregunta abierta.",
         },
         {
-          marker: "03",
+          marker: "04",
           title: "Organizar",
           text: "Las entradas se convierten en proyectos, tareas, decisiones, recordatorios, comentarios o ruido archivado.",
         },
         {
-          marker: "04",
+          marker: "05",
           title: "Ejecutar",
           text: "La siguiente acción útil se muestra para avanzar sin repensar todo.",
         },
         {
-          marker: "05",
+          marker: "06",
           title: "Revisar",
           text: "La revisión diaria y semanal mantiene prioridades, riesgos y decisiones alineados.",
         },
@@ -225,6 +257,10 @@ const publicInfoPages: Record<PublicInfoKind, Record<PublicInfoLang, PublicInfoP
         {
           title: "Preparado para voz",
           text: "Los flujos de voz están preparados, pero los servicios speech siguen desconectados hasta aprobación.",
+        },
+        {
+          title: "Preparado para conversaciones",
+          text: "Uploads de reuniones, llamadas y grabadoras podrán convertirse en resúmenes, decisiones, riesgos y tareas tras aprobación.",
         },
         {
           title: "Preparado para AI, no dependiente",
@@ -251,21 +287,26 @@ const publicInfoPages: Record<PublicInfoKind, Record<PublicInfoLang, PublicInfoP
         },
         {
           marker: "02",
+          title: "Gespräche importieren",
+          text: "Meeting-Aufnahmen, Telefonate, Recorder-Dateien und Transkripte kommen in denselben Review-Flow.",
+        },
+        {
+          marker: "03",
           title: "Verstehen",
           text: "Das System hält Kontext sichtbar: Projekt, Owner, Dringlichkeit, Priorität und offene Frage.",
         },
         {
-          marker: "03",
+          marker: "04",
           title: "Organisieren",
           text: "Eingaben werden zu Projekten, Aufgaben, Entscheidungen, Erinnerungen, Kommentaren oder Archivrauschen.",
         },
         {
-          marker: "04",
+          marker: "05",
           title: "Ausführen",
           text: "Die nächste nützliche Aktion wird sichtbar, damit Arbeit ohne Neudenken weitergeht.",
         },
         {
-          marker: "05",
+          marker: "06",
           title: "Review",
           text: "Täglicher und wöchentlicher Review hält Prioritäten, Risiken und Entscheidungen ausgerichtet.",
         },
@@ -278,6 +319,10 @@ const publicInfoPages: Record<PublicInfoKind, Record<PublicInfoLang, PublicInfoP
         {
           title: "Voice-ready",
           text: "Voice-Flows sind vorbereitet, Speech-Services bleiben bis zur Freigabe getrennt.",
+        },
+        {
+          title: "Conversation-ready",
+          text: "Uploads aus Meetings, Calls und Recordern können nach Freigabe zu Zusammenfassungen, Entscheidungen, Risiken und Aufgaben werden.",
         },
         {
           title: "AI-ready, nicht AI-abhängig",

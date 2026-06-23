@@ -30,6 +30,7 @@ const footerCopy = {
         links: [
           ["How it works", "how-it-works-page"],
           ["Nova + Vera", "nova-vera"],
+          ["Device connections", "device-connections-page"],
           ["Intelligence layer", "intelligence-layer"],
           ["Operating picture", "operating-picture"],
           ["Projects", "projects"],
@@ -82,6 +83,7 @@ const footerCopy = {
         links: [
           ["Как это работает", "how-it-works-page"],
           ["Nova + Vera", "nova-vera"],
+          ["Подключение устройств", "device-connections-page"],
           ["Интеллектуальный слой", "intelligence-layer"],
           ["Картина дня", "operating-picture"],
           ["Проекты", "projects"],
@@ -134,6 +136,7 @@ const footerCopy = {
         links: [
           ["Як це працює", "how-it-works-page"],
           ["Nova + Vera", "nova-vera"],
+          ["Підключення пристроїв", "device-connections-page"],
           ["Інтелектуальний шар", "intelligence-layer"],
           ["Картина дня", "operating-picture"],
           ["Проєкти", "projects"],
@@ -186,6 +189,7 @@ const footerCopy = {
         links: [
           ["Cómo funciona", "how-it-works-page"],
           ["Nova + Vera", "nova-vera"],
+          ["Conexión de dispositivos", "device-connections-page"],
           ["Capa inteligente", "intelligence-layer"],
           ["Vista operativa", "operating-picture"],
           ["Proyectos", "projects"],
@@ -238,6 +242,7 @@ const footerCopy = {
         links: [
           ["Wie es funktioniert", "how-it-works-page"],
           ["Nova + Vera", "nova-vera"],
+          ["Geräte verbinden", "device-connections-page"],
           ["Intelligenzschicht", "intelligence-layer"],
           ["Tagesbild", "operating-picture"],
           ["Projekte", "projects"],
@@ -401,6 +406,14 @@ function FooterColumn({ title, links }: { title: string; links: Array<string[]> 
             <Link
               key={slug}
               to="/roadmap"
+              className="block hover:text-slate-950 dark:hover:text-white"
+            >
+              {label}
+            </Link>
+          ) : slug === "device-connections-page" ? (
+            <Link
+              key={slug}
+              to="/device-connections"
               className="block hover:text-slate-950 dark:hover:text-white"
             >
               {label}

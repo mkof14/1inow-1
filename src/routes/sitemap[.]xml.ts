@@ -15,6 +15,7 @@ const LEARNING_PATHS = [
   "/learn/security",
   "/learn/projects",
   "/learn/automation-readiness",
+  "/learn/device-connections",
 ];
 
 interface SitemapEntry {
@@ -30,6 +31,7 @@ export const Route = createFileRoute("/sitemap.xml")({
         const entries: SitemapEntry[] = [
           { path: "/", changefreq: "weekly", priority: "1.0" },
           { path: "/how-it-works", changefreq: "monthly", priority: "0.8" },
+          { path: "/device-connections", changefreq: "monthly", priority: "0.8" },
           { path: "/security-trust", changefreq: "monthly", priority: "0.7" },
           { path: "/roadmap", changefreq: "monthly", priority: "0.7" },
           { path: "/principles/strategic-vs-tactical", changefreq: "monthly", priority: "0.7" },

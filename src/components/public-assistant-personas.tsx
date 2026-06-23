@@ -1,13 +1,15 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, MessageCircle, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Eye, MessageCircle, Radio, ShieldCheck, Sparkles } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 const assistantCopy = {
   en: {
     eyebrow: "Nova + Vera",
-    title: "Two voices make the assistant easier to trust.",
-    text: "1inow is designed around a simple human pattern: one voice helps you move, the other helps you think before you move.",
+    title: "Nova and Vera stay with you as two living senses of the system.",
+    text: "Nova listens for movement. Vera watches for meaning, risk, and missing context. Together they make 1inow feel less like software and more like a daily operating partner.",
     cta: "Open workspace",
+    listening: "Always listening layer",
+    watching: "Context watching layer",
     assistants: [
       {
         name: "Nova",
@@ -33,9 +35,11 @@ const assistantCopy = {
   },
   ru: {
     eyebrow: "Nova + Vera",
-    title: "Два голоса делают помощника понятнее и надежнее.",
-    text: "1inow строится на простой человеческой логике: один голос помогает двигаться, второй помогает подумать перед действием.",
+    title: "Nova и Vera становятся двумя живыми чувствами системы.",
+    text: "Nova слушает движение. Vera смотрит на смысл, риск и недостающий контекст. Вместе они делают 1inow не просто софтом, а ежедневным рабочим партнером.",
     cta: "Открыть систему",
+    listening: "Слой постоянного слуха",
+    watching: "Слой контекстного зрения",
     assistants: [
       {
         name: "Nova",
@@ -61,9 +65,11 @@ const assistantCopy = {
   },
   uk: {
     eyebrow: "Nova + Vera",
-    title: "Два голоси роблять помічника зрозумілішим і надійнішим.",
-    text: "1inow будується на простій людській логіці: один голос допомагає рухатися, другий допомагає подумати перед дією.",
+    title: "Nova і Vera стають двома живими відчуттями системи.",
+    text: "Nova слухає рух. Vera дивиться на сенс, ризик і відсутній контекст. Разом вони роблять 1inow не просто софтом, а щоденним робочим партнером.",
     cta: "Відкрити систему",
+    listening: "Шар постійного слуху",
+    watching: "Шар контекстного зору",
     assistants: [
       {
         name: "Nova",
@@ -89,9 +95,11 @@ const assistantCopy = {
   },
   es: {
     eyebrow: "Nova + Vera",
-    title: "Dos voces hacen que el asistente sea más claro y confiable.",
-    text: "1inow sigue un patrón humano simple: una voz ayuda a avanzar, la otra ayuda a pensar antes de actuar.",
+    title: "Nova y Vera funcionan como dos sentidos vivos del sistema.",
+    text: "Nova escucha el movimiento. Vera observa significado, riesgo y contexto faltante. Juntas hacen que 1inow se sienta menos como software y más como un compañero diario.",
     cta: "Abrir espacio",
+    listening: "Capa siempre atenta",
+    watching: "Capa de contexto visual",
     assistants: [
       {
         name: "Nova",
@@ -117,9 +125,11 @@ const assistantCopy = {
   },
   de: {
     eyebrow: "Nova + Vera",
-    title: "Zwei Stimmen machen den Assistenten klarer und vertrauenswürdiger.",
-    text: "1inow folgt einem einfachen menschlichen Muster: Eine Stimme hilft beim Vorankommen, die andere beim Denken vor der Aktion.",
+    title: "Nova und Vera werden zu zwei lebendigen Sinnen des Systems.",
+    text: "Nova hört auf Bewegung. Vera achtet auf Bedeutung, Risiko und fehlenden Kontext. Zusammen fühlt sich 1inow weniger wie Software und mehr wie ein täglicher Partner an.",
     cta: "Workspace öffnen",
+    listening: "Immer hörende Ebene",
+    watching: "Kontext beobachtende Ebene",
     assistants: [
       {
         name: "Nova",
@@ -161,6 +171,31 @@ export function PublicAssistantPersonas() {
             {copy.title}
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 dark:text-white/64">{copy.text}</p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl border border-slate-900/8 bg-white/70 p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.055]">
+              <div className="flex items-center gap-2 text-sm font-semibold text-slate-950 dark:text-white">
+                <Radio className="size-4 text-teal-600 dark:text-teal-200" />
+                {copy.listening}
+              </div>
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
+                <div className="h-full w-2/3 animate-pulse rounded-full bg-gradient-to-r from-teal-400 to-sky-400" />
+              </div>
+            </div>
+            <div className="rounded-2xl border border-slate-900/8 bg-white/70 p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.055]">
+              <div className="flex items-center gap-2 text-sm font-semibold text-slate-950 dark:text-white">
+                <Eye className="size-4 text-amber-600 dark:text-amber-200" />
+                {copy.watching}
+              </div>
+              <div className="mt-3 grid grid-cols-5 gap-1">
+                {[0, 1, 2, 3, 4].map((item) => (
+                  <span
+                    key={item}
+                    className="h-2 rounded-full bg-gradient-to-r from-amber-300 to-teal-300 opacity-70"
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
           <div className="mt-6 grid gap-2 sm:grid-cols-2">
             {copy.proof.map((item) => (
               <div
@@ -194,6 +229,8 @@ export function PublicAssistantPersonas() {
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/58 via-slate-950/10 to-transparent" />
+                <div className="absolute -right-14 -top-14 size-40 rounded-full border border-white/22 opacity-80 transition-transform duration-700 group-hover:scale-110" />
+                <div className="absolute -right-6 -top-6 size-24 rounded-full border border-white/18 opacity-70 transition-transform duration-700 group-hover:scale-125" />
                 <div className="absolute left-5 top-5 grid size-11 place-items-center rounded-2xl border border-white/22 bg-white/14 text-white backdrop-blur">
                   {index === 0 ? (
                     <MessageCircle className="size-5" />

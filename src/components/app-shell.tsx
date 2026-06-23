@@ -155,6 +155,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     { to: "/calendar", label: "Calendar", icon: TimelinePulse },
     { to: "/reports", label: "Reports", icon: IntelligenceBars },
     { to: "/communication", label: "Messages", icon: SignalWave },
+    { to: "/devices", label: "Devices", icon: SignalWave },
     { to: "/settings", label: "Settings", icon: GearMark },
     ...(isAdmin
       ? [{ to: "/administration", label: "Admin Console", icon: ShieldLine } as NavItem]

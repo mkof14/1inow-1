@@ -13,6 +13,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SecurityTrustRouteImport } from './routes/security-trust'
 import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as DeviceConnectionsRouteImport } from './routes/device-connections'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -40,6 +41,7 @@ import { Route as AuthenticatedInboxRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
 import { Route as AuthenticatedFavoritesRouteImport } from './routes/_authenticated/favorites'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
+import { Route as AuthenticatedDevicesRouteImport } from './routes/_authenticated/devices'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCommunicationRouteImport } from './routes/_authenticated/communication'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
@@ -82,6 +84,11 @@ const RoadmapRoute = RoadmapRouteImport.update({
 const HowItWorksRoute = HowItWorksRouteImport.update({
   id: '/how-it-works',
   path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeviceConnectionsRoute = DeviceConnectionsRouteImport.update({
+  id: '/device-connections',
+  path: '/device-connections',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -220,6 +227,11 @@ const AuthenticatedDocumentsRoute = AuthenticatedDocumentsRouteImport.update({
   path: '/documents',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDevicesRoute = AuthenticatedDevicesRouteImport.update({
+  id: '/devices',
+  path: '/devices',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -356,6 +368,7 @@ const AuthenticatedAdministrationAuditRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/device-connections': typeof DeviceConnectionsRoute
   '/how-it-works': typeof HowItWorksRoute
   '/roadmap': typeof RoadmapRoute
   '/security-trust': typeof SecurityTrustRoute
@@ -367,6 +380,7 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof AuthenticatedCalendarRoute
   '/communication': typeof AuthenticatedCommunicationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/devices': typeof AuthenticatedDevicesRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/favorites': typeof AuthenticatedFavoritesRoute
   '/files': typeof AuthenticatedFilesRoute
@@ -411,6 +425,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/device-connections': typeof DeviceConnectionsRoute
   '/how-it-works': typeof HowItWorksRoute
   '/roadmap': typeof RoadmapRoute
   '/security-trust': typeof SecurityTrustRoute
@@ -421,6 +436,7 @@ export interface FileRoutesByTo {
   '/calendar': typeof AuthenticatedCalendarRoute
   '/communication': typeof AuthenticatedCommunicationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/devices': typeof AuthenticatedDevicesRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/favorites': typeof AuthenticatedFavoritesRoute
   '/files': typeof AuthenticatedFilesRoute
@@ -467,6 +483,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/device-connections': typeof DeviceConnectionsRoute
   '/how-it-works': typeof HowItWorksRoute
   '/roadmap': typeof RoadmapRoute
   '/security-trust': typeof SecurityTrustRoute
@@ -478,6 +495,7 @@ export interface FileRoutesById {
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/communication': typeof AuthenticatedCommunicationRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/devices': typeof AuthenticatedDevicesRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/favorites': typeof AuthenticatedFavoritesRoute
   '/_authenticated/files': typeof AuthenticatedFilesRoute
@@ -524,6 +542,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/device-connections'
     | '/how-it-works'
     | '/roadmap'
     | '/security-trust'
@@ -535,6 +554,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/communication'
     | '/dashboard'
+    | '/devices'
     | '/documents'
     | '/favorites'
     | '/files'
@@ -579,6 +599,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/device-connections'
     | '/how-it-works'
     | '/roadmap'
     | '/security-trust'
@@ -589,6 +610,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/communication'
     | '/dashboard'
+    | '/devices'
     | '/documents'
     | '/favorites'
     | '/files'
@@ -634,6 +656,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/device-connections'
     | '/how-it-works'
     | '/roadmap'
     | '/security-trust'
@@ -645,6 +668,7 @@ export interface FileRouteTypes {
     | '/_authenticated/calendar'
     | '/_authenticated/communication'
     | '/_authenticated/dashboard'
+    | '/_authenticated/devices'
     | '/_authenticated/documents'
     | '/_authenticated/favorites'
     | '/_authenticated/files'
@@ -691,6 +715,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  DeviceConnectionsRoute: typeof DeviceConnectionsRoute
   HowItWorksRoute: typeof HowItWorksRoute
   RoadmapRoute: typeof RoadmapRoute
   SecurityTrustRoute: typeof SecurityTrustRoute
@@ -732,6 +757,13 @@ declare module '@tanstack/react-router' {
       path: '/how-it-works'
       fullPath: '/how-it-works'
       preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/device-connections': {
+      id: '/device-connections'
+      path: '/device-connections'
+      fullPath: '/device-connections'
+      preLoaderRoute: typeof DeviceConnectionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -921,6 +953,13 @@ declare module '@tanstack/react-router' {
       path: '/documents'
       fullPath: '/documents'
       preLoaderRoute: typeof AuthenticatedDocumentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/devices': {
+      id: '/_authenticated/devices'
+      path: '/devices'
+      fullPath: '/devices'
+      preLoaderRoute: typeof AuthenticatedDevicesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -1140,6 +1179,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedCommunicationRoute: typeof AuthenticatedCommunicationRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDevicesRoute: typeof AuthenticatedDevicesRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedFavoritesRoute: typeof AuthenticatedFavoritesRoute
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
@@ -1173,6 +1213,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedCommunicationRoute: AuthenticatedCommunicationRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDevicesRoute: AuthenticatedDevicesRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedFavoritesRoute: AuthenticatedFavoritesRoute,
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
@@ -1204,6 +1245,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  DeviceConnectionsRoute: DeviceConnectionsRoute,
   HowItWorksRoute: HowItWorksRoute,
   RoadmapRoute: RoadmapRoute,
   SecurityTrustRoute: SecurityTrustRoute,

@@ -1,5 +1,6 @@
 import {
   Brain,
+  Cable,
   CheckCircle2,
   CircleHelp,
   ClipboardList,
@@ -312,6 +313,35 @@ export const publicLearningTopics = [
     ],
     takeaways: ["Workflow first", "Permission before action", "Audit everything", "Automate later"],
   },
+  {
+    slug: "device-connections",
+    title: "Device connections",
+    eyebrow: "Conversation intake",
+    summary:
+      "Bring meeting recordings, phone calls, recorder files, and transcripts into the same review flow.",
+    icon: Cable,
+    image: "/marketing/voice-capture.jpg",
+    sections: [
+      [
+        "What it means",
+        "Device connections start with safe uploads: audio, video, transcripts, and notes from tools such as PLAUD or similar AI recorders.",
+      ],
+      [
+        "How it helps",
+        "Real conversations can become summaries, tasks, risks, decisions, reminders, and project updates after review.",
+      ],
+      [
+        "1inow direction",
+        "Direct integrations and AI processing come later only after explicit provider, privacy, consent, and audit approval.",
+      ],
+    ],
+    takeaways: [
+      "Upload first",
+      "Review before action",
+      "Extract outcomes",
+      "Approve integrations later",
+    ],
+  },
 ] as const;
 
 export type PublicLearningTopic = (typeof publicLearningTopics)[number];
@@ -620,6 +650,27 @@ const publicLearningTranslations: Record<
         "Автоматизировать позже",
       ],
     },
+    "device-connections": {
+      title: "Подключение устройств",
+      eyebrow: "Прием разговоров",
+      summary:
+        "Загружайте записи встреч, звонков, диктофонов и транскрипты в единый поток разбора.",
+      sections: [
+        [
+          "Что это значит",
+          "Интеграции устройств начинаются с безопасного upload: аудио, видео, транскрипты и заметки из PLAUD или похожих AI-рекордеров.",
+        ],
+        [
+          "Как это помогает",
+          "Реальные разговоры могут становиться саммари, задачами, рисками, решениями, напоминаниями и обновлениями проектов.",
+        ],
+        [
+          "Направление 1inow",
+          "Прямые интеграции и AI-обработка появятся позже только после approval провайдера, приватности, consent и аудита.",
+        ],
+      ],
+      takeaways: ["Сначала upload", "Проверка до действия", "Извлекать итоги", "Интеграции позже"],
+    },
   },
   uk: {
     "voice-capture": {
@@ -889,6 +940,32 @@ const publicLearningTranslations: Record<
       ],
       takeaways: ["Спочатку workflow", "Права до дій", "Аудит усього", "Автоматизувати пізніше"],
     },
+    "device-connections": {
+      title: "Підключення пристроїв",
+      eyebrow: "Прийом розмов",
+      summary:
+        "Завантажуйте записи зустрічей, дзвінків, диктофонів і транскрипти в єдиний потік огляду.",
+      sections: [
+        [
+          "Що це означає",
+          "Інтеграції пристроїв починаються з безпечного upload: аудіо, відео, транскрипти і нотатки з PLAUD або схожих AI-рекордерів.",
+        ],
+        [
+          "Як це допомагає",
+          "Реальні розмови можуть ставати summary, задачами, ризиками, рішеннями, нагадуваннями та оновленнями проєктів.",
+        ],
+        [
+          "Напрям 1inow",
+          "Прямі інтеграції та AI-обробка з'являться пізніше лише після approval провайдера, приватності, consent і аудиту.",
+        ],
+      ],
+      takeaways: [
+        "Спочатку upload",
+        "Перевірка до дії",
+        "Витягувати підсумки",
+        "Інтеграції пізніше",
+      ],
+    },
   },
   es: {
     "voice-capture": {
@@ -1156,6 +1233,32 @@ const publicLearningTranslations: Record<
         ],
       ],
       takeaways: ["Workflow primero", "Permisos antes", "Auditar todo", "Automatizar después"],
+    },
+    "device-connections": {
+      title: "Conexión de dispositivos",
+      eyebrow: "Entrada de conversaciones",
+      summary:
+        "Sube grabaciones de reuniones, llamadas, grabadoras y transcripciones al mismo flujo de revisión.",
+      sections: [
+        [
+          "Qué significa",
+          "Las conexiones empiezan con upload seguro: audio, video, transcripciones y notas desde PLAUD o grabadoras AI similares.",
+        ],
+        [
+          "Cómo ayuda",
+          "Conversaciones reales pueden convertirse en resúmenes, tareas, riesgos, decisiones, recordatorios y actualizaciones.",
+        ],
+        [
+          "Dirección de 1inow",
+          "Integraciones directas y procesamiento AI llegan después de aprobar proveedor, privacidad, consentimiento y auditoría.",
+        ],
+      ],
+      takeaways: [
+        "Upload primero",
+        "Revisar antes de actuar",
+        "Extraer resultados",
+        "Integrar después",
+      ],
     },
   },
   de: {
@@ -1445,6 +1548,32 @@ const publicLearningTranslations: Record<
         "Rechte vor Aktion",
         "Alles auditieren",
         "Später automatisieren",
+      ],
+    },
+    "device-connections": {
+      title: "Geräte verbinden",
+      eyebrow: "Gesprächs-Intake",
+      summary:
+        "Lade Meeting-Aufnahmen, Telefonate, Recorder-Dateien und Transkripte in denselben Review-Flow.",
+      sections: [
+        [
+          "Was es bedeutet",
+          "Geräteintegrationen beginnen mit sicherem Upload: Audio, Video, Transkripte und Notizen aus PLAUD oder ähnlichen AI-Recordern.",
+        ],
+        [
+          "Wie es hilft",
+          "Echte Gespräche können zu Zusammenfassungen, Aufgaben, Risiken, Entscheidungen, Erinnerungen und Projektupdates werden.",
+        ],
+        [
+          "1inow Richtung",
+          "Direkte Integrationen und AI-Verarbeitung kommen später nur nach Freigabe von Provider, Privacy, Consent und Audit.",
+        ],
+      ],
+      takeaways: [
+        "Upload zuerst",
+        "Vor Aktion prüfen",
+        "Ergebnisse extrahieren",
+        "Später integrieren",
       ],
     },
   },
