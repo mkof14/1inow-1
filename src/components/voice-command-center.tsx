@@ -54,9 +54,10 @@ type VoicePlan = {
 };
 
 type VoicePerspective = {
-  persona: "Operator" | "Auditor";
+  persona: "Nova" | "Vera";
   role: string;
   voice: string;
+  image: string;
   text: string;
 };
 
@@ -542,11 +543,11 @@ function VoicePlanPreview({
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-[11px] uppercase tracking-[0.14em] text-violet-700 dark:text-violet-300">
-              Two-assistant review
+              Nova + Vera review
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Two roles separate execution from risk, so the command is easier to hear, filter, and
-              trust.
+              Nova pushes the next useful move. Vera checks meaning, risk, and priority before
+              action.
             </p>
           </div>
           <Button
@@ -567,7 +568,14 @@ function VoicePlanPreview({
               className="rounded-xl border border-violet-500/20 bg-background/75 p-3"
             >
               <div className="flex items-center justify-between gap-2">
-                <div className="text-xs font-semibold">{item.persona}</div>
+                <div className="flex min-w-0 items-center gap-2">
+                  <img
+                    src={item.image}
+                    alt=""
+                    className="size-8 shrink-0 rounded-xl object-cover"
+                  />
+                  <div className="min-w-0 text-xs font-semibold">{item.persona}</div>
+                </div>
                 <div className="rounded-full bg-violet-500/10 px-2 py-0.5 text-[10px] font-medium text-violet-700 dark:text-violet-300">
                   {item.voice}
                 </div>
@@ -665,15 +673,17 @@ function buildVoicePerspectives(plan: VoicePlan): VoicePerspective[] {
 
   return [
     {
-      persona: "Operator",
-      role: "Action and momentum",
-      voice: "clear voice",
+      persona: "Nova",
+      role: "Action, motion, next step",
+      voice: "clear execution voice",
+      image: "/assistants/nova.jpg",
       text: operatorText,
     },
     {
-      persona: "Auditor",
-      role: "Risk and meaning filter",
-      voice: "careful voice",
+      persona: "Vera",
+      role: "Risk, truth, priority filter",
+      voice: "careful review voice",
+      image: "/assistants/vera.jpg",
       text: auditorText,
     },
   ];

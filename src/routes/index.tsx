@@ -79,6 +79,24 @@ const landingCopy = {
       ["Open tasks", "14"],
       ["Active projects", "8"],
     ],
+    assistantEyebrow: "Two personal voices",
+    assistantTitle: "Nova and Vera turn voice control into a thinking workflow.",
+    assistantText:
+      "One assistant moves work forward. The other filters meaning, risk, and priority before action.",
+    assistants: [
+      [
+        "Nova",
+        "Execution voice",
+        "Nova listens for the next useful move: create, open, plan, remind, and keep daily momentum visible.",
+        "Action, speed, next step",
+      ],
+      [
+        "Vera",
+        "Review voice",
+        "Vera checks whether the command is clear, what risk is hidden, and what should be clarified before execution.",
+        "Meaning, risk, priority",
+      ],
+    ],
     visuals: [
       ["Capture", "Voice thoughts become usable signals."],
       ["Organize", "Projects, tasks, and priorities stay visible."],
@@ -132,6 +150,24 @@ const landingCopy = {
       ["Открытые задачи", "14"],
       ["Активные проекты", "8"],
     ],
+    assistantEyebrow: "Два персональных голоса",
+    assistantTitle: "Nova и Vera превращают голосовое управление в думающий процесс.",
+    assistantText:
+      "Один помощник двигает работу вперед. Второй фильтрует смысл, риски и приоритет перед действием.",
+    assistants: [
+      [
+        "Nova",
+        "Голос исполнения",
+        "Nova слышит ближайший полезный шаг: создать, открыть, спланировать, напомнить и держать дневной темп видимым.",
+        "Действие, скорость, следующий шаг",
+      ],
+      [
+        "Vera",
+        "Голос проверки",
+        "Vera проверяет, ясна ли команда, какой риск скрыт и что нужно уточнить перед исполнением.",
+        "Смысл, риск, приоритет",
+      ],
+    ],
     visuals: [
       ["Фиксируйте", "Голосовые мысли становятся полезными сигналами."],
       ["Организуйте", "Проекты, задачи и приоритеты остаются на виду."],
@@ -184,6 +220,24 @@ const landingCopy = {
       ["Голосові записи", "5"],
       ["Відкриті задачі", "14"],
       ["Активні проєкти", "8"],
+    ],
+    assistantEyebrow: "Два персональні голоси",
+    assistantTitle: "Nova і Vera перетворюють голосове керування на мислячий процес.",
+    assistantText:
+      "Один помічник рухає роботу вперед. Другий фільтрує сенс, ризики і пріоритет перед дією.",
+    assistants: [
+      [
+        "Nova",
+        "Голос виконання",
+        "Nova чує найближчий корисний крок: створити, відкрити, спланувати, нагадати і тримати денний темп видимим.",
+        "Дія, швидкість, наступний крок",
+      ],
+      [
+        "Vera",
+        "Голос перевірки",
+        "Vera перевіряє, чи команда ясна, який ризик прихований і що потрібно уточнити перед виконанням.",
+        "Сенс, ризик, пріоритет",
+      ],
     ],
     visuals: [
       ["Фіксуйте", "Голосові думки стають корисними сигналами."],
@@ -239,6 +293,24 @@ const landingCopy = {
       ["Tareas abiertas", "14"],
       ["Proyectos activos", "8"],
     ],
+    assistantEyebrow: "Dos voces personales",
+    assistantTitle: "Nova y Vera convierten el control por voz en un flujo que piensa.",
+    assistantText:
+      "Un asistente impulsa el trabajo. El otro filtra significado, riesgo y prioridad antes de actuar.",
+    assistants: [
+      [
+        "Nova",
+        "Voz de ejecución",
+        "Nova escucha el siguiente movimiento útil: crear, abrir, planificar, recordar y mantener visible el ritmo diario.",
+        "Acción, velocidad, siguiente paso",
+      ],
+      [
+        "Vera",
+        "Voz de revisión",
+        "Vera comprueba si el comando es claro, qué riesgo está oculto y qué debe aclararse antes de ejecutar.",
+        "Significado, riesgo, prioridad",
+      ],
+    ],
     visuals: [
       ["Captura", "Las ideas de voz se convierten en señales útiles."],
       ["Organiza", "Proyectos, tareas y prioridades siguen visibles."],
@@ -292,6 +364,24 @@ const landingCopy = {
       ["Sprachnotizen", "5"],
       ["Offene Aufgaben", "14"],
       ["Aktive Projekte", "8"],
+    ],
+    assistantEyebrow: "Zwei personliche Stimmen",
+    assistantTitle: "Nova und Vera machen Sprachsteuerung zu einem denkenden Ablauf.",
+    assistantText:
+      "Ein Assistent bringt Arbeit voran. Der andere filtert Bedeutung, Risiko und Prioritat vor der Aktion.",
+    assistants: [
+      [
+        "Nova",
+        "Ausfuhrungsstimme",
+        "Nova hort auf den nachsten nutzlichen Schritt: erstellen, offnen, planen, erinnern und den Tagesrhythmus sichtbar halten.",
+        "Aktion, Tempo, nachster Schritt",
+      ],
+      [
+        "Vera",
+        "Prufstimme",
+        "Vera pruft, ob der Befehl klar ist, welches Risiko verborgen ist und was vor der Ausfuhrung geklart werden muss.",
+        "Bedeutung, Risiko, Prioritat",
+      ],
     ],
     visuals: [
       ["Erfassen", "Sprachgedanken werden zu nutzbaren Signalen."],
@@ -452,6 +542,56 @@ function LandingPage() {
               </Link>
             );
           })}
+        </div>
+      </section>
+
+      <section className="bg-[#f7faf8] px-5 pb-20 dark:bg-[#061014] md:px-8">
+        <div className="mx-auto grid w-full max-w-7xl gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+          <div className="max-w-xl">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-teal-500/20 bg-white/62 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-teal-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/8 dark:text-teal-200">
+              <Sparkles className="size-3.5" />
+              {c.assistantEyebrow}
+            </div>
+            <h2 className="text-3xl font-semibold leading-tight tracking-tight text-slate-950 dark:text-white md:text-4xl">
+              {c.assistantTitle}
+            </h2>
+            <p className="mt-4 text-base leading-7 text-slate-600 dark:text-white/64">
+              {c.assistantText}
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {c.assistants.map(([name, role, text, focus], index) => (
+              <div
+                key={name}
+                className="group overflow-hidden rounded-[1.75rem] border border-slate-900/8 bg-white/76 shadow-xl shadow-slate-950/5 transition-transform hover:-translate-y-1 dark:border-white/10 dark:bg-white/[0.055]"
+              >
+                <div className="relative h-64 overflow-hidden bg-slate-100 dark:bg-slate-900">
+                  <img
+                    src={index === 0 ? "/assistants/nova.jpg" : "/assistants/vera.jpg"}
+                    alt=""
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/54 via-slate-950/6 to-transparent" />
+                  <div className="absolute bottom-5 left-5 right-5">
+                    <div className="text-3xl font-semibold tracking-tight text-white">{name}</div>
+                    <div className="mt-1 text-sm font-medium text-white/76">{role}</div>
+                  </div>
+                </div>
+                <div className="p-5">
+                  <p className="text-sm leading-6 text-slate-600 dark:text-white/64">{text}</p>
+                  <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-teal-500/10 px-3 py-1.5 text-xs font-semibold text-teal-700 dark:text-teal-200">
+                    {index === 0 ? (
+                      <ArrowRight className="size-3.5" />
+                    ) : (
+                      <ShieldCheck className="size-3.5" />
+                    )}
+                    {focus}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
