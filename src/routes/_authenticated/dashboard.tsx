@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { BrandMark } from "@/components/icons/compass-mark";
 import { BrandMark as BrandRing } from "@/components/icons/compass-icons";
+import { Button } from "@/components/ui/button";
 import {
   buildAttention,
   buildToday,
