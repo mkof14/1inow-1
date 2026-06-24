@@ -472,7 +472,7 @@ function LandingPage() {
 
             <div className="mt-9 flex flex-wrap gap-3">
               <Link
-                to="/auth"
+                to="/dashboard"
                 className="inline-flex h-12 items-center gap-2 rounded-2xl bg-slate-950 px-5 text-sm font-semibold text-white shadow-xl shadow-slate-950/15 transition-transform hover:-translate-y-0.5 dark:bg-white dark:text-slate-950"
               >
                 {c.openWorkspace}
@@ -562,7 +562,7 @@ function LandingPage() {
             </p>
           </div>
           <Link
-            to="/auth"
+            to="/dashboard"
             className="inline-flex h-12 w-fit items-center gap-2 rounded-2xl bg-slate-950 px-5 text-sm font-semibold text-white shadow-xl shadow-slate-950/15 transition-transform hover:-translate-y-0.5 dark:bg-white dark:text-slate-950"
           >
             {c.continue}

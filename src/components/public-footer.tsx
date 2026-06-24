@@ -437,7 +437,7 @@ function FooterColumn({ title, links }: { title: string; links: Array<string[]> 
           ) : slug === "auth" ? (
             <Link
               key={slug}
-              to="/auth"
+              to="/dashboard"
               className="block hover:text-slate-950 dark:hover:text-white"
             >
               {label}

@@ -206,7 +206,7 @@ function DeviceConnectionsPage() {
               {c.subtitle}
             </p>
             <Link
-              to="/auth"
+              to="/dashboard"
               className="mt-8 inline-flex h-12 items-center gap-2 rounded-2xl bg-slate-950 px-5 text-sm font-semibold text-white shadow-xl shadow-slate-950/15 transition-transform hover:-translate-y-0.5 dark:bg-white dark:text-slate-950"
             >
               {c.cta}
