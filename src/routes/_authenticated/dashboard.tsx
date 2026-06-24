@@ -20,6 +20,8 @@ import {
   Target,
   TrendingUp,
   Mic,
+  Radio,
+  ShieldCheck,
 } from "lucide-react";
 import { BrandMark } from "@/components/icons/compass-mark";
 import { BrandMark as BrandRing } from "@/components/icons/compass-icons";
@@ -33,6 +35,7 @@ import {
 import { firstScreenGreeting } from "@/lib/simplicity";
 import { PageHeader } from "@/components/page-header";
 import { useT } from "@/lib/i18n";
+import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
 import { getVoiceInboxItems, subscribeVoiceInbox, type VoiceInboxItem } from "@/lib/voice-intake";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({ component: HomePage });
@@ -76,6 +79,7 @@ function HomePage() {
 
   const openTalk = () =>
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "j", metaKey: true }));
+  const openVoiceCenter = () => window.dispatchEvent(new Event("1inow:open-voice"));
 
   useEffect(() => {
     const refresh = () => setVoiceInbox(getVoiceInboxItems());
@@ -295,6 +299,12 @@ function HomePage() {
         </div>
       </div>
 
+      <SenseVoiceLayer
+        openSense={openTalk}
+        openVoiceCenter={openVoiceCenter}
+        pendingVoiceItems={voiceInbox.filter((item) => item.status === "new").length}
+      />
+
       <DailyCommandCenter
         todayFocus={todayFocus}
         projectRisks={projectRisks}
@@ -456,7 +466,7 @@ function HomePage() {
             onClick={openTalk}
             className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-accent hover:underline"
           >
-            <MessageSquare className="size-3.5" /> Ask advisor about today
+            <MessageSquare className="size-3.5" /> Ask Sense about today
           </button>
         </Widget>
       </div>
@@ -834,6 +844,132 @@ function DailyCommandCenter({
   );
 }
 
+function SenseVoiceLayer({
+  openSense,
+  openVoiceCenter,
+  pendingVoiceItems,
+}: {
+  openSense: () => void;
+  openVoiceCenter: () => void;
+  pendingVoiceItems: number;
+}) {
+  const voices = [
+    {
+      name: "Nova",
+      role: "Execution voice",
+      text: "Captures commands and turns them into the next useful move: open, create, plan, or route.",
+      image: SENSE_ASSETS.nova,
+    },
+    {
+      name: "Vera",
+      role: "Review voice",
+      text: "Checks meaning, risk, missing context, and whether the command is ready to act.",
+      image: SENSE_ASSETS.vera,
+    },
+  ];
+
+  return (
+    <section className="mb-10 rounded-3xl border border-border surface-aurora shimmer-border ring-accent-soft p-4 md:p-5 fade-rise">
+      <div className="grid gap-4 lg:grid-cols-[1.1fr_1.4fr] lg:items-stretch">
+        <div className="flex flex-col justify-between rounded-2xl border border-border bg-background/65 p-4">
+          <div>
+            <div className="mb-4 flex items-center gap-3">
+              <img src={SENSE_ASSETS.sense} alt="" className="size-12 rounded-2xl" />
+              <div>
+                <div className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                  Voice system
+                </div>
+                <h2 className="mt-1 text-xl font-display tracking-tight">{SENSE_NAME}</h2>
+              </div>
+            </div>
+            <p className="text-sm leading-6 text-muted-foreground">
+              Nova and Vera work as one Sense layer: capture first, review together, then execute
+              only when the action is clear.
+            </p>
+          </div>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <Button type="button" size="sm" className="gap-2" onClick={openSense}>
+              <MessageSquare className="size-4" />
+              Open Sense
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="gap-2"
+              onClick={openVoiceCenter}
+            >
+              <Mic className="size-4" />
+              Voice Center
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          {voices.map((voice) => (
+            <div
+              key={voice.name}
+              className="rounded-2xl border border-border bg-card/75 p-4 transition-all hover:-translate-y-0.5 hover:border-accent/40"
+            >
+              <div className="mb-3 flex items-center gap-3">
+                <img src={voice.image} alt="" className="size-12 rounded-2xl object-cover" />
+                <div>
+                  <div className="text-sm font-semibold">{voice.name}</div>
+                  <div className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                    {voice.role}
+                  </div>
+                </div>
+              </div>
+              <p className="text-xs leading-5 text-muted-foreground">{voice.text}</p>
+            </div>
+          ))}
+
+          <Link
+            to="/inbox"
+            className="group rounded-2xl border border-border bg-card/75 p-4 transition-all hover:-translate-y-0.5 hover:border-accent/40"
+          >
+            <div className="mb-3 flex items-center gap-3">
+              <div className="grid size-12 place-items-center rounded-2xl bg-accent/10 text-accent">
+                <Radio className="size-5" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold group-hover:text-accent">Voice Inbox</div>
+                <div className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                  {pendingVoiceItems} waiting
+                </div>
+              </div>
+            </div>
+            <p className="text-xs leading-5 text-muted-foreground">
+              Raw captures wait here until Nova turns them into movement and Vera approves the
+              meaning.
+            </p>
+          </Link>
+
+          <Link
+            to="/devices"
+            className="group rounded-2xl border border-border bg-card/75 p-4 transition-all hover:-translate-y-0.5 hover:border-accent/40"
+          >
+            <div className="mb-3 flex items-center gap-3">
+              <div className="grid size-12 place-items-center rounded-2xl bg-accent/10 text-accent">
+                <ShieldCheck className="size-5" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold group-hover:text-accent">Voice Devices</div>
+                <div className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                  Controlled intake
+                </div>
+              </div>
+            </div>
+            <p className="text-xs leading-5 text-muted-foreground">
+              Meeting recorders, calls, and captures should feed the same Sense review flow.
+            </p>
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function VoiceReviewQueue({ items }: { items: VoiceInboxItem[] }) {
   if (!items.length) return null;
 
@@ -841,13 +977,11 @@ function VoiceReviewQueue({ items }: { items: VoiceInboxItem[] }) {
     <section className="mb-10 rounded-2xl border border-border bg-card/70 p-4 fade-rise">
       <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
-          <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-accent/10 text-accent">
-            <Mic className="size-4" />
-          </div>
+          <img src={SENSE_ASSETS.sense} alt="" className="size-10 shrink-0 rounded-xl" />
           <div>
-            <h2 className="text-sm font-semibold tracking-tight">Voice Review Queue</h2>
+            <h2 className="text-sm font-semibold tracking-tight">Sense Voice Queue</h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Recent captured thoughts waiting to become tasks, projects, or decisions.
+              Nova prepares the next move. Vera checks the captured meaning before it becomes work.
             </p>
           </div>
         </div>

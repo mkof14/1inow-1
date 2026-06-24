@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Eye, MessageCircle, Radio, ShieldCheck } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { SENSE_ASSETS } from "@/lib/sense-assets";
 
 const assistantCopy = {
   en: {
@@ -16,14 +17,14 @@ const assistantCopy = {
         role: "Execution voice",
         text: "Nova turns voice commands into the next useful action: create a task, open a project, plan a reminder, or move the day forward.",
         focus: "Action, speed, momentum",
-        image: "/assistants/nova.jpg",
+        image: SENSE_ASSETS.nova,
       },
       {
         name: "Vera",
         role: "Review voice",
         text: "Vera filters meaning, priority, and risk. When a command is unclear, Vera asks before the system acts.",
         focus: "Meaning, risk, priority",
-        image: "/assistants/vera.jpg",
+        image: SENSE_ASSETS.vera,
       },
     ],
     proof: [
@@ -46,14 +47,14 @@ const assistantCopy = {
         role: "Голос исполнения",
         text: "Nova превращает голосовые команды в ближайшее полезное действие: создать задачу, открыть проект, запланировать напоминание или сдвинуть день вперед.",
         focus: "Действие, скорость, движение",
-        image: "/assistants/nova.jpg",
+        image: SENSE_ASSETS.nova,
       },
       {
         name: "Vera",
         role: "Голос проверки",
         text: "Vera фильтрует смысл, приоритет и риск. Если команда неясна, Vera уточняет до того, как система начнет действовать.",
         focus: "Смысл, риск, приоритет",
-        image: "/assistants/vera.jpg",
+        image: SENSE_ASSETS.vera,
       },
     ],
     proof: [
@@ -76,14 +77,14 @@ const assistantCopy = {
         role: "Голос виконання",
         text: "Nova перетворює голосові команди на найближчу корисну дію: створити задачу, відкрити проєкт, запланувати нагадування або зрушити день вперед.",
         focus: "Дія, швидкість, рух",
-        image: "/assistants/nova.jpg",
+        image: SENSE_ASSETS.nova,
       },
       {
         name: "Vera",
         role: "Голос перевірки",
         text: "Vera фільтрує сенс, пріоритет і ризик. Якщо команда неясна, Vera уточнює до того, як система почне діяти.",
         focus: "Сенс, ризик, пріоритет",
-        image: "/assistants/vera.jpg",
+        image: SENSE_ASSETS.vera,
       },
     ],
     proof: [
@@ -106,14 +107,14 @@ const assistantCopy = {
         role: "Voz de ejecución",
         text: "Nova convierte comandos de voz en la siguiente acción útil: crear una tarea, abrir un proyecto, planificar un recordatorio o mover el día.",
         focus: "Acción, velocidad, impulso",
-        image: "/assistants/nova.jpg",
+        image: SENSE_ASSETS.nova,
       },
       {
         name: "Vera",
         role: "Voz de revisión",
         text: "Vera filtra significado, prioridad y riesgo. Si el comando no está claro, Vera pregunta antes de que el sistema actúe.",
         focus: "Significado, riesgo, prioridad",
-        image: "/assistants/vera.jpg",
+        image: SENSE_ASSETS.vera,
       },
     ],
     proof: [
@@ -136,14 +137,14 @@ const assistantCopy = {
         role: "Ausführungsstimme",
         text: "Nova macht aus Sprachbefehlen den nächsten nützlichen Schritt: Aufgabe erstellen, Projekt öffnen, Erinnerung planen oder den Tag bewegen.",
         focus: "Aktion, Tempo, Bewegung",
-        image: "/assistants/nova.jpg",
+        image: SENSE_ASSETS.nova,
       },
       {
         name: "Vera",
         role: "Prüfstimme",
         text: "Vera filtert Bedeutung, Priorität und Risiko. Wenn ein Befehl unklar ist, fragt Vera, bevor das System handelt.",
         focus: "Bedeutung, Risiko, Priorität",
-        image: "/assistants/vera.jpg",
+        image: SENSE_ASSETS.vera,
       },
     ],
     proof: [

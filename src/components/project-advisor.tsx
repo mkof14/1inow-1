@@ -28,7 +28,7 @@ export function ProjectAdvisor({
       const r = await ask({ data: { projectId, prompt: p, lang } });
       setAnswer(r.text);
     } catch (e: any) {
-      toast.error(e?.message ?? "Advisor unavailable");
+      toast.error(e?.message ?? "Sense unavailable");
     } finally {
       setLoading(false);
     }

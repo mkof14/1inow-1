@@ -22,7 +22,7 @@ const CONTENT: Record<string, Pack> = {
     items: [
       {
         q: "What is 1inow?",
-        a: "A command workspace for projects, decisions, communications, voice capture, and a memory layer the advisor can reason over.",
+        a: "A command workspace for projects, decisions, communications, voice capture, and a Sense layer that reasons over memory and context.",
       },
       {
         q: "Can I upload conversations or recorder files?",

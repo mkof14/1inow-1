@@ -188,7 +188,7 @@ export const seedDemoData = createServerFn({ method: "POST" })
         message_type: "normal",
       },
       {
-        body: "Decision: keep Advisor as a review-first layer with no blind external actions.",
+        body: "Decision: keep Sense as a review-first layer with no blind external actions.",
         message_type: "decision",
       },
       {

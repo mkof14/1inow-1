@@ -53,6 +53,7 @@ import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { InstallPrompt } from "@/components/install-prompt";
 import { VoiceCommandCenter } from "@/components/voice-command-center";
+import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -88,6 +89,12 @@ export function AppShell({ children }: { children: ReactNode }) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  useEffect(() => {
+    const openVoice = () => setVoiceOpen(true);
+    window.addEventListener("1inow:open-voice", openVoice);
+    return () => window.removeEventListener("1inow:open-voice", openVoice);
   }, []);
 
   useShortcuts(
@@ -197,10 +204,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                 ? "gradient-compass text-primary-foreground border-transparent shadow-md"
                 : "border-accent/30 bg-accent/5 text-foreground hover:bg-accent/10",
             )}
-            title="1inow Advisor"
+            title={SENSE_NAME}
           >
-            <BrandMark className="size-4 shrink-0" />
-            <span className="flex-1 text-left">Advisor</span>
+            <img src={SENSE_ASSETS.sense} alt="" className="size-5 shrink-0 rounded-md" />
+            <span className="flex-1 text-left">Sense</span>
             <kbd
               className={cn(
                 "text-[10px] font-mono px-1.5 py-0.5 rounded border",
@@ -313,10 +320,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                 aiOpen && "border-accent/50 bg-accent/10 text-accent",
               )}
               onClick={() => setAiOpen((v) => !v)}
-              title="1inow Advisor"
+              title={SENSE_NAME}
             >
-              <BrandMark className="size-4" />
-              <span>Advisor</span>
+              <img src={SENSE_ASSETS.sense} alt="" className="size-4 rounded" />
+              <span>Sense</span>
               {aiOpen && (
                 <span className="absolute top-2 right-2 size-1.5 rounded-full bg-accent" />
               )}

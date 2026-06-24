@@ -198,7 +198,7 @@ export const publicLearningTopics = [
       ],
       [
         "Can 1inow manage projects and personal work?",
-        "Yes. The product direction combines projects, tasks, voice capture, decisions, files, communication, and controlled advisor workflows.",
+        "Yes. The product direction combines projects, tasks, voice capture, decisions, files, communication, and controlled Sense workflows.",
       ],
       [
         "How are external services controlled?",
@@ -536,7 +536,7 @@ const publicLearningTranslations: Record<
         ],
         [
           "Можно управлять проектами и личными делами?",
-          "Да. Направление продукта объединяет проекты, задачи, голосовой ввод, решения, файлы, коммуникацию и контролируемые сценарии советника.",
+          "Да. Направление продукта объединяет проекты, задачи, голосовой ввод, решения, файлы, коммуникацию и контролируемые сценарии Sense.",
         ],
         [
           "Платные сервисы подключены?",
@@ -831,7 +831,7 @@ const publicLearningTranslations: Record<
         ],
         [
           "Можна керувати проєктами й особистими справами?",
-          "Так. Напрям продукту поєднує проєкти, задачі, голос, рішення, файли, комунікацію і контрольовані сценарії радника.",
+          "Так. Напрям продукту поєднує проєкти, задачі, голос, рішення, файли, комунікацію і контрольовані сценарії Sense.",
         ],
         [
           "Платні сервіси підключені?",
@@ -1436,7 +1436,7 @@ const publicLearningTranslations: Record<
         ],
         [
           "Kann 1inow Projekte und persönliche Arbeit verwalten?",
-          "Ja. Die Richtung verbindet Projekte, Aufgaben, Voice Capture, Entscheidungen, Dateien, Kommunikation und kontrollierte Advisor-Flows.",
+          "Ja. Die Richtung verbindet Projekte, Aufgaben, Voice Capture, Entscheidungen, Dateien, Kommunikation und kontrollierte Sense-Flows.",
         ],
         [
           "Sind bezahlte Services verbunden?",

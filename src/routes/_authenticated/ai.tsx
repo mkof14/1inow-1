@@ -4,9 +4,9 @@ import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { askAdvisor } from "@/lib/advisor.functions";
 import { PageHeader } from "@/components/page-header";
-import { AdvisorRing } from "@/components/icons/compass-icons";
 import { Send, Loader2, TrendingUp, AlertTriangle, CalendarRange, Lightbulb } from "lucide-react";
 import { useT, useI18n } from "@/lib/i18n";
+import { SENSE_ASSETS } from "@/lib/sense-assets";
 
 export const Route = createFileRoute("/_authenticated/ai")({ component: AdvisorPage });
 
@@ -56,7 +56,7 @@ function AdvisorPage() {
   return (
     <div className="p-4 sm:p-6 md:p-8 max-w-[1100px] mx-auto fade-rise">
       <PageHeader
-        icon={<AdvisorRing size={44} />}
+        icon={<img src={SENSE_ASSETS.sense} alt="" className="size-11 rounded-2xl" />}
         title={t("page.advisor.title")}
         subtitle={t("page.advisor.desc")}
       />

@@ -1,0 +1,19 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="128" fill="#10100A"/>
+  <path d="M94 257C129 178 186 138 256 138C326 138 383 178 418 257C383 334 326 373 256 373C186 373 129 334 94 257Z" stroke="url(#vera-eye)" stroke-width="28" stroke-linejoin="round"/>
+  <circle cx="256" cy="256" r="72" fill="#FDE68A"/>
+  <circle cx="256" cy="256" r="34" fill="#10100A"/>
+  <circle cx="276" cy="235" r="12" fill="#FDE68A"/>
+  <path d="M256 82V52" stroke="#FDE68A" stroke-width="18" stroke-linecap="round"/>
+  <path d="M154 112L134 85" stroke="#FDBA74" stroke-width="16" stroke-linecap="round"/>
+  <path d="M358 112L378 85" stroke="#FDBA74" stroke-width="16" stroke-linecap="round"/>
+  <path d="M173 408C199 427 226 436 256 436C286 436 313 427 339 408" stroke="#FDE68A" stroke-width="18" stroke-linecap="round"/>
+  <path d="M205 409L256 361L307 409" stroke="#FDBA74" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <defs>
+    <linearGradient id="vera-eye" x1="94" y1="138" x2="418" y2="373" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FDE68A"/>
+      <stop offset="0.55" stop-color="#FDBA74"/>
+      <stop offset="1" stop-color="#5EEAD4"/>
+    </linearGradient>
+  </defs>
+</svg>

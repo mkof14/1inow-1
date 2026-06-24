@@ -16,11 +16,11 @@ import {
   ChevronLeft,
   Loader2,
 } from "lucide-react";
-import { BrandMark } from "@/components/icons/compass-mark";
 import { StudioMeter } from "@/components/voice/studio-meter";
 import { cn } from "@/lib/utils";
 import { useAiPageContext } from "@/lib/ai-context";
 import { useI18n } from "@/lib/i18n";
+import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
 
 type Mode = "docked" | "floating" | "collapsed";
 
@@ -278,12 +278,10 @@ export function AiSidebar({
     <aside className={containerCls}>
       <header className="h-12 px-3 flex items-center justify-between border-b border-border bg-gradient-to-r from-accent/5 to-transparent">
         <div className="flex items-center gap-2">
-          <div className="size-7 rounded-lg gradient-compass grid place-items-center text-primary-foreground">
-            <BrandMark className="size-4" />
-          </div>
+          <img src={SENSE_ASSETS.sense} alt="" className="size-8 rounded-lg shadow-sm" />
           <div className="leading-tight">
-            <div className="text-sm font-medium">1inow Advisor</div>
-            <div className="text-[10px] text-muted-foreground">Context, voice, commands</div>
+            <div className="text-sm font-medium">{SENSE_NAME}</div>
+            <div className="text-[10px] text-muted-foreground">Nova, Vera, voice, commands</div>
           </div>
         </div>
         <div className="flex items-center gap-0.5">
@@ -333,6 +331,20 @@ export function AiSidebar({
                 {t("ai.welcomeHint")}
               </p>
             </div>
+            <div className="grid grid-cols-2 gap-2">
+              <SensePersonaMini
+                image={SENSE_ASSETS.nova}
+                name="Nova"
+                role="Execution voice"
+                text="Turns commands into the next useful move."
+              />
+              <SensePersonaMini
+                image={SENSE_ASSETS.vera}
+                name="Vera"
+                role="Review voice"
+                text="Checks meaning, risk, and missing context."
+              />
+            </div>
             {onOpenVoiceCommand && (
               <button
                 type="button"
@@ -341,9 +353,9 @@ export function AiSidebar({
               >
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <div className="text-sm font-medium text-foreground">Voice Command Center</div>
+                    <div className="text-sm font-medium text-foreground">Sense Voice Center</div>
                     <div className="mt-1 text-[12px] text-muted-foreground">
-                      Speak or type commands: create tasks, open projects, review risks.
+                      Nova captures and moves. Vera reviews before action.
                     </div>
                   </div>
                   <Mic className="size-4 shrink-0 text-accent" />
@@ -446,6 +458,31 @@ export function AiSidebar({
         </div>
       </form>
     </aside>
+  );
+}
+
+function SensePersonaMini({
+  image,
+  name,
+  role,
+  text,
+}: {
+  image: string;
+  name: string;
+  role: string;
+  text: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-background/70 p-2.5">
+      <div className="flex items-center gap-2">
+        <img src={image} alt="" className="size-8 shrink-0 rounded-lg" />
+        <div className="min-w-0">
+          <div className="text-xs font-semibold">{name}</div>
+          <div className="truncate text-[10px] text-muted-foreground">{role}</div>
+        </div>
+      </div>
+      <p className="mt-2 text-[11px] leading-4 text-muted-foreground">{text}</p>
+    </div>
   );
 }
 

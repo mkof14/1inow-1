@@ -13,7 +13,6 @@ import {
   Mic,
   MicOff,
   Navigation,
-  Radio,
   Search,
   ShieldCheck,
   Volume2,
@@ -24,6 +23,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
 import { saveVoiceInboxItem, type VoiceInboxKind } from "@/lib/voice-intake";
 
 type VoiceIntent =
@@ -86,7 +86,11 @@ const ROUTES = [
     label: "Intelligence",
     words: ["intelligence", "brain", "интеллект", "мозг"],
   },
-  { route: "/ai", label: "Advisor", words: ["advisor", "assistant", "помощник", "ассистент"] },
+  {
+    route: "/ai",
+    label: "Sense",
+    words: ["sense", "advisor", "assistant", "помощник", "ассистент"],
+  },
   { route: "/administration", label: "Admin", words: ["admin", "админ", "администрирование"] },
   { route: "/settings", label: "Settings", words: ["settings", "настройки"] },
 ];
@@ -329,8 +333,8 @@ export function VoiceCommandCenter({
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Radio className="size-5 text-accent" />
-              1inow Voice Command Center
+              <img src={SENSE_ASSETS.sense} alt="" className="size-7 rounded-xl" />
+              {SENSE_NAME} Voice Center
             </DialogTitle>
           </DialogHeader>
 
@@ -340,8 +344,8 @@ export function VoiceCommandCenter({
                 <div>
                   <div className="text-sm font-semibold">Say or type what you want 1inow to do</div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Local assistant logic first: it can ask, clarify, suggest, draft, and execute
-                    safe commands. External AI, STT, and TTS services remain disconnected.
+                    Nova captures movement. Vera checks meaning, risk, and missing context. Sense
+                    keeps voice actions local, reviewable, and explicit before anything changes.
                   </p>
                 </div>
                 <Button
@@ -481,7 +485,7 @@ function VoicePlanPreview({
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
           <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-            Assistant understood
+            Sense understood
           </div>
           <div className="mt-1 text-base font-semibold">{plan.label}</div>
           <p className="mt-1 text-sm text-muted-foreground">{plan.summary}</p>
@@ -525,7 +529,7 @@ function VoicePlanPreview({
       {plan.advice?.length ? (
         <div className="mb-3 rounded-xl border border-teal-500/20 bg-teal-500/10 p-3">
           <div className="text-[11px] uppercase tracking-[0.14em] text-teal-700 dark:text-teal-300">
-            Assistant advice
+            Sense advice
           </div>
           <ul className="mt-2 space-y-1">
             {plan.advice.map((item) => (
@@ -542,7 +546,7 @@ function VoicePlanPreview({
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-[11px] uppercase tracking-[0.14em] text-violet-700 dark:text-violet-300">
-              Nova + Vera review
+              Sense review
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
               Nova pushes the next useful move. Vera checks meaning, risk, and priority before
@@ -675,14 +679,14 @@ function buildVoicePerspectives(plan: VoicePlan): VoicePerspective[] {
       persona: "Nova",
       role: "Action, motion, next step",
       voice: "clear execution voice",
-      image: "/assistants/nova.jpg",
+      image: SENSE_ASSETS.nova,
       text: operatorText,
     },
     {
       persona: "Vera",
       role: "Risk, truth, priority filter",
       voice: "careful review voice",
-      image: "/assistants/vera.jpg",
+      image: SENSE_ASSETS.vera,
       text: auditorText,
     },
   ];
@@ -859,7 +863,7 @@ function parseVoiceCommand(raw: string): VoicePlan {
       ["Matched today/focus phrase", "Dashboard contains Daily Command Center"],
       [
         "Use today view to choose one concrete next move.",
-        "If something feels unclear, ask the assistant to save it as a voice inbox item.",
+        "If something feels unclear, ask Sense to save it as a voice inbox item.",
       ],
     );
   }

@@ -1,0 +1,20 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="128" fill="#061014"/>
+  <path d="M96 336C96 222.8 163.8 128 256 128C348.2 128 416 222.8 416 336" stroke="url(#nova-ring)" stroke-width="28" stroke-linecap="round"/>
+  <path d="M154 329C174 263 210 230 256 230C302 230 338 263 358 329" stroke="#C8FFF4" stroke-width="18" stroke-linecap="round"/>
+  <path d="M197 324C210 292 230 276 256 276C282 276 302 292 315 324" stroke="#5EEAD4" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="256" cy="186" r="36" fill="#5EEAD4"/>
+  <circle cx="256" cy="186" r="16" fill="#061014"/>
+  <path d="M256 92V54" stroke="#C8FFF4" stroke-width="18" stroke-linecap="round"/>
+  <path d="M134 126L105 97" stroke="#5EEAD4" stroke-width="16" stroke-linecap="round"/>
+  <path d="M378 126L407 97" stroke="#5EEAD4" stroke-width="16" stroke-linecap="round"/>
+  <path d="M147 376H365" stroke="#C8FFF4" stroke-width="18" stroke-linecap="round"/>
+  <path d="M207 421H305" stroke="#5EEAD4" stroke-width="16" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="nova-ring" x1="96" y1="128" x2="416" y2="336" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5EEAD4"/>
+      <stop offset="0.55" stop-color="#38BDF8"/>
+      <stop offset="1" stop-color="#FDE68A"/>
+    </linearGradient>
+  </defs>
+</svg>
