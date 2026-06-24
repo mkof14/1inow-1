@@ -137,5 +137,5 @@ export function ProjectSuggestions({ projectId }: { projectId: string }) {
   );
 }
 
-// Re-exports for potential future per-scope panels
+// Re-exports for per-scope panels
 export const _icons = { AlertCircle, Clock, UserX, Link2Off, FileQuestion };

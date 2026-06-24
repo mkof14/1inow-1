@@ -11,5 +11,5 @@
 ## Product direction
 
 - Voice capture and Voice Inbox are available without external AI services.
-- AI, speech-to-text, and text-to-speech provider connections are prepared but intentionally disabled.
+- External AI, speech-to-text, and text-to-speech providers require explicit approval and environment configuration before use.
 - The authenticated workspace contains dashboard, projects, tasks, calendar, inbox, communication, people, reports, intelligence, admin, and settings modules.

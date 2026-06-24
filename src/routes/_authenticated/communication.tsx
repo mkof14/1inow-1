@@ -19,6 +19,7 @@ function Communication() {
   const { data: channels = [] } = useQuery({ queryKey: ["channels"], queryFn: fetchChannels });
   const [activeId, setActiveId] = useState<string | null>(null);
   const [thread, setThread] = useState<string | null>(null);
+  const [creatingChannel, setCreatingChannel] = useState(false);
 
   useEffect(() => {
     if (!activeId && channels.length > 0) setActiveId(channels[0].id);
@@ -68,6 +69,8 @@ function Communication() {
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <ChannelList
           activeId={activeId}
+          creating={creatingChannel}
+          onCreatingChange={setCreatingChannel}
           onSelect={(c) => {
             setActiveId(c.id);
             setThread(null);
@@ -81,6 +84,7 @@ function Communication() {
               icon={MessageSquare}
               title={t("comm.noChannelTitle")}
               description={t("comm.noChannelDesc")}
+              action={{ label: "Create channel", onClick: () => setCreatingChannel(true) }}
             />
           </div>
         )}

@@ -342,7 +342,7 @@ const publicInfoPages: Record<PublicInfoKind, Record<PublicInfoLang, PublicInfoP
       subtitle:
         "1inow should grow as a controlled system: clear permissions, clean environment handling, safe AI boundaries, and explicit integration approvals.",
       notice:
-        "This page describes the intended production discipline. It is not a claim that every future control is already implemented.",
+        "This page describes the production discipline 1inow should follow: clear controls, explicit approvals, and no hidden external processing.",
       stages: [
         {
           marker: "01",

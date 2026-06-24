@@ -27,13 +27,19 @@ const GROUP_KEY: Record<string, string> = {
 export function ChannelList({
   activeId,
   onSelect,
+  creating: controlledCreating,
+  onCreatingChange,
 }: {
   activeId: string | null;
   onSelect: (c: Channel) => void;
+  creating?: boolean;
+  onCreatingChange?: (v: boolean) => void;
 }) {
   const t = useT();
   const { data: channels = [] } = useQuery({ queryKey: ["channels"], queryFn: fetchChannels });
-  const [creating, setCreating] = useState(false);
+  const [localCreating, setLocalCreating] = useState(false);
+  const creating = controlledCreating ?? localCreating;
+  const setCreating = onCreatingChange ?? setLocalCreating;
 
   const grouped = GROUP_ORDER.map((g) => ({
     key: g,
@@ -76,7 +82,14 @@ export function ChannelList({
           </div>
         ))}
       </div>
-      <NewChannelDialog open={creating} onOpenChange={setCreating} />
+      <NewChannelDialog
+        open={creating}
+        onOpenChange={setCreating}
+        onCreated={(id) => {
+          const created = channels.find((channel) => channel.id === id);
+          if (created) onSelect(created);
+        }}
+      />
     </aside>
   );
 }

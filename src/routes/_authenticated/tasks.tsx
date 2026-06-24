@@ -20,11 +20,13 @@ import {
   LayoutGrid,
   List,
   Calendar,
+  Plus,
 } from "lucide-react";
 import { ExecutionNode } from "@/components/icons/compass-icons";
 import { useSetPageContext } from "@/lib/ai-context";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/tasks")({ component: ExecutionPage });
 
@@ -43,6 +45,7 @@ function ExecutionPage() {
   const qc = useQueryClient();
   const [view, setView] = useState<"board" | "list">("board");
   const [q, setQ] = useState("");
+  const [newTaskTitle, setNewTaskTitle] = useState("");
   const [draggingId, setDraggingId] = useState<string | null>(null);
 
   const update = useMutation({
@@ -60,6 +63,27 @@ function ExecutionPage() {
       qc.invalidateQueries({ queryKey: ["tasks"] });
       toast.success("Moved");
     },
+  });
+
+  const createTask = useMutation({
+    mutationFn: async () => {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) throw new Error("Sign in to create a task.");
+      const { error } = await supabase.from("tasks").insert({
+        title: newTaskTitle.trim(),
+        status: "todo",
+        priority: "medium",
+        created_by: user.id,
+        assignee_id: user.id,
+      } as never);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setNewTaskTitle("");
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+      toast.success("Task created");
+    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
   const filtered = useMemo(() => {
@@ -112,7 +136,7 @@ function ExecutionPage() {
             </p>
           </div>
         </div>
-        <div className="inline-flex rounded-lg border border-border p-0.5 bg-card shrink-0">
+        <div className="inline-flex self-start rounded-lg border border-border bg-card p-0.5 shrink-0">
           {[
             { id: "board", icon: LayoutGrid, label: "Board" },
             { id: "list", icon: List, label: "List" },
@@ -165,14 +189,38 @@ function ExecutionPage() {
         <TaskSignal icon={CheckCircle2} label="Review" value={inReview.length} tone="review" />
       </div>
 
-      <div className="relative max-w-md mb-5">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        <Input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder={t("page.tasks.searchPh")}
-          className="pl-9 h-9"
-        />
+      <div className="mb-5 grid gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(280px,420px)]">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={t("page.tasks.searchPh")}
+            className="h-9 pl-9"
+          />
+        </div>
+        <form
+          className="flex gap-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!newTaskTitle.trim()) {
+              toast.message("Add a task title first.");
+              return;
+            }
+            createTask.mutate();
+          }}
+        >
+          <Input
+            value={newTaskTitle}
+            onChange={(event) => setNewTaskTitle(event.target.value)}
+            placeholder="Create the next useful action..."
+            className="h-9"
+          />
+          <Button type="submit" size="sm" disabled={createTask.isPending}>
+            <Plus className="size-4" />
+            Add
+          </Button>
+        </form>
       </div>
 
       {view === "board" && (
@@ -238,8 +286,10 @@ function ExecutionPage() {
                   </div>
                 ))}
                 {grouped[col].length === 0 && (
-                  <div className="text-[11px] text-muted-foreground/60 italic px-1 py-4 text-center">
-                    {t("page.tasks.dropHere")}
+                  <div className="rounded-lg border border-dashed border-border bg-background/60 px-3 py-4 text-center text-[11px] text-muted-foreground">
+                    {col === "todo"
+                      ? "Add the next action above, then move it through the board."
+                      : t("page.tasks.dropHere")}
                   </div>
                 )}
               </div>

@@ -31,14 +31,14 @@ const publicLegalContent: Record<LegalKind, Record<LegalLang, LegalPack>> = {
         },
         {
           h: "3. How data should be used",
-          p: "Data should be used to operate the workspace, preserve context, improve daily execution, secure access, and support future assistant workflows after explicit approval.",
+          p: "Data should be used to operate the workspace, preserve context, improve daily execution, secure access, and support approved assistant workflows only after explicit approval.",
         },
         {
           h: "4. Secrets and credentials",
           p: "Production secrets must never be committed to the repository. Environment variables must stay scoped to the services actually used by the application.",
         },
         {
-          h: "5. Future integrations",
+          h: "5. External integrations",
           p: "OpenAI, Anthropic, Gemini, Resend, Stripe, analytics, monitoring, and other services require separate approval, implementation, and privacy review before activation.",
         },
         {
@@ -219,7 +219,7 @@ const publicLegalContent: Record<LegalKind, Record<LegalLang, LegalPack>> = {
         },
         {
           h: "2. Product status",
-          p: "1inow is a developing personal command system for projects, tasks, voice capture, decisions, and future AI assistance.",
+          p: "1inow is a developing personal command system for projects, tasks, voice capture, decisions, and controlled assistant workflows.",
         },
         {
           h: "3. Accounts and access",

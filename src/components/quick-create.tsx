@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { FolderKanban, CheckSquare, FileText, Video, StickyNote } from "lucide-react";
+import { FolderKanban, CheckSquare, Workflow } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,7 +26,7 @@ export function QuickCreate({ openSignal = 0 }: { openSignal?: number }) {
       if (openSignal > 0) setOpen(true);
     }
   }, [openSignal]);
-  const [tab, setTab] = useState<"task" | "project" | "note">("task");
+  const [tab, setTab] = useState<"task" | "project">("task");
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const qc = useQueryClient();
@@ -67,8 +67,6 @@ export function QuickCreate({ openSignal = 0 }: { openSignal?: number }) {
         if (error) throw error;
         qc.invalidateQueries({ queryKey: ["projects"] });
         toast.success(t("quick.projectCreated"));
-      } else {
-        toast.message(t("quick.notesSoon"));
       }
       reset();
       setOpen(false);
@@ -86,7 +84,7 @@ export function QuickCreate({ openSignal = 0 }: { openSignal?: number }) {
             <DialogTitle>{t("quick.title")}</DialogTitle>
           </DialogHeader>
           <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
-            <TabsList className="grid grid-cols-3 w-full">
+            <TabsList className="grid grid-cols-2 w-full">
               <TabsTrigger value="task">
                 <CheckSquare className="size-3.5 mr-1.5" />
                 {t("quick.tab.task")}
@@ -94,10 +92,6 @@ export function QuickCreate({ openSignal = 0 }: { openSignal?: number }) {
               <TabsTrigger value="project">
                 <FolderKanban className="size-3.5 mr-1.5" />
                 {t("quick.tab.project")}
-              </TabsTrigger>
-              <TabsTrigger value="note">
-                <StickyNote className="size-3.5 mr-1.5" />
-                {t("quick.tab.note")}
               </TabsTrigger>
             </TabsList>
             <TabsContent value={tab} className="space-y-3 mt-4">
@@ -114,8 +108,10 @@ export function QuickCreate({ openSignal = 0 }: { openSignal?: number }) {
                 rows={3}
               />
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <FileText className="size-3" /> {t("quick.docs")}
-                <Video className="size-3 ml-2" /> {t("quick.meetings")}
+                <Workflow className="size-3" />
+                {tab === "task"
+                  ? t("quick.taskHelp", "Creates a trackable action in the execution board.")
+                  : t("quick.projectHelp", "Creates an initiative with owner and planning status.")}
               </div>
             </TabsContent>
           </Tabs>

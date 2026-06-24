@@ -434,7 +434,8 @@ function VoicePage() {
                   Model router
                 </Label>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Future routing across approved AI providers. No runtime calls are enabled yet.
+                  Review-first provider routing policy. External execution stays blocked until an
+                  approved provider is configured.
                 </p>
               </div>
               <Switch

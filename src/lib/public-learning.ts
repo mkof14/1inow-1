@@ -256,7 +256,7 @@ export const publicLearningTopics = [
       ],
       [
         "Access model",
-        "Founder and admin flows should be separated from regular user access, with future roles for admin, manager, member, and viewer.",
+        "Founder and admin flows should stay separated from regular user access, with explicit admin, manager, member, and viewer responsibilities.",
       ],
       [
         "Production direction",

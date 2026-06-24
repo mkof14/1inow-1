@@ -86,7 +86,7 @@ export const resetDemoData = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-/** Insert a minimal but realistic demo dataset. Owner-only. */
+/** Insert a realistic executive workspace dataset. Owner-only. */
 export const seedDemoData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -97,37 +97,40 @@ export const seedDemoData = createServerFn({ method: "POST" })
     // Projects
     const projects = [
       {
-        name: "Atlas Launch",
-        slug: `atlas-${Date.now()}`,
-        description: "Q3 product rollout across regions.",
+        name: "AI Operating Layer",
+        slug: `ai-operating-layer-${Date.now()}`,
+        description:
+          "Executive command layer for portfolio signals, intake, decisions, and daily execution.",
         status: "active" as const,
         priority: "high" as const,
         color: "#06b6d4",
-        progress: 62,
+        progress: 68,
         health: "on_track",
         owner_id: uid,
         created_by: uid,
       },
       {
-        name: "Northstar Research",
-        slug: `northstar-${Date.now()}`,
-        description: "Customer discovery and segmentation.",
+        name: "Portfolio Control Room",
+        slug: `portfolio-control-room-${Date.now()}`,
+        description:
+          "Board-level view across companies, milestones, capital priorities, and risk signals.",
         status: "active" as const,
-        priority: "medium" as const,
+        priority: "critical" as const,
         color: "#8b5cf6",
-        progress: 30,
+        progress: 42,
         health: "at_risk",
         owner_id: uid,
         created_by: uid,
       },
       {
-        name: "Internal Ops",
-        slug: `ops-${Date.now()}`,
-        description: "Process and tooling improvements.",
-        status: "planning" as const,
-        priority: "low" as const,
+        name: "Enterprise Readiness",
+        slug: `enterprise-readiness-${Date.now()}`,
+        description:
+          "Security, admin controls, permissions, evidence trails, and deployment readiness.",
+        status: "in_progress" as const,
+        priority: "high" as const,
         color: "#10b981",
-        progress: 12,
+        progress: 35,
         health: "on_track",
         owner_id: uid,
         created_by: uid,
@@ -142,10 +145,14 @@ export const seedDemoData = createServerFn({ method: "POST" })
     // Tasks
     const tasks = (insertedProjects ?? []).flatMap((p, idx) =>
       [
-        { title: `Kickoff — ${p.name}`, status: "done", priority: "medium" },
-        { title: `Define scope — ${p.name}`, status: "in_progress", priority: "high" },
-        { title: `Weekly review — ${p.name}`, status: "todo", priority: "medium" },
-        { title: `Risks register — ${p.name}`, status: "todo", priority: "low" },
+        { title: `Confirm executive objective — ${p.name}`, status: "done", priority: "medium" },
+        { title: `Map current blockers — ${p.name}`, status: "in_progress", priority: "high" },
+        { title: `Define next operating review — ${p.name}`, status: "todo", priority: "high" },
+        {
+          title: `Attach evidence and owner notes — ${p.name}`,
+          status: "todo",
+          priority: "medium",
+        },
       ].map((t, i) => ({
         project_id: p.id,
         title: t.title,
@@ -176,10 +183,22 @@ export const seedDemoData = createServerFn({ method: "POST" })
     if (cErr) throw new Error(`channels: ${cErr.message}`);
 
     const messages = [
-      { body: "Welcome to 1inow — this is a demo channel.", message_type: "normal" },
-      { body: "Atlas Launch kickoff went well. Scope draft attached.", message_type: "normal" },
-      { body: "Decision: ship beta to 10 design partners next Monday.", message_type: "decision" },
-      { body: "Blocker: legal review pending on data export clause.", message_type: "blocker" },
+      {
+        body: "Executive review: focus the next operating cycle on intake quality, evidence, and owner clarity.",
+        message_type: "normal",
+      },
+      {
+        body: "Decision: keep Advisor as a review-first layer with no blind external actions.",
+        message_type: "decision",
+      },
+      {
+        body: "Blocker: production auth and environment policy need final verification before external release.",
+        message_type: "blocker",
+      },
+      {
+        body: "Next action: prepare a concise CTO/CIO walkthrough across dashboard, projects, devices, and admin.",
+        message_type: "normal",
+      },
     ];
     const { error: mErr } = await supabaseAdmin.from("messages").insert(
       messages.map((m) => ({

@@ -112,7 +112,7 @@ export const featureReviewChecklist = [
 
 /**
  * Assistant behavior contract — shared by the AI sidebar, the Thinking
- * Engine, the System Brain and any future agent. Imported by client
+ * Engine, the System Brain and any approved agent. Imported by client
  * components for display and by the chat server route for the system prompt.
  */
 export const assistantBehavior = {

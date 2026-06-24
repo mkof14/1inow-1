@@ -2,8 +2,8 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   PortfolioCard,
   ExecutionNode,
-  TimelinePulse,
   BrandMark,
+  SignalWave,
 } from "@/components/icons/compass-icons";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
@@ -12,7 +12,7 @@ const items = [
   { to: "/dashboard", label: "Home", icon: BrandMark },
   { to: "/projects", label: "Projects", icon: PortfolioCard },
   { to: "/tasks", label: "Tasks", icon: ExecutionNode },
-  { to: "/calendar", label: "Calendar", icon: TimelinePulse },
+  { to: "/communication", label: "Messages", icon: SignalWave },
 ];
 
 export function MobileBottomNav() {

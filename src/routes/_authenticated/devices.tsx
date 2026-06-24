@@ -73,7 +73,7 @@ const copy = {
     usefulOutput: "What 1inow can prepare",
     useSetup: "Use this setup",
     readyNow: "Ready now",
-    planned: "Planned",
+    planned: "Manual setup",
   },
   ru: {
     title: "Устройства и разговоры",
@@ -118,7 +118,7 @@ const copy = {
     usefulOutput: "Что 1inow подготовит",
     useSetup: "Использовать этот вариант",
     readyNow: "Готово сейчас",
-    planned: "Запланировано",
+    planned: "Ручная настройка",
   },
   uk: {
     title: "Пристрої та розмови",
@@ -162,7 +162,7 @@ const copy = {
     usefulOutput: "Що 1inow підготує",
     useSetup: "Використати цей варіант",
     readyNow: "Готово зараз",
-    planned: "Заплановано",
+    planned: "Ручне налаштування",
   },
   es: {
     title: "Dispositivos y conversaciones",
@@ -200,7 +200,7 @@ const copy = {
     usefulOutput: "Qué prepara 1inow",
     useSetup: "Usar esta opción",
     readyNow: "Listo ahora",
-    planned: "Planificado",
+    planned: "Configuración manual",
   },
   de: {
     title: "Geräte & Gespräche",
@@ -244,7 +244,7 @@ const copy = {
     usefulOutput: "Was 1inow vorbereitet",
     useSetup: "Diese Option nutzen",
     readyNow: "Jetzt bereit",
-    planned: "Geplant",
+    planned: "Manuelle Einrichtung",
   },
 };
 

@@ -108,28 +108,6 @@ function AdminDashboard() {
         <p className="text-sm text-muted-foreground mt-1">{t("page.adminHome.subtitle")}</p>
       </div>
 
-      <Card className="p-5">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <h2 className="font-semibold">Developer Tools</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Reset workspace data and reload a sample dataset in one click. Owner-only.
-            </p>
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            <Button variant="outline" size="sm" disabled={busy !== null} onClick={runReset}>
-              <RotateCcw className="size-4" /> {busy === "reset" ? "Resetting…" : "Reset"}
-            </Button>
-            <Button variant="outline" size="sm" disabled={busy !== null} onClick={runSeed}>
-              <Database className="size-4" /> {busy === "seed" ? "Seeding…" : "Seed Sample"}
-            </Button>
-            <Button size="sm" disabled={busy !== null} onClick={runFresh}>
-              {busy === "both" ? "Working…" : "Reset & Reload"}
-            </Button>
-          </div>
-        </div>
-      </Card>
-
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         <StatCard icon={Users} label={t("page.users.title")} value={s?.totalUsers ?? "—"} />
         <StatCard
@@ -191,6 +169,33 @@ function AdminDashboard() {
           </div>
         )}
       </Card>
+
+      <details className="group rounded-2xl border border-border bg-card p-5">
+        <summary className="cursor-pointer list-none">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="font-semibold">Owner maintenance</h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Local-only workspace reset and executive sample data controls.
+              </p>
+            </div>
+            <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
+              Restricted
+            </span>
+          </div>
+        </summary>
+        <div className="mt-4 flex flex-wrap gap-2 border-t border-border pt-4">
+          <Button variant="outline" size="sm" disabled={busy !== null} onClick={runReset}>
+            <RotateCcw className="size-4" /> {busy === "reset" ? "Clearing…" : "Clear sample data"}
+          </Button>
+          <Button variant="outline" size="sm" disabled={busy !== null} onClick={runSeed}>
+            <Database className="size-4" /> {busy === "seed" ? "Loading…" : "Load executive sample"}
+          </Button>
+          <Button size="sm" disabled={busy !== null} onClick={runFresh}>
+            {busy === "both" ? "Working…" : "Refresh sample workspace"}
+          </Button>
+        </div>
+      </details>
     </div>
   );
 }

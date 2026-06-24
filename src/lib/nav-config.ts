@@ -10,7 +10,6 @@ import {
   IntelligenceBars,
   ShieldLine,
   GearMark,
-  AdvisorRing,
 } from "@/components/icons/compass-icons";
 import type { ComponentType, SVGProps } from "react";
 
@@ -23,18 +22,17 @@ export const primaryNav: NavItem[] = [
   { to: "/dashboard", label: "Home", icon: BrandMark },
   { to: "/projects", label: "Projects", icon: PortfolioCard },
   { to: "/tasks", label: "Tasks", icon: ExecutionNode },
-  { to: "/people", label: "People", icon: PeopleOrbit },
   { to: "/communication", label: "Messages", icon: SignalWave },
+  { to: "/devices", label: "Devices", icon: SignalWave },
 ];
 
 /** Secondary destinations remain available without competing with daily work. */
 export const moreNav: NavItem[] = [
   { to: "/intelligence", label: "Intelligence", icon: IntelligenceBars },
-  { to: "/ai", label: "Advisor", icon: AdvisorRing },
-  { to: "/portfolio", label: "Portfolio", icon: PortfolioCard },
-  { to: "/calendar", label: "Calendar", icon: TimelinePulse },
   { to: "/reports", label: "Reports", icon: IntelligenceBars },
+  { to: "/calendar", label: "Calendar", icon: TimelinePulse },
   { to: "/approvals", label: "Decisions", icon: DecisionDiamond },
+  { to: "/people", label: "People", icon: PeopleOrbit },
   { to: "/documents", label: "Knowledge", icon: KnowledgeLens },
   { to: "/principles", label: "Principles", icon: ShieldLine },
   { to: "/settings", label: "Settings", icon: GearMark },
@@ -49,13 +47,12 @@ export const navSections: NavSection[] = [
     items: primaryNav,
   },
   {
-    id: "intelligence",
-    label: "Intelligence",
+    id: "review",
+    label: "Review",
     items: [
       { to: "/intelligence", label: "Intelligence", icon: IntelligenceBars },
-      { to: "/ai", label: "Advisor", icon: AdvisorRing },
-      { to: "/portfolio", label: "Portfolio", icon: PortfolioCard },
       { to: "/reports", label: "Reports", icon: IntelligenceBars },
+      { to: "/approvals", label: "Decisions", icon: DecisionDiamond },
     ],
   },
   {
@@ -63,11 +60,8 @@ export const navSections: NavSection[] = [
     label: "Operations",
     items: [
       { to: "/calendar", label: "Calendar", icon: TimelinePulse },
-      { to: "/approvals", label: "Decisions", icon: DecisionDiamond },
-      { to: "/devices", label: "Devices", icon: SignalWave },
+      { to: "/people", label: "People", icon: PeopleOrbit },
       { to: "/documents", label: "Knowledge", icon: KnowledgeLens },
-      { to: "/teams", label: "Teams", icon: PeopleOrbit },
-      { to: "/principles", label: "Principles", icon: ShieldLine },
       { to: "/settings", label: "Settings", icon: GearMark },
     ],
   },
@@ -80,9 +74,8 @@ export const footerSections: NavSection[] = [
     label: "Insights",
     items: [
       { to: "/intelligence", label: "Intelligence", icon: IntelligenceBars },
-      { to: "/portfolio", label: "Portfolio", icon: PortfolioCard },
       { to: "/reports", label: "Reports", icon: IntelligenceBars },
-      { to: "/ai", label: "Advisor", icon: AdvisorRing },
+      { to: "/portfolio", label: "Portfolio", icon: PortfolioCard },
     ],
   },
   {
