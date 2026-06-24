@@ -351,12 +351,12 @@ export function PublicFooter() {
               <Send className="size-3.5" />
             </button>
           </form>
-          <Link
-            to="/auth"
+          <a
+            href="/auth"
             className="mt-3 inline-flex h-9 w-full items-center justify-center rounded-xl border border-slate-900/10 bg-white/70 text-sm font-semibold text-slate-800 transition-colors hover:bg-white dark:border-white/10 dark:bg-white/[0.06] dark:text-white dark:hover:bg-white/[0.1]"
           >
             {copy.signIn}
-          </Link>
+          </a>
         </div>
       </div>
 
@@ -435,13 +435,9 @@ function FooterColumn({ title, links }: { title: string; links: Array<string[]> 
               {label}
             </Link>
           ) : slug === "auth" ? (
-            <Link
-              key={slug}
-              to="/dashboard"
-              className="block hover:text-slate-950 dark:hover:text-white"
-            >
+            <a key={slug} href="/auth" className="block hover:text-slate-950 dark:hover:text-white">
               {label}
-            </Link>
+            </a>
           ) : slug === "nova-vera" ? (
             <a
               key={slug}

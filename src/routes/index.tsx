@@ -448,12 +448,12 @@ function LandingPage() {
             >
               {c.navPrinciples}
             </Link>
-            <Link
-              to="/auth"
+            <a
+              href="/auth"
               className="rounded-xl bg-slate-950 px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-slate-950/10 transition-transform hover:-translate-y-0.5 dark:bg-white dark:text-slate-950 sm:px-4"
             >
               {c.signIn}
-            </Link>
+            </a>
           </nav>
         </header>
 
@@ -471,13 +471,13 @@ function LandingPage() {
             </p>
 
             <div className="mt-9 flex flex-wrap gap-3">
-              <Link
-                to="/dashboard"
+              <a
+                href="/auth"
                 className="inline-flex h-12 items-center gap-2 rounded-2xl bg-slate-950 px-5 text-sm font-semibold text-white shadow-xl shadow-slate-950/15 transition-transform hover:-translate-y-0.5 dark:bg-white dark:text-slate-950"
               >
                 {c.openWorkspace}
                 <ArrowRight className="size-4" />
-              </Link>
+              </a>
               <Link
                 to="/principles/strategic-vs-tactical"
                 className="inline-flex h-12 items-center rounded-2xl border border-slate-900/10 bg-white/60 px-5 text-sm font-semibold text-slate-800 backdrop-blur transition-colors hover:bg-white dark:border-white/10 dark:bg-white/8 dark:text-white dark:hover:bg-white/12"
@@ -561,13 +561,13 @@ function LandingPage() {
               {c.ctaText}
             </p>
           </div>
-          <Link
-            to="/dashboard"
+          <a
+            href="/auth"
             className="inline-flex h-12 w-fit items-center gap-2 rounded-2xl bg-slate-950 px-5 text-sm font-semibold text-white shadow-xl shadow-slate-950/15 transition-transform hover:-translate-y-0.5 dark:bg-white dark:text-slate-950"
           >
             {c.continue}
             <ArrowRight className="size-4" />
-          </Link>
+          </a>
         </div>
       </section>
 

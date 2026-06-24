@@ -176,13 +176,13 @@ function DeviceConnectionsPage() {
               <LanguageSwitcher compact />
             </div>
             <ThemeToggle className="rounded-xl bg-white/55 shadow-sm ring-1 ring-slate-900/5 backdrop-blur dark:bg-white/8 dark:ring-white/10" />
-            <Link
-              to="/auth"
+            <a
+              href="/auth"
               className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-slate-950/10 transition-transform hover:-translate-y-0.5 dark:bg-white dark:text-slate-950 sm:px-4"
             >
               {c.signIn}
               <ArrowRight className="hidden size-3.5 sm:block" />
-            </Link>
+            </a>
           </nav>
         </header>
 
@@ -205,13 +205,13 @@ function DeviceConnectionsPage() {
             <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600 dark:text-white/70 md:text-xl">
               {c.subtitle}
             </p>
-            <Link
-              to="/dashboard"
+            <a
+              href="/auth"
               className="mt-8 inline-flex h-12 items-center gap-2 rounded-2xl bg-slate-950 px-5 text-sm font-semibold text-white shadow-xl shadow-slate-950/15 transition-transform hover:-translate-y-0.5 dark:bg-white dark:text-slate-950"
             >
               {c.cta}
               <ArrowRight className="size-4" />
-            </Link>
+            </a>
           </div>
 
           <div className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white/78 p-5 shadow-2xl shadow-slate-950/10 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06]">
