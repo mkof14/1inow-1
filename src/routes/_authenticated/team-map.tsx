@@ -31,9 +31,21 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 const FLAGS: Record<string, string> = {
-  UA: "🇺🇦", US: "🇺🇸", GB: "🇬🇧", DE: "🇩🇪", FR: "🇫🇷",
-  ES: "🇪🇸", PL: "🇵🇱", RO: "🇷🇴", IT: "🇮🇹", PT: "🇵🇹",
-  RU: "🇷🇺", NL: "🇳🇱", CA: "🇨🇦", AU: "🇦🇺", IN: "🇮🇳",
+  UA: "🇺🇦",
+  US: "🇺🇸",
+  GB: "🇬🇧",
+  DE: "🇩🇪",
+  FR: "🇫🇷",
+  ES: "🇪🇸",
+  PL: "🇵🇱",
+  RO: "🇷🇴",
+  IT: "🇮🇹",
+  PT: "🇵🇹",
+  RU: "🇷🇺",
+  NL: "🇳🇱",
+  CA: "🇨🇦",
+  AU: "🇦🇺",
+  IN: "🇮🇳",
 };
 
 function flagFor(country: string | null) {
@@ -49,7 +61,9 @@ function TeamMapPage() {
     queryFn: async (): Promise<Member[]> => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, full_name, email, avatar_url, country, city, timezone, preferred_language, online_status, office_status")
+        .select(
+          "id, full_name, email, avatar_url, country, city, timezone, preferred_language, online_status, office_status",
+        )
         .order("full_name");
       if (error) throw error;
       return (data ?? []) as Member[];
@@ -80,20 +94,40 @@ function TeamMapPage() {
             const tz = m.timezone || "UTC";
             let localTime = "—";
             try {
-              localTime = new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit", timeZone: tz }).format(new Date());
-            } catch { /* invalid tz */ }
-            const initials = (m.full_name || m.email || "?").split(/\s|@/)[0].slice(0, 2).toUpperCase();
+              localTime = new Intl.DateTimeFormat(undefined, {
+                hour: "2-digit",
+                minute: "2-digit",
+                timeZone: tz,
+              }).format(new Date());
+            } catch {
+              /* invalid tz */
+            }
+            const initials = (m.full_name || m.email || "?")
+              .split(/\s|@/)[0]
+              .slice(0, 2)
+              .toUpperCase();
             const status = m.online_status || "offline";
             return (
-              <div key={m.id} className="rounded-lg border border-border bg-card p-4 hover:shadow-sm transition-shadow">
+              <div
+                key={m.id}
+                className="rounded-lg border border-border bg-card p-4 hover:shadow-sm transition-shadow"
+              >
                 <div className="flex items-start gap-3">
                   <div className="relative">
                     {m.avatar_url ? (
-                      <img src={m.avatar_url} alt="" className="size-10 rounded-full object-cover" />
+                      <img
+                        src={m.avatar_url}
+                        alt=""
+                        className="size-10 rounded-full object-cover"
+                      />
                     ) : (
-                      <div className="size-10 rounded-full bg-primary text-primary-foreground grid place-items-center text-xs font-semibold">{initials}</div>
+                      <div className="size-10 rounded-full bg-primary text-primary-foreground grid place-items-center text-xs font-semibold">
+                        {initials}
+                      </div>
                     )}
-                    <span className={`absolute -bottom-0.5 -right-0.5 size-3 rounded-full ring-2 ring-card ${STATUS_COLOR[status] ?? STATUS_COLOR.offline}`} />
+                    <span
+                      className={`absolute -bottom-0.5 -right-0.5 size-3 rounded-full ring-2 ring-card ${STATUS_COLOR[status] ?? STATUS_COLOR.offline}`}
+                    />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium truncate">{m.full_name || m.email}</div>
@@ -104,7 +138,10 @@ function TeamMapPage() {
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                   <div>
                     <div className="text-muted-foreground">{t("common.country")}</div>
-                    <div className="font-medium">{m.country || "—"}{m.city ? `, ${m.city}` : ""}</div>
+                    <div className="font-medium">
+                      {m.country || "—"}
+                      {m.city ? `, ${m.city}` : ""}
+                    </div>
                   </div>
                   <div>
                     <div className="text-muted-foreground">{t("common.timezone")}</div>
@@ -121,10 +158,14 @@ function TeamMapPage() {
                 </div>
                 <div className="mt-3 flex items-center justify-between text-[11px]">
                   <span className="inline-flex items-center gap-1.5">
-                    <span className={`size-1.5 rounded-full ${STATUS_COLOR[status] ?? STATUS_COLOR.offline}`} />
+                    <span
+                      className={`size-1.5 rounded-full ${STATUS_COLOR[status] ?? STATUS_COLOR.offline}`}
+                    />
                     {t(`status.${status}`, status)}
                   </span>
-                  <span className="text-muted-foreground">{t(`office.${m.office_status || "offline"}`, m.office_status || "")}</span>
+                  <span className="text-muted-foreground">
+                    {t(`office.${m.office_status || "offline"}`, m.office_status || "")}
+                  </span>
                 </div>
               </div>
             );

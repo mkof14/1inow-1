@@ -5,7 +5,7 @@ type Props = React.SVGProps<SVGSVGElement> & { className?: string; size?: number
 /**
  * BrainPulse — custom icon for the System Brain.
  * Concentric "scanning" rings around a center dot (the system
- * continuously observing itself). No generic AI sparkle.
+ * continuously observing itself).
  */
 export function BrainPulse({ className, size = 16, ...props }: Props) {
   return (

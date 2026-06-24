@@ -128,7 +128,7 @@ export function IntelligenceBars(p: IconProps) {
   );
 }
 
-/* Advisor — compass ring + center node (no sparkle) */
+/* Advisor — compass ring + center node */
 export function AdvisorRing(p: IconProps) {
   return (
     <svg {...base(p)}>
@@ -215,10 +215,7 @@ export function BrandLogo({ size = 28, className, ...rest }: IconProps) {
     >
       <rect x="1" y="1" width="30" height="30" rx="7" fill="var(--primary)" />
       {/* Stylised "1" in cream */}
-      <path
-        d="M11 10 L17 6.5 L17 25 L20 25 L13 25 Z"
-        fill="var(--primary-foreground)"
-      />
+      <path d="M11 10 L17 6.5 L17 25 L20 25 L13 25 Z" fill="var(--primary-foreground)" />
       {/* Sage green dot — the "now" */}
       <circle cx="20" cy="8" r="2.6" fill="var(--accent)" />
     </svg>
@@ -226,13 +223,7 @@ export function BrandLogo({ size = 28, className, ...rest }: IconProps) {
 }
 
 /* 1inow wordmark — full "1inow" lockup as SVG-free HTML usage helper. */
-export function BrandWordmark({
-  className,
-  size = 18,
-}: {
-  className?: string;
-  size?: number;
-}) {
+export function BrandWordmark({ className, size = 18 }: { className?: string; size?: number }) {
   return (
     <span
       className={cn("inline-flex items-baseline font-semibold tracking-tight", className)}

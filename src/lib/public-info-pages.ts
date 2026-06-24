@@ -30,7 +30,7 @@ const publicInfoPages: Record<PublicInfoKind, Record<PublicInfoLang, PublicInfoP
       subtitle:
         "A simple daily loop: capture signals, understand context, organize work, execute next actions, and review what changed.",
       notice:
-        "The product is designed to feel useful before AI is connected. Intelligence starts with structure, visibility, and clear decisions.",
+        "The product is designed to stay useful through structure, visibility, and clear decisions. Intelligence supports the workflow instead of replacing judgment.",
       stages: [
         {
           marker: "01",
@@ -69,16 +69,16 @@ const publicInfoPages: Record<PublicInfoKind, Record<PublicInfoLang, PublicInfoP
           text: "The interface should guide what to do next instead of becoming another static task list.",
         },
         {
-          title: "Voice-ready",
-          text: "Voice workflows are prepared, while speech services remain disconnected until approval.",
+          title: "Voice discipline",
+          text: "Voice workflows keep raw thoughts attached to context before they become tasks, decisions, or notes.",
         },
         {
           title: "Conversation-ready",
           text: "Uploads from meetings, calls, and recorders can become summaries, decisions, risks, and tasks after approved processing.",
         },
         {
-          title: "AI-ready, not AI-dependent",
-          text: "Future intelligence can summarize and suggest, but the current base stays usable without external AI.",
+          title: "Intelligence without dependency",
+          text: "Summaries and suggestions are useful only when the underlying project, task, and decision structure is clear.",
         },
       ],
       cta: {
@@ -92,7 +92,7 @@ const publicInfoPages: Record<PublicInfoKind, Record<PublicInfoLang, PublicInfoP
       subtitle:
         "Простой ежедневный цикл: зафиксировать сигналы, понять контекст, организовать работу, выполнить следующие действия и проверить изменения.",
       notice:
-        "Продукт должен быть полезным до подключения AI. Интеллект начинается со структуры, видимости и ясных решений.",
+        "Продукт должен оставаться полезным благодаря структуре, видимости и ясным решениям. Интеллект поддерживает процесс, а не заменяет суждение.",
       stages: [
         {
           marker: "01",
@@ -131,8 +131,8 @@ const publicInfoPages: Record<PublicInfoKind, Record<PublicInfoLang, PublicInfoP
           text: "Интерфейс должен вести к действию, а не становиться очередным статичным списком задач.",
         },
         {
-          title: "Готово к голосу",
-          text: "Голосовые сценарии подготовлены, но speech-сервисы не подключены до отдельного approval.",
+          title: "Голосовая дисциплина",
+          text: "Голосовые сценарии сохраняют сырые мысли вместе с контекстом до превращения в задачи, решения или заметки.",
         },
         {
           title: "Готово к разговорам",
@@ -193,16 +193,16 @@ const publicInfoPages: Record<PublicInfoKind, Record<PublicInfoLang, PublicInfoP
           text: "Інтерфейс має вести до дії, а не ставати черговим статичним списком задач.",
         },
         {
-          title: "Готово до голосу",
-          text: "Голосові сценарії підготовлені, але speech-сервіси не підключені до approval.",
+          title: "Голосова дисципліна",
+          text: "Голосові сценарії зберігають сирі думки разом із контекстом до перетворення на задачі, рішення або нотатки.",
         },
         {
           title: "Готово до розмов",
           text: "Uploads зустрічей, дзвінків і диктофонів зможуть ставати summary, рішеннями, ризиками і задачами після затвердженої обробки.",
         },
         {
-          title: "Готово до AI, але не залежить від AI",
-          text: "Майбутній інтелект зможе підсумовувати і радити, але база корисна без зовнішнього AI.",
+          title: "Інтелект без залежності",
+          text: "Підсумки і поради корисні лише тоді, коли структура проєктів, задач і рішень вже зрозуміла.",
         },
       ],
       cta: {
@@ -216,7 +216,7 @@ const publicInfoPages: Record<PublicInfoKind, Record<PublicInfoLang, PublicInfoP
       subtitle:
         "Un ciclo diario simple: capturar señales, entender contexto, organizar trabajo, ejecutar acciones y revisar cambios.",
       notice:
-        "El producto debe ser útil antes de conectar AI. La inteligencia empieza con estructura, visibilidad y decisiones claras.",
+        "El producto se mantiene útil mediante estructura, visibilidad y decisiones claras. La inteligencia apoya el flujo sin reemplazar el criterio.",
       stages: [
         {
           marker: "01",
@@ -255,16 +255,16 @@ const publicInfoPages: Record<PublicInfoKind, Record<PublicInfoLang, PublicInfoP
           text: "La interfaz debe guiar la acción, no convertirse en otra lista estática de tareas.",
         },
         {
-          title: "Preparado para voz",
-          text: "Los flujos de voz están preparados, pero los servicios speech siguen desconectados hasta aprobación.",
+          title: "Disciplina de voz",
+          text: "Los flujos de voz mantienen ideas sin procesar junto al contexto antes de convertirlas en tareas, decisiones o notas.",
         },
         {
           title: "Preparado para conversaciones",
           text: "Uploads de reuniones, llamadas y grabadoras podrán convertirse en resúmenes, decisiones, riesgos y tareas tras aprobación.",
         },
         {
-          title: "Preparado para AI, no dependiente",
-          text: "La inteligencia futura podrá resumir y sugerir, pero la base actual funciona sin AI externa.",
+          title: "Inteligencia sin dependencia",
+          text: "Los resúmenes y sugerencias son útiles solo cuando la estructura de proyectos, tareas y decisiones es clara.",
         },
       ],
       cta: {
@@ -278,7 +278,7 @@ const publicInfoPages: Record<PublicInfoKind, Record<PublicInfoLang, PublicInfoP
       subtitle:
         "Ein einfacher Tageszyklus: Signale erfassen, Kontext verstehen, Arbeit organisieren, nächste Aktionen ausführen und Änderungen prüfen.",
       notice:
-        "Das Produkt soll vor AI-Anbindung nützlich sein. Intelligenz beginnt mit Struktur, Sichtbarkeit und klaren Entscheidungen.",
+        "Das Produkt bleibt durch Struktur, Sichtbarkeit und klare Entscheidungen nützlich. Intelligenz unterstützt den Ablauf, ersetzt aber kein Urteil.",
       stages: [
         {
           marker: "01",
@@ -317,16 +317,16 @@ const publicInfoPages: Record<PublicInfoKind, Record<PublicInfoLang, PublicInfoP
           text: "Die Oberfläche soll zur Aktion führen, nicht eine weitere statische Aufgabenliste sein.",
         },
         {
-          title: "Voice-ready",
-          text: "Voice-Flows sind vorbereitet, Speech-Services bleiben bis zur Freigabe getrennt.",
+          title: "Voice-Disziplin",
+          text: "Voice-Flows halten rohe Gedanken mit Kontext fest, bevor sie zu Aufgaben, Entscheidungen oder Notizen werden.",
         },
         {
           title: "Conversation-ready",
           text: "Uploads aus Meetings, Calls und Recordern können nach Freigabe zu Zusammenfassungen, Entscheidungen, Risiken und Aufgaben werden.",
         },
         {
-          title: "AI-ready, nicht AI-abhängig",
-          text: "Künftige Intelligenz kann zusammenfassen und vorschlagen, aber die Basis funktioniert ohne externe AI.",
+          title: "Intelligenz ohne Abhängigkeit",
+          text: "Zusammenfassungen und Vorschläge sind nur nützlich, wenn Projekt-, Aufgaben- und Entscheidungsstruktur klar sind.",
         },
       ],
       cta: {

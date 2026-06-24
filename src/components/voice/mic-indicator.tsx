@@ -62,7 +62,9 @@ export function MicIndicator({
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
       });
       streamRef.current = stream;
-      const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AC =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       const ctx = new AC();
       ctxRef.current = ctx;
       const source = ctx.createMediaStreamSource(stream);
@@ -115,7 +117,6 @@ export function MicIndicator({
       document.removeEventListener("visibilitychange", onVisibility);
       stop();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const speaking = peak > threshold;
@@ -137,7 +138,11 @@ export function MicIndicator({
       <div
         className={cn(
           "flex h-9 items-end gap-[2px] rounded-md border bg-muted/30 px-2 py-1 transition-colors",
-          active ? (speaking ? "border-accent" : "border-border") : "border-dashed border-muted-foreground/30",
+          active
+            ? speaking
+              ? "border-accent"
+              : "border-border"
+            : "border-dashed border-muted-foreground/30",
         )}
         aria-label="Microphone level"
         role="meter"
@@ -152,11 +157,7 @@ export function MicIndicator({
               key={i}
               className={cn(
                 "w-[3px] rounded-sm transition-[height,background-color] duration-75",
-                active
-                  ? speaking
-                    ? "bg-accent"
-                    : "bg-foreground/60"
-                  : "bg-muted-foreground/30",
+                active ? (speaking ? "bg-accent" : "bg-foreground/60") : "bg-muted-foreground/30",
               )}
               style={{ height: `${h}px` }}
             />

@@ -10,8 +10,14 @@ import { useAuth } from "@/hooks/use-auth";
 import { useT } from "@/lib/i18n";
 
 export function ThreadPanel({
-  channel, threadRootId, onClose,
-}: { channel: Channel; threadRootId: string; onClose: () => void }) {
+  channel,
+  threadRootId,
+  onClose,
+}: {
+  channel: Channel;
+  threadRootId: string;
+  onClose: () => void;
+}) {
   const t = useT();
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -28,7 +34,10 @@ export function ThreadPanel({
       let profile = null;
       if (data.author_id) {
         const { data: p } = await supabase
-          .from("profiles").select("id,full_name,avatar_url").eq("id", data.author_id).maybeSingle();
+          .from("profiles")
+          .select("id,full_name,avatar_url")
+          .eq("id", data.author_id)
+          .maybeSingle();
         profile = p ?? null;
       }
       return { ...data, profiles: profile };
@@ -48,10 +57,20 @@ export function ThreadPanel({
   useEffect(() => {
     const ch = supabase
       .channel(`thread-${threadRootId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "messages", filter: `thread_root_id=eq.${threadRootId}` },
-          () => qc.invalidateQueries({ queryKey: ["messages", channel.id, threadRootId] }))
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "messages",
+          filter: `thread_root_id=eq.${threadRootId}`,
+        },
+        () => qc.invalidateQueries({ queryKey: ["messages", channel.id, threadRootId] }),
+      )
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [threadRootId, channel.id, qc]);
 
   return (
@@ -61,7 +80,9 @@ export function ThreadPanel({
           <div className="text-sm font-semibold">{t("comm.thread.title")}</div>
           <div className="text-xs text-muted-foreground">#{channel.name}</div>
         </div>
-        <Button variant="ghost" size="icon" onClick={onClose}><X className="size-4" /></Button>
+        <Button variant="ghost" size="icon" onClick={onClose}>
+          <X className="size-4" />
+        </Button>
       </div>
       <div className="flex-1 overflow-y-auto py-3">
         {root.data && (
@@ -86,7 +107,11 @@ export function ThreadPanel({
         ))}
       </div>
       <div className="p-3 border-t border-border">
-        <MessageComposer channelId={channel.id} threadRootId={threadRootId} placeholder={t("comm.thread.placeholder")} />
+        <MessageComposer
+          channelId={channel.id}
+          threadRootId={threadRootId}
+          placeholder={t("comm.thread.placeholder")}
+        />
       </div>
     </aside>
   );

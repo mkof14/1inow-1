@@ -22,11 +22,11 @@ const CONTENT: Record<string, Pack> = {
     items: [
       {
         q: "What is 1inow?",
-        a: "An AI-grounded workspace for investment teams: projects, decisions, communications and a memory layer 1inow can reason over.",
+        a: "A command workspace for projects, decisions, communications, voice capture, and a memory layer the advisor can reason over.",
       },
       {
         q: "Can I upload conversations or recorder files?",
-        a: "Yes. Use Devices to select meeting recordings, phone calls, transcripts, and recorder files. In this phase files stay local and AI/STT processing is intentionally disabled.",
+        a: "Yes. Use Devices to select meeting recordings, phone calls, transcripts, and recorder files, then review extracted context before sending it into the workspace.",
       },
       {
         q: "How do I switch language?",

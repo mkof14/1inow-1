@@ -1,7 +1,15 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
-export type EntityType = "project" | "task" | "document" | "channel" | "report" | "note" | "file" | "meeting";
+export type EntityType =
+  | "project"
+  | "task"
+  | "document"
+  | "channel"
+  | "report"
+  | "note"
+  | "file"
+  | "meeting";
 
 // ============ FAVORITES ============
 export async function fetchFavorites() {
@@ -64,7 +72,10 @@ export async function fetchNotifications() {
   return data ?? [];
 }
 
-export async function markNotification(id: string, fields: { read_at?: string | null; resolved_at?: string | null }) {
+export async function markNotification(
+  id: string,
+  fields: { read_at?: string | null; resolved_at?: string | null },
+) {
   const { error } = await supabase.from("notifications").update(fields).eq("id", id);
   if (error) throw error;
 }

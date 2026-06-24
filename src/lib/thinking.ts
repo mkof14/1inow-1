@@ -11,21 +11,53 @@
  */
 
 export type Intent =
-  | "ask" | "summarize" | "create" | "update" | "delete"
-  | "schedule" | "delegate" | "search" | "plan" | "unknown";
+  | "ask"
+  | "summarize"
+  | "create"
+  | "update"
+  | "delete"
+  | "schedule"
+  | "delegate"
+  | "search"
+  | "plan"
+  | "unknown";
 
 export type AgentRole =
-  | "planner" | "reviewer" | "researcher" | "controller"
-  | "writer"  | "translator" | "organizer" | "coordinator";
+  | "planner"
+  | "reviewer"
+  | "researcher"
+  | "controller"
+  | "writer"
+  | "translator"
+  | "organizer"
+  | "coordinator";
 
 export type Confidence = "high" | "medium" | "low";
 
 export type ThinkingInput = {
   prompt: string;
-  pageContext?: { route?: string; scope?: string; title?: string; ids?: Record<string, string | undefined> };
+  pageContext?: {
+    route?: string;
+    scope?: string;
+    title?: string;
+    ids?: Record<string, string | undefined>;
+  };
   data: {
-    projects?: Array<{ id: string; name: string; status?: string; slug?: string; owner_id?: string | null }>;
-    tasks?: Array<{ id: string; title: string; status?: string; due_date?: string | null; assignee_id?: string | null; project_id?: string | null }>;
+    projects?: Array<{
+      id: string;
+      name: string;
+      status?: string;
+      slug?: string;
+      owner_id?: string | null;
+    }>;
+    tasks?: Array<{
+      id: string;
+      title: string;
+      status?: string;
+      due_date?: string | null;
+      assignee_id?: string | null;
+      project_id?: string | null;
+    }>;
     people?: Array<{ id: string; full_name?: string | null; email?: string | null }>;
     decisions?: Array<{ id: string; title: string; status?: string }>;
     memories?: Array<{ key: string; value: string; type?: string; confidence?: number }>;
@@ -35,38 +67,41 @@ export type ThinkingInput = {
 
 export type ThinkingResult = {
   understanding: { intent: Intent; subject: string; verbs: string[]; mentions: string[] };
-  context:       { page: string; signals: string[] };
-  memory:        Array<{ key: string; value: string }>;
-  related:       Array<{ kind: string; label: string; id?: string }>;
-  rules:         string[];
-  missing:       string[];
-  confidence:    { level: Confidence; score: number; reasons: string[] };
-  agents:        AgentRole[];
-  plan:          string[];
-  allowExecute:  boolean;
-  selfCheck:     { conflicts: string[]; notes: string[] };
-  log:           { reason: string; sources: string[]; createdAt: string };
+  context: { page: string; signals: string[] };
+  memory: Array<{ key: string; value: string }>;
+  related: Array<{ kind: string; label: string; id?: string }>;
+  rules: string[];
+  missing: string[];
+  confidence: { level: Confidence; score: number; reasons: string[] };
+  agents: AgentRole[];
+  plan: string[];
+  allowExecute: boolean;
+  selfCheck: { conflicts: string[]; notes: string[] };
+  log: { reason: string; sources: string[]; createdAt: string };
 };
 
 /* ───── 1. Understand ───── */
 const ACTION_VERBS: Record<Intent, RegExp> = {
-  create:    /\b(create|add|new|draft|make|start)\b/i,
-  update:    /\b(update|edit|change|rename|move|reassign|fix)\b/i,
-  delete:    /\b(delete|remove|archive|cancel)\b/i,
-  schedule:  /\b(schedule|book|meet|invite|calendar)\b/i,
-  delegate:  /\b(delegate|assign|hand off|send to)\b/i,
+  create: /\b(create|add|new|draft|make|start)\b/i,
+  update: /\b(update|edit|change|rename|move|reassign|fix)\b/i,
+  delete: /\b(delete|remove|archive|cancel)\b/i,
+  schedule: /\b(schedule|book|meet|invite|calendar)\b/i,
+  delegate: /\b(delegate|assign|hand off|send to)\b/i,
   summarize: /\b(summari[sz]e|recap|tl;dr|overview|status)\b/i,
-  search:    /\b(find|search|where is|look up|show me)\b/i,
-  plan:      /\b(plan|prepare|organi[sz]e|roadmap|agenda)\b/i,
-  ask:       /\?$|^(what|why|how|when|who|which)\b/i,
-  unknown:   /.^/,
+  search: /\b(find|search|where is|look up|show me)\b/i,
+  plan: /\b(plan|prepare|organi[sz]e|roadmap|agenda)\b/i,
+  ask: /\?$|^(what|why|how|when|who|which)\b/i,
+  unknown: /.^/,
 };
 
 function understand(prompt: string) {
   const verbs: string[] = [];
   let intent: Intent = "unknown";
   for (const [k, re] of Object.entries(ACTION_VERBS) as [Intent, RegExp][]) {
-    if (re.test(prompt)) { verbs.push(k); if (intent === "unknown") intent = k; }
+    if (re.test(prompt)) {
+      verbs.push(k);
+      if (intent === "unknown") intent = k;
+    }
   }
   if (intent === "unknown" && prompt.trim()) intent = "ask";
   const mentions = Array.from(prompt.matchAll(/@([\w.-]+)/g)).map((m) => m[1]);
@@ -80,7 +115,8 @@ function collectContext(input: ThinkingInput) {
   const signals: string[] = [];
   if (p.scope) signals.push(`scope:${p.scope}`);
   if (p.title) signals.push(`title:${p.title}`);
-  if (p.ids) for (const [k, v] of Object.entries(p.ids)) if (v) signals.push(`${k}:${v.slice(0, 8)}`);
+  if (p.ids)
+    for (const [k, v] of Object.entries(p.ids)) if (v) signals.push(`${k}:${v.slice(0, 8)}`);
   return { page: p.route ?? "(none)", signals };
 }
 
@@ -116,7 +152,8 @@ function findRelated(input: ThinkingInput) {
     if (n && text.includes(n)) push("person", person.full_name!, person.id);
   }
   for (const d of input.data.decisions ?? []) {
-    if (d.title && text.includes(d.title.toLowerCase().slice(0, 24))) push("decision", d.title, d.id);
+    if (d.title && text.includes(d.title.toLowerCase().slice(0, 24)))
+      push("decision", d.title, d.id);
   }
   // Fall back to the current page entity
   const ids = input.pageContext?.ids ?? {};
@@ -142,7 +179,11 @@ function findMissing(intent: Intent, input: ThinkingInput, related: ThinkingResu
   const need = (label: string) => missing.push(label);
   if (intent === "create" && !related.some((r) => r.kind === "project")) need("Target project");
   if (intent === "delegate" && !related.some((r) => r.kind === "person")) need("Assignee");
-  if (intent === "schedule" && !/\b\d{1,2}[:/]\d{2}|\btomorrow|\btoday|\bnext\b/i.test(input.prompt)) need("Date / time");
+  if (
+    intent === "schedule" &&
+    !/\b\d{1,2}[:/]\d{2}|\btomorrow|\btoday|\bnext\b/i.test(input.prompt)
+  )
+    need("Date / time");
   if (intent === "update" && related.length === 0) need("Which item to update");
   if (intent === "delete" && related.length === 0) need("Which item to remove");
   return missing;
@@ -150,17 +191,29 @@ function findMissing(intent: Intent, input: ThinkingInput, related: ThinkingResu
 
 /* ───── 7. Confidence ───── */
 function estimateConfidence(
-  intent: Intent, related: ThinkingResult["related"],
-  memory: ThinkingResult["memory"], missing: string[],
+  intent: Intent,
+  related: ThinkingResult["related"],
+  memory: ThinkingResult["memory"],
+  missing: string[],
 ): ThinkingResult["confidence"] {
   let score = 60;
   const reasons: string[] = [];
-  if (intent === "unknown") { score -= 25; reasons.push("intent unclear"); }
-  else                       reasons.push(`intent: ${intent}`);
-  if (related.length)        { score += Math.min(20, related.length * 5); reasons.push(`${related.length} related object(s)`); }
-  else                       reasons.push("no related objects matched");
-  if (memory.length)         { score += Math.min(10, memory.length * 2); reasons.push(`${memory.length} memory hit(s)`); }
-  if (missing.length)        { score -= missing.length * 15; reasons.push(`${missing.length} missing input(s)`); }
+  if (intent === "unknown") {
+    score -= 25;
+    reasons.push("intent unclear");
+  } else reasons.push(`intent: ${intent}`);
+  if (related.length) {
+    score += Math.min(20, related.length * 5);
+    reasons.push(`${related.length} related object(s)`);
+  } else reasons.push("no related objects matched");
+  if (memory.length) {
+    score += Math.min(10, memory.length * 2);
+    reasons.push(`${memory.length} memory hit(s)`);
+  }
+  if (missing.length) {
+    score -= missing.length * 15;
+    reasons.push(`${missing.length} missing input(s)`);
+  }
   score = Math.max(0, Math.min(100, score));
   const level: Confidence = score >= 75 ? "high" : score >= 45 ? "medium" : "low";
   return { level, score, reasons };
@@ -169,36 +222,73 @@ function estimateConfidence(
 /* ───── 8. Temporary agents ───── */
 function pickAgents(intent: Intent): AgentRole[] {
   switch (intent) {
-    case "plan":      return ["planner", "researcher", "reviewer"];
-    case "create":    return ["writer", "reviewer"];
-    case "update":    return ["controller", "reviewer"];
-    case "delete":    return ["controller", "reviewer"];
-    case "delegate":  return ["coordinator", "controller"];
-    case "schedule":  return ["organizer", "coordinator"];
-    case "summarize": return ["researcher", "writer"];
-    case "search":    return ["researcher"];
-    case "ask":       return ["researcher", "writer"];
-    default:          return ["researcher"];
+    case "plan":
+      return ["planner", "researcher", "reviewer"];
+    case "create":
+      return ["writer", "reviewer"];
+    case "update":
+      return ["controller", "reviewer"];
+    case "delete":
+      return ["controller", "reviewer"];
+    case "delegate":
+      return ["coordinator", "controller"];
+    case "schedule":
+      return ["organizer", "coordinator"];
+    case "summarize":
+      return ["researcher", "writer"];
+    case "search":
+      return ["researcher"];
+    case "ask":
+      return ["researcher", "writer"];
+    default:
+      return ["researcher"];
   }
 }
 
 /* ───── 9. Plan ───── */
-function buildPlan(intent: Intent, related: ThinkingResult["related"], missing: string[]): string[] {
+function buildPlan(
+  intent: Intent,
+  related: ThinkingResult["related"],
+  missing: string[],
+): string[] {
   if (missing.length) return [`Pause and ask: ${missing.join(", ")}`];
   const subjects = related.length
-    ? related.slice(0, 3).map((r) => `${r.kind}:${r.label}`).join(", ")
+    ? related
+        .slice(0, 3)
+        .map((r) => `${r.kind}:${r.label}`)
+        .join(", ")
     : "available context";
   switch (intent) {
-    case "plan":      return ["Collect related sources", "Draft outline", "List risks & open questions", "Present for review"];
-    case "summarize": return [`Gather ${subjects}`, "Group by theme", "Extract decisions & owners", "Write concise summary"];
-    case "create":    return ["Validate inputs", "Draft item", "Show preview", "Wait for one-tap confirm"];
-    case "update":    return [`Locate ${subjects}`, "Compute diff", "Show preview", "Wait for confirm"];
-    case "delete":    return [`Locate ${subjects}`, "Show impact", "Ask for explicit confirm"];
-    case "delegate":  return ["Identify assignee", "Check workload", "Draft handoff note", "Wait for confirm"];
-    case "schedule":  return ["Resolve participants", "Find time slot", "Draft invite", "Wait for confirm"];
-    case "search":    return ["Scan indexes", "Rank matches", "Return top results"];
-    case "ask":       return ["Gather sources", "Compare facts", "Compose answer with citations"];
-    default:          return ["Clarify request"];
+    case "plan":
+      return [
+        "Collect related sources",
+        "Draft outline",
+        "List risks & open questions",
+        "Present for review",
+      ];
+    case "summarize":
+      return [
+        `Gather ${subjects}`,
+        "Group by theme",
+        "Extract decisions & owners",
+        "Write concise summary",
+      ];
+    case "create":
+      return ["Validate inputs", "Draft item", "Show preview", "Wait for one-tap confirm"];
+    case "update":
+      return [`Locate ${subjects}`, "Compute diff", "Show preview", "Wait for confirm"];
+    case "delete":
+      return [`Locate ${subjects}`, "Show impact", "Ask for explicit confirm"];
+    case "delegate":
+      return ["Identify assignee", "Check workload", "Draft handoff note", "Wait for confirm"];
+    case "schedule":
+      return ["Resolve participants", "Find time slot", "Draft invite", "Wait for confirm"];
+    case "search":
+      return ["Scan indexes", "Rank matches", "Return top results"];
+    case "ask":
+      return ["Gather sources", "Compare facts", "Compose answer with citations"];
+    default:
+      return ["Clarify request"];
   }
 }
 
@@ -220,15 +310,15 @@ function selfCheck(input: ThinkingInput, related: ThinkingResult["related"]) {
 
 export function think(input: ThinkingInput): ThinkingResult {
   const understanding = understand(input.prompt);
-  const context       = collectContext(input);
-  const memory        = pickMemory(input);
-  const related       = findRelated(input);
-  const rules         = applicableRules(input);
-  const missing       = findMissing(understanding.intent, input, related);
-  const confidence    = estimateConfidence(understanding.intent, related, memory, missing);
-  const agents        = pickAgents(understanding.intent);
-  const plan          = buildPlan(understanding.intent, related, missing);
-  const check         = selfCheck(input, related);
+  const context = collectContext(input);
+  const memory = pickMemory(input);
+  const related = findRelated(input);
+  const rules = applicableRules(input);
+  const missing = findMissing(understanding.intent, input, related);
+  const confidence = estimateConfidence(understanding.intent, related, memory, missing);
+  const agents = pickAgents(understanding.intent);
+  const plan = buildPlan(understanding.intent, related, missing);
+  const check = selfCheck(input, related);
 
   const destructive = understanding.intent === "delete" || understanding.intent === "update";
   const allowExecute =
@@ -243,8 +333,17 @@ export function think(input: ThinkingInput): ThinkingResult {
   if (context.signals.length) sources.push("page context");
 
   return {
-    understanding, context, memory, related, rules, missing,
-    confidence, agents, plan, allowExecute, selfCheck: check,
+    understanding,
+    context,
+    memory,
+    related,
+    rules,
+    missing,
+    confidence,
+    agents,
+    plan,
+    allowExecute,
+    selfCheck: check,
     log: {
       reason: `intent=${understanding.intent}; confidence=${confidence.level}; ${missing.length ? "blocked by missing input" : allowExecute ? "ready to execute" : "needs review"}`,
       sources,

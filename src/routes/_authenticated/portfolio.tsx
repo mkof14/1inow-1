@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { fetchProjects } from "@/lib/queries";
 import { PortfolioCard, BrandMark } from "@/components/icons/compass-icons";
-import { ArrowUpRight, Layers3, Sparkles } from "lucide-react";
+import { ArrowUpRight, Layers3 } from "lucide-react";
 import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/portfolio")({ component: PortfolioPage });
@@ -60,7 +60,7 @@ function PortfolioPage() {
         </div>
         <div className="relative">
           <div className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-accent mb-3">
-            <Sparkles className="size-3.5 signal-pulse" /> {t("portfolio.eyebrow")}
+            <Layers3 className="size-3.5 signal-pulse" /> {t("portfolio.eyebrow")}
           </div>
           <h1 className="font-display text-3xl sm:text-5xl font-semibold tracking-tight mb-3 max-w-3xl">
             {t("portfolio.title")}

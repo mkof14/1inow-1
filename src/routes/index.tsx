@@ -10,7 +10,6 @@ import {
   Mic,
   Radar,
   ShieldCheck,
-  Sparkles,
   Workflow,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -54,10 +53,10 @@ const landingCopy = {
   en: {
     navPrinciples: "Principles",
     signIn: "Sign in",
-    eyebrow: "Intelligent command center for work and life",
-    title: "1inow brings projects, life tasks, voice notes, and decisions into one living system.",
+    eyebrow: "Operating layer for focused execution",
+    title: "1inow is a command center for projects, decisions, voice capture, and daily execution.",
     subtitle:
-      "Capture ideas fast, see what matters now, turn scattered signals into clear next actions, and keep momentum without building another heavy task calculator.",
+      "Capture ideas fast, see what matters now, turn scattered signals into clear next actions, and keep momentum without another heavy task system.",
     openWorkspace: "Open workspace",
     seePrinciples: "See principles",
     heroLabel: "Today operating picture",
@@ -66,13 +65,13 @@ const landingCopy = {
     previewSubtitle: "Voice, projects, tasks, risks, decisions",
     insightTitle: "Intelligence layer",
     insightText:
-      "The assistant is prepared to guide the workflow, while external AI stays disabled until production approval.",
+      "The assistant works inside controlled workflows: context first, clear evidence, and no blind actions.",
     proofTitle: "Built to feel obvious",
     proofText:
       "Every screen should answer three questions: what is happening, what matters, and what should happen next.",
     ctaTitle: "Start with one clear workspace.",
     ctaText:
-      "Use 1inow as the center for projects, personal plans, communication, notes, and future AI support.",
+      "Use 1inow as the center for projects, personal plans, communication, notes, and controlled intelligence.",
     continue: "Continue to app",
     signals: ["Capture by voice", "Review the queue", "Create the next action", "Track risks"],
     metrics: [
@@ -118,17 +117,18 @@ const landingCopy = {
       ],
       [
         "Controlled intelligence",
-        "Prepare AI, automation, and voice workflows without connecting paid services too early.",
+        "Keep context, automation, and voice workflows governed by clear approval boundaries.",
       ],
     ],
   },
   ru: {
     navPrinciples: "Принципы",
     signIn: "Войти",
-    eyebrow: "Умный центр управления работой и жизнью",
-    title: "1inow собирает проекты, личные задачи, голосовые мысли и решения в одну живую систему.",
+    eyebrow: "Операционный слой для фокусного исполнения",
+    title:
+      "1inow - командный центр для проектов, решений, голосового ввода и ежедневного исполнения.",
     subtitle:
-      "Быстро фиксируйте идеи, видьте главное сейчас, превращайте разрозненные сигналы в ясные действия и держите темп без очередного тяжелого калькулятора задач.",
+      "Быстро фиксируйте идеи, видьте главное сейчас, превращайте разрозненные сигналы в ясные действия и держите темп без очередной тяжелой системы задач.",
     openWorkspace: "Открыть систему",
     seePrinciples: "Смотреть принципы",
     heroLabel: "Картина дня",
@@ -137,13 +137,13 @@ const landingCopy = {
     previewSubtitle: "Голос, проекты, задачи, риски, решения",
     insightTitle: "Интеллектуальный слой",
     insightText:
-      "Помощник подготовлен для сопровождения процессов, но внешние AI-сервисы отключены до отдельного production-решения.",
+      "Помощник работает внутри контролируемых процессов: сначала контекст, затем доказательства и только потом действие.",
     proofTitle: "Система должна быть очевидной",
     proofText:
       "Каждый экран должен отвечать на три вопроса: что происходит, что важно и какое следующее действие.",
     ctaTitle: "Начните с одного понятного пространства.",
     ctaText:
-      "Используйте 1inow как центр проектов, личных планов, коммуникаций, заметок и будущей AI-поддержки.",
+      "Используйте 1inow как центр проектов, личных планов, коммуникаций, заметок и контролируемого интеллекта.",
     continue: "Перейти в приложение",
     signals: ["Записать голосом", "Разобрать входящие", "Создать действие", "Увидеть риски"],
     metrics: [
@@ -189,15 +189,15 @@ const landingCopy = {
       ],
       [
         "Контролируемый интеллект",
-        "Готовьте AI, автоматизацию и голосовые сценарии без раннего подключения платных сервисов.",
+        "Держите контекст, автоматизацию и голосовые сценарии в понятных границах контроля и подтверждения.",
       ],
     ],
   },
   uk: {
     navPrinciples: "Принципи",
     signIn: "Увійти",
-    eyebrow: "Розумний центр керування роботою і життям",
-    title: "1inow збирає проєкти, особисті задачі, голосові думки і рішення в одну живу систему.",
+    eyebrow: "Операційний шар для сфокусованого виконання",
+    title: "1inow - командний центр для проєктів, рішень, голосового вводу і щоденного виконання.",
     subtitle:
       "Швидко фіксуйте ідеї, бачте головне зараз, перетворюйте розрізнені сигнали на чіткі дії і тримайте темп без ще одного важкого списку задач.",
     openWorkspace: "Відкрити систему",
@@ -208,13 +208,13 @@ const landingCopy = {
     previewSubtitle: "Голос, проєкти, задачі, ризики, рішення",
     insightTitle: "Інтелектуальний шар",
     insightText:
-      "Помічник підготовлений для супроводу процесів, але зовнішні AI-сервіси вимкнені до окремого production-рішення.",
+      "Помічник працює всередині контрольованих процесів: спочатку контекст, потім докази і лише тоді дія.",
     proofTitle: "Система має бути очевидною",
     proofText:
       "Кожен екран має відповідати на три питання: що відбувається, що важливо і яка наступна дія.",
     ctaTitle: "Почніть з одного зрозумілого простору.",
     ctaText:
-      "Використовуйте 1inow як центр проєктів, особистих планів, комунікацій, нотаток і майбутньої AI-підтримки.",
+      "Використовуйте 1inow як центр проєктів, особистих планів, комунікацій, нотаток і контрольованого інтелекту.",
     continue: "Перейти в застосунок",
     signals: ["Записати голосом", "Розібрати вхідні", "Створити дію", "Побачити ризики"],
     metrics: [
@@ -260,16 +260,15 @@ const landingCopy = {
       ],
       [
         "Контрольований інтелект",
-        "Готуйте AI, автоматизацію і голосові сценарії без раннього підключення платних сервісів.",
+        "Тримайте контекст, автоматизацію і голосові сценарії в зрозумілих межах контролю та підтвердження.",
       ],
     ],
   },
   es: {
     navPrinciples: "Principios",
     signIn: "Entrar",
-    eyebrow: "Centro inteligente para trabajo y vida",
-    title:
-      "1inow reúne proyectos, tareas personales, notas de voz y decisiones en un sistema vivo.",
+    eyebrow: "Capa operativa para ejecución enfocada",
+    title: "1inow es un centro de mando para proyectos, decisiones, voz y ejecución diaria.",
     subtitle:
       "Captura ideas rápido, mira lo importante ahora, convierte señales dispersas en acciones claras y mantén el impulso sin otro gestor pesado de tareas.",
     openWorkspace: "Abrir espacio",
@@ -280,13 +279,13 @@ const landingCopy = {
     previewSubtitle: "Voz, proyectos, tareas, riesgos, decisiones",
     insightTitle: "Capa de inteligencia",
     insightText:
-      "El asistente está preparado para guiar el flujo, pero los servicios externos de IA siguen desactivados hasta aprobación de producción.",
+      "El asistente trabaja dentro de flujos controlados: contexto primero, evidencia clara y sin acciones ciegas.",
     proofTitle: "Diseñado para ser evidente",
     proofText:
       "Cada pantalla debe responder: qué ocurre, qué importa y cuál es la siguiente acción.",
     ctaTitle: "Empieza con un espacio claro.",
     ctaText:
-      "Usa 1inow como centro de proyectos, planes personales, comunicación, notas y futura ayuda con IA.",
+      "Usa 1inow como centro de proyectos, planes personales, comunicación, notas e inteligencia controlada.",
     continue: "Continuar a la app",
     signals: ["Capturar por voz", "Revisar bandeja", "Crear acción", "Seguir riesgos"],
     metrics: [
@@ -332,16 +331,16 @@ const landingCopy = {
       ],
       [
         "Inteligencia controlada",
-        "Prepara IA, automatización y voz sin conectar servicios pagos demasiado pronto.",
+        "Mantén contexto, automatización y voz dentro de límites claros de control y aprobación.",
       ],
     ],
   },
   de: {
     navPrinciples: "Prinzipien",
     signIn: "Anmelden",
-    eyebrow: "Intelligente Steuerzentrale fur Arbeit und Leben",
+    eyebrow: "Operative Ebene fur fokussierte Umsetzung",
     title:
-      "1inow bringt Projekte, private Aufgaben, Sprachnotizen und Entscheidungen in ein lebendiges System.",
+      "1inow ist ein Command Center fur Projekte, Entscheidungen, Sprache und tagliche Umsetzung.",
     subtitle:
       "Erfasse Ideen schnell, erkenne was jetzt wichtig ist, verwandle verstreute Signale in klare nachste Schritte und halte Tempo ohne ein weiteres schweres Aufgabenwerkzeug.",
     openWorkspace: "Workspace offnen",
@@ -352,13 +351,13 @@ const landingCopy = {
     previewSubtitle: "Sprache, Projekte, Aufgaben, Risiken, Entscheidungen",
     insightTitle: "Intelligenzschicht",
     insightText:
-      "Der Assistent ist fur Prozessfuhrung vorbereitet, externe KI-Dienste bleiben aber bis zur Produktionsfreigabe deaktiviert.",
+      "Der Assistent arbeitet in kontrollierten Ablaufen: erst Kontext, dann Evidenz, dann die Aktion.",
     proofTitle: "Gebaut, damit es klar wirkt",
     proofText:
       "Jeder Screen soll drei Fragen beantworten: was passiert, was ist wichtig und was ist der nachste Schritt.",
     ctaTitle: "Beginne mit einem klaren Workspace.",
     ctaText:
-      "Nutze 1inow als Zentrum fur Projekte, personliche Plane, Kommunikation, Notizen und kunftige KI-Unterstutzung.",
+      "Nutze 1inow als Zentrum fur Projekte, personliche Plane, Kommunikation, Notizen und kontrollierte Intelligenz.",
     continue: "Zur App",
     signals: ["Per Sprache erfassen", "Inbox prufen", "Aktion erstellen", "Risiken sehen"],
     metrics: [
@@ -404,7 +403,7 @@ const landingCopy = {
       ],
       [
         "Kontrollierte Intelligenz",
-        "Bereite KI, Automatisierung und Sprache vor, ohne kostenpflichtige Dienste zu fruh zu verbinden.",
+        "Halte Kontext, Automatisierung und Sprache in klaren Kontroll- und Freigabegrenzen.",
       ],
     ],
   },
@@ -525,7 +524,7 @@ function LandingPage() {
       <section className="relative bg-[#f7faf8] px-5 pb-20 pt-2 dark:bg-[#061014] md:px-8">
         <div className="mx-auto grid w-full max-w-7xl gap-4 md:grid-cols-4">
           {c.modules.map(([title, text], index) => {
-            const Icon = moduleIcons[index] ?? Sparkles;
+            const Icon = moduleIcons[index] ?? Workflow;
             return (
               <Link
                 key={title}
@@ -552,7 +551,7 @@ function LandingPage() {
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 rounded-[2rem] border border-slate-900/8 bg-white/72 p-6 shadow-2xl shadow-slate-950/5 backdrop-blur dark:border-white/10 dark:bg-white/[0.06] md:flex-row md:items-center md:justify-between md:p-8">
           <div className="max-w-2xl">
             <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-teal-500/10 px-3 py-1 text-xs font-semibold text-teal-700 dark:text-teal-200">
-              <Sparkles className="size-3.5" />
+              <CheckCircle2 className="size-3.5" />
               {c.proofTitle}
             </div>
             <h2 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white md:text-3xl">
@@ -594,7 +593,7 @@ function HeroDashboard({ copy: c }: { copy: (typeof landingCopy)["en"] }) {
               </div>
             </div>
           </div>
-          <span className="rounded-full border border-teal-500/25 bg-teal-500/10 px-3 py-1 text-xs font-semibold text-teal-700 dark:text-teal-200">
+          <span className="shrink-0 whitespace-nowrap rounded-full border border-teal-500/25 bg-teal-500/10 px-3 py-1 text-xs font-semibold text-teal-700 dark:text-teal-200">
             {c.live}
           </span>
         </div>

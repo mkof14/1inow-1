@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Eye, MessageCircle, Radio, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Eye, MessageCircle, Radio, ShieldCheck } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 const assistantCopy = {
@@ -164,7 +164,7 @@ export function PublicAssistantPersonas() {
       <div className="mx-auto grid w-full max-w-7xl gap-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-end">
         <div className="max-w-xl">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-teal-500/20 bg-white/62 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-teal-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/8 dark:text-teal-200">
-            <Sparkles className="size-3.5" />
+            <Radio className="size-3.5" />
             {copy.eyebrow}
           </div>
           <h2 className="text-3xl font-semibold leading-tight tracking-tight text-slate-950 dark:text-white md:text-4xl">

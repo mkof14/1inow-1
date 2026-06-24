@@ -3,11 +3,7 @@ import { PageContainer, SectionHeader, ResponsiveGrid } from "@/components/layou
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2 } from "lucide-react";
-import {
-  productPrinciples,
-  featureReviewChecklist,
-  assistantBehavior,
-} from "@/lib/principles";
+import { productPrinciples, featureReviewChecklist, assistantBehavior } from "@/lib/principles";
 import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/principles")({
@@ -26,8 +22,8 @@ function PrinciplesPage() {
       <Card className="mb-6 border-primary/30 bg-primary/5">
         <CardContent className="py-5">
           <p className="text-sm font-medium">
-            Top rule: do not ask the user to do what the system can understand,
-            infer, connect, or prepare by itself.
+            Top rule: do not ask the user to do what the system can understand, infer, connect, or
+            prepare by itself.
           </p>
         </CardContent>
       </Card>
@@ -74,20 +70,28 @@ function PrinciplesPage() {
               <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">Tone</div>
               <div className="flex flex-wrap gap-1.5">
                 {assistantBehavior.tone.map((t) => (
-                  <Badge key={t} variant="secondary">{t}</Badge>
+                  <Badge key={t} variant="secondary">
+                    {t}
+                  </Badge>
                 ))}
               </div>
             </div>
             <div>
-              <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">Avoid</div>
+              <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">
+                Avoid
+              </div>
               <div className="flex flex-wrap gap-1.5">
                 {assistantBehavior.avoid.map((t) => (
-                  <Badge key={t} variant="outline">{t}</Badge>
+                  <Badge key={t} variant="outline">
+                    {t}
+                  </Badge>
                 ))}
               </div>
             </div>
             <div>
-              <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">Must say when true</div>
+              <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">
+                Must say when true
+              </div>
               <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
                 {assistantBehavior.mustSayWhenTrue.map((s) => (
                   <li key={s}>{s}</li>
@@ -95,11 +99,15 @@ function PrinciplesPage() {
               </ul>
             </div>
             <div>
-              <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">Never invent</div>
+              <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">
+                Never invent
+              </div>
               <p className="text-muted-foreground">{assistantBehavior.neverInvent.join(", ")}.</p>
             </div>
             <div>
-              <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">Notify only when</div>
+              <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">
+                Notify only when
+              </div>
               <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
                 {assistantBehavior.notifyOnly.map((s) => (
                   <li key={s}>{s}</li>

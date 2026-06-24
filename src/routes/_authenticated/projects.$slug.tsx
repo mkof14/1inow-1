@@ -1,7 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { fetchProjectBySlug, fetchTasks, TASK_STATUSES, TASK_STATUS_LABEL, PROJECT_STATUS_LABEL } from "@/lib/queries";
+import {
+  fetchProjectBySlug,
+  fetchTasks,
+  TASK_STATUSES,
+  TASK_STATUS_LABEL,
+  PROJECT_STATUS_LABEL,
+} from "@/lib/queries";
 import { trackRecent } from "@/lib/wave1";
 import { StarButton } from "@/components/star-button";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,8 +20,21 @@ import { createRelation } from "@/lib/relations";
 import { useSetPageContext } from "@/lib/ai-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ChevronLeft, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,7 +46,10 @@ function ProjectDetail() {
   const { slug } = Route.useParams();
   const qc = useQueryClient();
   const { user } = useAuth();
-  const project = useQuery({ queryKey: ["project", slug], queryFn: () => fetchProjectBySlug(slug) });
+  const project = useQuery({
+    queryKey: ["project", slug],
+    queryFn: () => fetchProjectBySlug(slug),
+  });
   useSetPageContext(
     {
       route: `/projects/${slug}`,
@@ -54,9 +76,17 @@ function ProjectDetail() {
 
   const createTask = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.from("tasks").insert({
-        project_id: project.data!.id, title, status: status as any, created_by: user!.id, priority: "medium",
-      }).select("id").single();
+      const { data, error } = await supabase
+        .from("tasks")
+        .insert({
+          project_id: project.data!.id,
+          title,
+          status: status as any,
+          created_by: user!.id,
+          priority: "medium",
+        })
+        .select("id")
+        .single();
       if (error) throw error;
       // Auto-link the new task to this project
       if (data?.id && user?.id) {
@@ -73,17 +103,21 @@ function ProjectDetail() {
       toast.success("Task created");
       qc.invalidateQueries({ queryKey: ["tasks"] });
       qc.invalidateQueries({ queryKey: ["relations"] });
-      setOpen(false); setTitle("");
+      setOpen(false);
+      setTitle("");
     },
     onError: (e: any) => toast.error(e.message),
   });
 
   const updateTaskStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await supabase.from("tasks").update({
-        status: status as any,
-        completed_at: status === "done" ? new Date().toISOString() : null,
-      }).eq("id", id);
+      const { error } = await supabase
+        .from("tasks")
+        .update({
+          status: status as any,
+          completed_at: status === "done" ? new Date().toISOString() : null,
+        })
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
@@ -94,7 +128,10 @@ function ProjectDetail() {
       const { error } = await supabase.from("tasks").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("Deleted"); qc.invalidateQueries({ queryKey: ["tasks"] }); },
+    onSuccess: () => {
+      toast.success("Deleted");
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+    },
   });
 
   if (project.isLoading) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
@@ -105,13 +142,19 @@ function ProjectDetail() {
 
   return (
     <div className="p-6 md:p-8 max-w-[1500px] mx-auto">
-      <Link to="/projects" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 mb-4">
+      <Link
+        to="/projects"
+        className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 mb-4"
+      >
         <ChevronLeft className="size-3" /> All projects
       </Link>
 
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-4">
-          <div className="size-14 rounded-xl grid place-items-center text-white text-lg font-semibold" style={{ background: p.color ?? "#0a2540" }}>
+          <div
+            className="size-14 rounded-xl grid place-items-center text-white text-lg font-semibold"
+            style={{ background: p.color ?? "#0a2540" }}
+          >
             {p.name.slice(0, 2).toUpperCase()}
           </div>
           <div>
@@ -143,21 +186,41 @@ function ProjectDetail() {
       <div className="mt-8 flex items-center justify-between">
         <h2 className="text-lg font-semibold tracking-tight">Task Board</h2>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button size="sm"><Plus className="size-4" /> New task</Button></DialogTrigger>
+          <DialogTrigger asChild>
+            <Button size="sm">
+              <Plus className="size-4" /> New task
+            </Button>
+          </DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>Create task</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle>Create task</DialogTitle>
+            </DialogHeader>
             <div className="space-y-3">
-              <Input placeholder="Task title" value={title} onChange={(e) => setTitle(e.target.value)} />
+              <Input
+                placeholder="Task title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
               <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {TASK_STATUSES.map((s) => <SelectItem key={s} value={s}>{TASK_STATUS_LABEL[s]}</SelectItem>)}
+                  {TASK_STATUSES.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {TASK_STATUS_LABEL[s]}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button disabled={!title || createTask.isPending} onClick={() => createTask.mutate()}>Create</Button>
+              <Button variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button disabled={!title || createTask.isPending} onClick={() => createTask.mutate()}>
+                Create
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -166,38 +229,56 @@ function ProjectDetail() {
       <div className="mt-4 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-6">
         <div className="flex gap-4 overflow-x-auto pb-3 -mx-2 px-2 snap-x min-w-0">
           {columns.map((col) => {
-          const colTasks = tasks.data?.filter((t: any) => t.status === col) ?? [];
-          return (
-            <div key={col} className="snap-start shrink-0 w-[260px] rounded-xl bg-muted/40 p-3 min-h-[300px]">
-              <div className="flex items-center justify-between px-2 mb-3">
-                <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                  {TASK_STATUS_LABEL[col]}
-                </h3>
-                <span className="text-xs text-muted-foreground font-mono">{colTasks.length}</span>
-              </div>
-              <div className="space-y-2">
-                {colTasks.map((t: any) => (
-                  <div key={t.id} className="group rounded-lg bg-card border border-border p-3 hover:border-accent/50 transition-colors">
-                    <div className="text-sm font-medium">{t.title}</div>
-                    <div className="mt-2 flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <Select value={t.status} onValueChange={(v) => updateTaskStatus.mutate({ id: t.id, status: v })}>
-                          <SelectTrigger className="h-7 text-xs w-auto"><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            {TASK_STATUSES.map((s) => <SelectItem key={s} value={s}>{TASK_STATUS_LABEL[s]}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                        <TaskTimer taskId={t.id} actualHours={Number(t.actual_hours ?? 0)} />
+            const colTasks = tasks.data?.filter((t: any) => t.status === col) ?? [];
+            return (
+              <div
+                key={col}
+                className="snap-start shrink-0 w-[260px] rounded-xl bg-muted/40 p-3 min-h-[300px]"
+              >
+                <div className="flex items-center justify-between px-2 mb-3">
+                  <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    {TASK_STATUS_LABEL[col]}
+                  </h3>
+                  <span className="text-xs text-muted-foreground font-mono">{colTasks.length}</span>
+                </div>
+                <div className="space-y-2">
+                  {colTasks.map((t: any) => (
+                    <div
+                      key={t.id}
+                      className="group rounded-lg bg-card border border-border p-3 hover:border-accent/50 transition-colors"
+                    >
+                      <div className="text-sm font-medium">{t.title}</div>
+                      <div className="mt-2 flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <Select
+                            value={t.status}
+                            onValueChange={(v) => updateTaskStatus.mutate({ id: t.id, status: v })}
+                          >
+                            <SelectTrigger className="h-7 text-xs w-auto">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {TASK_STATUSES.map((s) => (
+                                <SelectItem key={s} value={s}>
+                                  {TASK_STATUS_LABEL[s]}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <TaskTimer taskId={t.id} actualHours={Number(t.actual_hours ?? 0)} />
+                        </div>
+                        <button
+                          onClick={() => deleteTask.mutate(t.id)}
+                          className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
                       </div>
-                      <button onClick={() => deleteTask.mutate(t.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive">
-                        <Trash2 className="size-3.5" />
-                      </button>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          );
+            );
           })}
         </div>
         <aside className="space-y-4">

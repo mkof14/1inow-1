@@ -12,25 +12,101 @@ export interface SimplicityRule {
 }
 
 export const simplicityRules: SimplicityRule[] = [
-  { id: "minute",   title: "One-minute rule",        rule: "A new user should understand the product within one minute — without videos, tutorials or documentation." },
-  { id: "first",    title: "First screen is calm",   rule: "Open with a greeting, four things that deserve attention, and three buttons: Talk, Review, Create. Nothing else." },
-  { id: "one-click",title: "One click or one sentence", rule: "Every common action takes a single click, or a single natural sentence to the assistant." },
-  { id: "no-empty", title: "No empty pages",         rule: "Every page shows something useful immediately — recent items, a continue action, or a single create button." },
-  { id: "plain",    title: "Plain language only",    rule: "Never expose technical names: graph, vector, agent, LLM, workflow engine, background job. The user sees only their work." },
-  { id: "disclose", title: "Progressive disclosure", rule: "Simple view first. Advanced options appear only when explicitly requested." },
-  { id: "defaults", title: "Smart defaults",         rule: "Forms come pre-filled with today, current project, current user, recent people, recent folder." },
-  { id: "zero",     title: "Zero configuration",     rule: "The app works on first open. No setup wizard, no mandatory profile completion." },
-  { id: "talk",     title: "Conversation first",     rule: "Natural requests replace navigation: ‘find latest contract’, ‘remind me next month’, ‘prepare today’s work’." },
-  { id: "quiet",    title: "Do not interrupt",       rule: "No popups, no tutorials, no tips. The user discovers naturally." },
-  { id: "memory",   title: "Memory without work",    rule: "Remember silently. Only ask permission for important permanent knowledge." },
-  { id: "calm",     title: "Visual calm",            rule: "One primary action, one main message, one clear focus per screen. Whitespace, readable type, large targets." },
-  { id: "learn",    title: "Learning over time",     rule: "After a day — adapt. After a week — anticipate. After a month — organize. Without manual configuration." },
-  { id: "relevant", title: "Discovery on relevance", rule: "Surface a feature only when the user’s behaviour makes it useful. Hide what they never use." },
-  { id: "trust",    title: "Explain why",            rule: "Every recommendation states why it exists, what data was used, and what is missing." },
-  { id: "humane-errors", title: "Humane errors",     rule: "Never say ‘something went wrong’. Say what was missing and offer the next step." },
-  { id: "one-life", title: "One life, not two apps", rule: "Personal and business live together. The assistant understands family, travel, projects, meetings — within privacy settings." },
-  { id: "metrics",  title: "Measure outcomes",       rule: "Minutes saved, questions avoided, typing reduced, repeated work eliminated. Not clicks, not pageviews." },
-  { id: "veto",     title: "Complexity veto",        rule: "If a feature makes the product more complicated than helpful, do not build it." },
+  {
+    id: "minute",
+    title: "One-minute rule",
+    rule: "A new user should understand the product within one minute — without videos, tutorials or documentation.",
+  },
+  {
+    id: "first",
+    title: "First screen is calm",
+    rule: "Open with a greeting, four things that deserve attention, and three buttons: Talk, Review, Create. Nothing else.",
+  },
+  {
+    id: "one-click",
+    title: "One click or one sentence",
+    rule: "Every common action takes a single click, or a single natural sentence to the assistant.",
+  },
+  {
+    id: "no-empty",
+    title: "No empty pages",
+    rule: "Every page shows something useful immediately — recent items, a continue action, or a single create button.",
+  },
+  {
+    id: "plain",
+    title: "Plain language only",
+    rule: "Never expose technical names: graph, vector, agent, LLM, workflow engine, background job. The user sees only their work.",
+  },
+  {
+    id: "disclose",
+    title: "Progressive disclosure",
+    rule: "Simple view first. Advanced options appear only when explicitly requested.",
+  },
+  {
+    id: "defaults",
+    title: "Smart defaults",
+    rule: "Forms come pre-filled with today, current project, current user, recent people, recent folder.",
+  },
+  {
+    id: "zero",
+    title: "Zero configuration",
+    rule: "The app works on first open. No setup wizard, no mandatory profile completion.",
+  },
+  {
+    id: "talk",
+    title: "Conversation first",
+    rule: "Natural requests replace navigation: ‘find latest contract’, ‘remind me next month’, ‘prepare today’s work’.",
+  },
+  {
+    id: "quiet",
+    title: "Do not interrupt",
+    rule: "No popups, no tutorials, no tips. The user discovers naturally.",
+  },
+  {
+    id: "memory",
+    title: "Memory without work",
+    rule: "Remember silently. Only ask permission for important permanent knowledge.",
+  },
+  {
+    id: "calm",
+    title: "Visual calm",
+    rule: "One primary action, one main message, one clear focus per screen. Whitespace, readable type, large targets.",
+  },
+  {
+    id: "learn",
+    title: "Learning over time",
+    rule: "After a day — adapt. After a week — anticipate. After a month — organize. Without manual configuration.",
+  },
+  {
+    id: "relevant",
+    title: "Discovery on relevance",
+    rule: "Surface a feature only when the user’s behaviour makes it useful. Hide what they never use.",
+  },
+  {
+    id: "trust",
+    title: "Explain why",
+    rule: "Every recommendation states why it exists, what data was used, and what is missing.",
+  },
+  {
+    id: "humane-errors",
+    title: "Humane errors",
+    rule: "Never say ‘something went wrong’. Say what was missing and offer the next step.",
+  },
+  {
+    id: "one-life",
+    title: "One life, not two apps",
+    rule: "Personal and business live together. The assistant understands family, travel, projects, meetings — within privacy settings.",
+  },
+  {
+    id: "metrics",
+    title: "Measure outcomes",
+    rule: "Minutes saved, questions avoided, typing reduced, repeated work eliminated. Not clicks, not pageviews.",
+  },
+  {
+    id: "veto",
+    title: "Complexity veto",
+    rule: "If a feature makes the product more complicated than helpful, do not build it.",
+  },
 ];
 
 /* ───────────── Copy templates used across pages ───────────── */
@@ -45,9 +121,11 @@ export function firstScreenGreeting(
   const tplOne = i18n?.one ?? "Here is 1 thing that deserves your attention today.";
   const tplMany = i18n?.many ?? "Here are {n} things that deserve your attention today.";
   const sub =
-    attentionCount === 0 ? calm
-    : attentionCount === 1 ? tplOne
-    : tplMany.replace("{n}", String(attentionCount));
+    attentionCount === 0
+      ? calm
+      : attentionCount === 1
+        ? tplOne
+        : tplMany.replace("{n}", String(attentionCount));
   return {
     headline: hello,
     subline: sub,
@@ -55,13 +133,33 @@ export function firstScreenGreeting(
 }
 
 /** Human errors — never raw "something went wrong". */
-export function humaneError(kind: "not_found" | "no_match" | "offline" | "permission" | "unknown", subject?: string) {
+export function humaneError(
+  kind: "not_found" | "no_match" | "offline" | "permission" | "unknown",
+  subject?: string,
+) {
   switch (kind) {
-    case "not_found":   return { message: `I could not find ${subject ?? "that"} yet.`, suggest: "Search everywhere?" };
-    case "no_match":    return { message: `Nothing matches ${subject ?? "your request"} so far.`, suggest: "Try a broader phrase?" };
-    case "offline":     return { message: "I cannot reach the network right now.", suggest: "Try again in a moment." };
-    case "permission":  return { message: `You do not have access to ${subject ?? "this item"}.`, suggest: "Ask the owner for access?" };
-    default:            return { message: "I am not sure what to do with this yet.", suggest: "Could you rephrase?" };
+    case "not_found":
+      return {
+        message: `I could not find ${subject ?? "that"} yet.`,
+        suggest: "Search everywhere?",
+      };
+    case "no_match":
+      return {
+        message: `Nothing matches ${subject ?? "your request"} so far.`,
+        suggest: "Try a broader phrase?",
+      };
+    case "offline":
+      return {
+        message: "I cannot reach the network right now.",
+        suggest: "Try again in a moment.",
+      };
+    case "permission":
+      return {
+        message: `You do not have access to ${subject ?? "this item"}.`,
+        suggest: "Ask the owner for access?",
+      };
+    default:
+      return { message: "I am not sure what to do with this yet.", suggest: "Could you rephrase?" };
   }
 }
 
@@ -84,8 +182,15 @@ export function smartDefaults(input: {
 
 /** Words we never show to the user. */
 export const forbiddenJargon = [
-  "context graph", "memory engine", "vector search", "agent orchestration",
-  "workflow engine", "LLM", "background job", "embeddings", "RAG pipeline",
+  "context graph",
+  "memory engine",
+  "vector search",
+  "agent orchestration",
+  "workflow engine",
+  "LLM",
+  "background job",
+  "embeddings",
+  "RAG pipeline",
 ];
 
 /** True if any forbidden technical term leaked into user-facing copy. */

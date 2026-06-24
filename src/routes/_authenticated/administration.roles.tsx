@@ -1,7 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Fragment, useMemo } from "react";
-import { fetchPermissions, fetchRolePermissions, toggleRolePermission, ROLES, ROLE_LABELS, type AppRole, type Permission } from "@/lib/admin-queries";
+import {
+  fetchPermissions,
+  fetchRolePermissions,
+  toggleRolePermission,
+  ROLES,
+  ROLE_LABELS,
+  type AppRole,
+  type Permission,
+} from "@/lib/admin-queries";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
@@ -56,7 +64,10 @@ function RolesPage() {
                   {t("tbl.permission")}
                 </th>
                 {ROLES.map((r) => (
-                  <th key={r} className="px-3 py-2.5 text-xs font-medium text-center whitespace-nowrap">
+                  <th
+                    key={r}
+                    className="px-3 py-2.5 text-xs font-medium text-center whitespace-nowrap"
+                  >
                     {ROLE_LABELS[r]}
                   </th>
                 ))}
@@ -66,7 +77,10 @@ function RolesPage() {
               {grouped.map(([cat, list]) => (
                 <Fragment key={cat}>
                   <tr className="bg-muted/10">
-                    <td colSpan={ROLES.length + 1} className="px-4 py-1.5 text-xs uppercase tracking-wider font-medium text-muted-foreground">
+                    <td
+                      colSpan={ROLES.length + 1}
+                      className="px-4 py-1.5 text-xs uppercase tracking-wider font-medium text-muted-foreground"
+                    >
                       {cat}
                     </td>
                   </tr>
@@ -98,12 +112,24 @@ function RolesPage() {
                 </Fragment>
               ))}
               {perms.isLoading && (
-                <tr><td colSpan={ROLES.length + 1} className="px-4 py-8 text-center text-muted-foreground">{t("common.loading")}</td></tr>
+                <tr>
+                  <td
+                    colSpan={ROLES.length + 1}
+                    className="px-4 py-8 text-center text-muted-foreground"
+                  >
+                    {t("common.loading")}
+                  </td>
+                </tr>
               )}
               {!perms.isLoading && (perms.data?.length ?? 0) === 0 && (
-                <tr><td colSpan={ROLES.length + 1} className="px-4 py-8 text-center text-muted-foreground">
-                  {t("page.roles.empty")}
-                </td></tr>
+                <tr>
+                  <td
+                    colSpan={ROLES.length + 1}
+                    className="px-4 py-8 text-center text-muted-foreground"
+                  >
+                    {t("page.roles.empty")}
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>

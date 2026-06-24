@@ -166,12 +166,22 @@ export function InstallPrompt() {
             <Step
               n={1}
               icon={<Share className="size-3.5 text-sky-500" />}
-              text={<>Тапни <span className="font-medium text-foreground">«Поделиться»</span> в нижней панели Safari</>}
+              text={
+                <>
+                  Тапни <span className="font-medium text-foreground">«Поделиться»</span> в нижней
+                  панели Safari
+                </>
+              }
             />
             <Step
               n={2}
               icon={<Plus className="size-3.5 text-emerald-500" />}
-              text={<>Выбери <span className="font-medium text-foreground">«На экран „Домой“»</span> → <span className="font-medium text-foreground">«Добавить»</span></>}
+              text={
+                <>
+                  Выбери <span className="font-medium text-foreground">«На экран „Домой“»</span> →{" "}
+                  <span className="font-medium text-foreground">«Добавить»</span>
+                </>
+              }
             />
           </ol>
         )}
@@ -181,7 +191,12 @@ export function InstallPrompt() {
             <Step
               n={1}
               icon={<Download className="size-3.5 text-accent" />}
-              text={<>Жми <span className="font-medium text-foreground">«Установить»</span> выше — Chrome/Edge откроет системное окно</>}
+              text={
+                <>
+                  Жми <span className="font-medium text-foreground">«Установить»</span> выше —
+                  Chrome/Edge откроет системное окно
+                </>
+              }
             />
             <Step
               n={2}
@@ -202,7 +217,12 @@ export function InstallPrompt() {
             <Step
               n={2}
               icon={<Chrome className="size-3.5 text-accent" />}
-              text={<>Выбери <span className="font-medium text-foreground">«Установить 1inow»</span> или <span className="font-medium text-foreground">«Создать ярлык…»</span></>}
+              text={
+                <>
+                  Выбери <span className="font-medium text-foreground">«Установить 1inow»</span> или{" "}
+                  <span className="font-medium text-foreground">«Создать ярлык…»</span>
+                </>
+              }
             />
           </ol>
         )}

@@ -41,16 +41,24 @@ export function useShortcuts(onCommandBar?: () => void, onQuickCreate?: () => vo
       if (e.key === "g") {
         seq.current = "g";
         if (seqTimer.current) window.clearTimeout(seqTimer.current);
-        seqTimer.current = window.setTimeout(() => { seq.current = ""; }, 800);
+        seqTimer.current = window.setTimeout(() => {
+          seq.current = "";
+        }, 800);
         return;
       }
       if (seq.current === "g") {
         seq.current = "";
-        if (e.key === "d") { navigate({ to: "/dashboard" }); }
-        else if (e.key === "t") { navigate({ to: "/tasks" }); }
-        else if (e.key === "p") { navigate({ to: "/projects" }); }
-        else if (e.key === "i") { navigate({ to: "/inbox" }); }
-        else if (e.key === "m") { navigate({ to: "/my-work" }); }
+        if (e.key === "d") {
+          navigate({ to: "/dashboard" });
+        } else if (e.key === "t") {
+          navigate({ to: "/tasks" });
+        } else if (e.key === "p") {
+          navigate({ to: "/projects" });
+        } else if (e.key === "i") {
+          navigate({ to: "/inbox" });
+        } else if (e.key === "m") {
+          navigate({ to: "/my-work" });
+        }
       }
     }
     window.addEventListener("keydown", handler);

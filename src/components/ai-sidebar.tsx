@@ -190,7 +190,6 @@ export function AiSidebar({
         audioRef.current?.pause();
       } catch {}
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Speak new assistant messages with a human voice via /api/tts.
@@ -283,8 +282,8 @@ export function AiSidebar({
             <BrandMark className="size-4" />
           </div>
           <div className="leading-tight">
-            <div className="text-sm font-medium">1inow AI + Voice</div>
-            <div className="text-[10px] text-muted-foreground">Assistant, voice, commands</div>
+            <div className="text-sm font-medium">1inow Advisor</div>
+            <div className="text-[10px] text-muted-foreground">Context, voice, commands</div>
           </div>
         </div>
         <div className="flex items-center gap-0.5">

@@ -26,7 +26,11 @@ function ProfilePage() {
     queryKey: ["my-profile-full", user?.id],
     queryFn: async () => {
       if (!user) return null;
-      const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -37,15 +41,15 @@ function ProfilePage() {
     queryKey: ["my-projects", user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const { data: owned } = await supabase
-        .from("projects").select("*").eq("created_by", user.id);
+      const { data: owned } = await supabase.from("projects").select("*").eq("created_by", user.id);
       const { data: memberRows } = await supabase
-        .from("project_members").select("project_id").eq("user_id", user.id);
+        .from("project_members")
+        .select("project_id")
+        .eq("user_id", user.id);
       const memberIds = (memberRows ?? []).map((r: any) => r.project_id);
       let memberProjects: any[] = [];
       if (memberIds.length) {
-        const { data } = await supabase
-          .from("projects").select("*").in("id", memberIds);
+        const { data } = await supabase.from("projects").select("*").in("id", memberIds);
         memberProjects = data ?? [];
       }
       const map = new Map<string, any>();
@@ -56,7 +60,12 @@ function ProfilePage() {
   });
 
   const [form, setForm] = useState({
-    full_name: "", avatar_url: "", bio: "", phone: "", country: "", city: "",
+    full_name: "",
+    avatar_url: "",
+    bio: "",
+    phone: "",
+    country: "",
+    city: "",
   });
 
   useEffect(() => {
@@ -108,22 +117,35 @@ function ProfilePage() {
           </Avatar>
           <div className="flex-1 space-y-1.5">
             <Label>Avatar URL</Label>
-            <Input value={form.avatar_url} onChange={(e) => setForm({ ...form, avatar_url: e.target.value })} placeholder="https://…" />
+            <Input
+              value={form.avatar_url}
+              onChange={(e) => setForm({ ...form, avatar_url: e.target.value })}
+              placeholder="https://…"
+            />
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label>Full name</Label>
-            <Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
+            <Input
+              value={form.full_name}
+              onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+            />
           </div>
           <div className="space-y-1.5">
             <Label>Phone</Label>
-            <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+            <Input
+              value={form.phone}
+              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            />
           </div>
           <div className="space-y-1.5">
             <Label>Country</Label>
-            <Input value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} />
+            <Input
+              value={form.country}
+              onChange={(e) => setForm({ ...form, country: e.target.value })}
+            />
           </div>
           <div className="space-y-1.5">
             <Label>City</Label>
@@ -133,7 +155,11 @@ function ProfilePage() {
 
         <div className="space-y-1.5">
           <Label>Bio</Label>
-          <Textarea rows={4} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} />
+          <Textarea
+            rows={4}
+            value={form.bio}
+            onChange={(e) => setForm({ ...form, bio: e.target.value })}
+          />
         </div>
 
         <div className="flex justify-end">
@@ -149,7 +175,7 @@ function ProfilePage() {
           <h2 className="text-lg font-semibold tracking-tight">Мои проекты</h2>
           <span className="text-xs text-muted-foreground ml-auto">{myProjects?.length ?? 0}</span>
         </div>
-        {(!myProjects || myProjects.length === 0) ? (
+        {!myProjects || myProjects.length === 0 ? (
           <p className="text-sm text-muted-foreground">Проектов пока нет.</p>
         ) : (
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">

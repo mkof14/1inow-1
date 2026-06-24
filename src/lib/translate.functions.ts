@@ -20,7 +20,11 @@ export const translateText = createServerFn({ method: "POST" })
   });
 
 // AI Language Assistant: rewrite/improve with tone
-type RewriteInput = { text: string; mode: "improve" | "simplify" | "professional" | "executive" | "legal" | "technical" | "marketing"; lang?: string };
+type RewriteInput = {
+  text: string;
+  mode: "improve" | "simplify" | "professional" | "executive" | "legal" | "technical" | "marketing";
+  lang?: string;
+};
 
 export const rewriteText = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

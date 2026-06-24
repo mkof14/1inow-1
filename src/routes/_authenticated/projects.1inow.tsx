@@ -12,9 +12,9 @@ import {
   DollarSign,
   CalendarRange,
   Activity,
-  Sparkles,
   TrendingUp,
   Target,
+  FileText,
 } from "lucide-react";
 
 const PROJECT_ID = "ca2f9a0a-d8cc-4978-af4a-1f5afbd71c2d";
@@ -93,9 +93,7 @@ function OneInowPage() {
   const deadline = p?.deadline ? new Date(p.deadline) : null;
   const now = new Date();
   const totalDays =
-    startDate && deadline
-      ? Math.max(1, Math.round((+deadline - +startDate) / 86400000))
-      : 0;
+    startDate && deadline ? Math.max(1, Math.round((+deadline - +startDate) / 86400000)) : 0;
   const elapsed =
     startDate && deadline
       ? Math.max(0, Math.min(totalDays, Math.round((+now - +startDate) / 86400000)))
@@ -111,13 +109,11 @@ function OneInowPage() {
     n >= 1_000_000
       ? `$${(n / 1_000_000).toFixed(2)}M`
       : n >= 1_000
-      ? `$${(n / 1_000).toFixed(1)}K`
-      : `$${n}`;
+        ? `$${(n / 1_000).toFixed(1)}K`
+        : `$${n}`;
 
   const fmtDate = (d: Date | null) =>
-    d
-      ? d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
-      : "—";
+    d ? d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "—";
 
   if (project.isLoading) {
     return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
@@ -200,8 +196,12 @@ function OneInowPage() {
               <p className="text-xs text-muted-foreground mt-1">overall completion</p>
             </div>
             <div className="text-right text-xs text-muted-foreground">
-              <div><span className="text-foreground font-mono">{done}</span> done</div>
-              <div><span className="text-foreground font-mono">{total - done}</span> open</div>
+              <div>
+                <span className="text-foreground font-mono">{done}</span> done
+              </div>
+              <div>
+                <span className="text-foreground font-mono">{total - done}</span> open
+              </div>
             </div>
           </div>
           <div className="h-2 rounded-full bg-muted overflow-hidden">
@@ -214,7 +214,10 @@ function OneInowPage() {
             {(["todo", "in_progress", "review", "done"] as const).map((s) => {
               const c = tasks.data?.filter((t: any) => t.status === s).length ?? 0;
               return (
-                <div key={s} className="rounded-lg border border-border/60 px-2 py-2 text-center hover:border-accent/50 transition-colors">
+                <div
+                  key={s}
+                  className="rounded-lg border border-border/60 px-2 py-2 text-center hover:border-accent/50 transition-colors"
+                >
                   <div className="font-mono text-sm text-foreground">{c}</div>
                   <div className="mt-0.5">{s.replace("_", " ")}</div>
                 </div>
@@ -228,22 +231,38 @@ function OneInowPage() {
             <ul className="space-y-2">
               {team.data.map((m: any, i: number) => {
                 const prof = m.profiles ?? {};
-                const initials = (prof.full_name ?? prof.email ?? "?").split(/\s+|@/)[0].slice(0, 2).toUpperCase();
+                const initials = (prof.full_name ?? prof.email ?? "?")
+                  .split(/\s+|@/)[0]
+                  .slice(0, 2)
+                  .toUpperCase();
                 return (
                   <li
                     key={m.user_id ?? i}
                     className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/40 transition-colors fade-rise"
                     style={{ animationDelay: `${i * 50}ms` }}
                   >
-                    <div className="size-9 rounded-full grid place-items-center text-xs font-semibold text-white overflow-hidden" style={{ background: color }}>
-                      {prof.avatar_url ? <img src={prof.avatar_url} alt="" className="size-full object-cover" /> : initials}
+                    <div
+                      className="size-9 rounded-full grid place-items-center text-xs font-semibold text-white overflow-hidden"
+                      style={{ background: color }}
+                    >
+                      {prof.avatar_url ? (
+                        <img src={prof.avatar_url} alt="" className="size-full object-cover" />
+                      ) : (
+                        initials
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-sm font-medium truncate">{prof.full_name ?? prof.email ?? "Member"}</div>
-                      <div className="text-xs text-muted-foreground truncate">{prof.job_title ?? prof.email ?? "Contributor"}</div>
+                      <div className="text-sm font-medium truncate">
+                        {prof.full_name ?? prof.email ?? "Member"}
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {prof.job_title ?? prof.email ?? "Contributor"}
+                      </div>
                     </div>
                     {m.user_id === p.owner_id && (
-                      <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-accent/10 text-accent">Owner</span>
+                      <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-accent/10 text-accent">
+                        Owner
+                      </span>
                     )}
                   </li>
                 );
@@ -257,7 +276,9 @@ function OneInowPage() {
         <Widget icon={<DollarSign className="size-5" />} title="Budget" accent={color} delay={0.15}>
           <div className="flex items-end justify-between mb-3">
             <div>
-              <div className="text-3xl font-display font-semibold tracking-tight">{fmtMoney(budget)}</div>
+              <div className="text-3xl font-display font-semibold tracking-tight">
+                {fmtMoney(budget)}
+              </div>
               <p className="text-xs text-muted-foreground mt-1">total allocation</p>
             </div>
             <div className="text-right">
@@ -281,7 +302,12 @@ function OneInowPage() {
           </div>
         </Widget>
 
-        <Widget icon={<CalendarRange className="size-5" />} title="Timeline" accent={color} delay={0.2}>
+        <Widget
+          icon={<CalendarRange className="size-5" />}
+          title="Timeline"
+          accent={color}
+          delay={0.2}
+        >
           <div className="flex items-end justify-between mb-3">
             <div>
               <div className="text-sm text-muted-foreground">Kickoff</div>
@@ -293,16 +319,34 @@ function OneInowPage() {
             </div>
           </div>
           <div className="relative h-2 rounded-full bg-muted overflow-hidden">
-            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${timePct}%`, background: color }} />
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{ width: `${timePct}%`, background: color }}
+            />
           </div>
           <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-            <span><span className="text-foreground font-mono">{elapsed}</span> / {totalDays} days</span>
-            <span>{daysLeft != null && daysLeft >= 0 ? `${daysLeft} days remaining` : "Past deadline"}</span>
+            <span>
+              <span className="text-foreground font-mono">{elapsed}</span> / {totalDays} days
+            </span>
+            <span>
+              {daysLeft != null && daysLeft >= 0 ? `${daysLeft} days remaining` : "Past deadline"}
+            </span>
           </div>
           <div className="mt-4 space-y-2">
             {milestones(startDate, deadline).map((m, i) => (
-              <div key={m.label} className="flex items-center gap-3 text-xs fade-rise" style={{ animationDelay: `${i * 60}ms` }}>
-                <div className="size-2 rounded-full" style={{ background: m.passed ? color : "color-mix(in oklab, var(--muted-foreground) 40%, transparent)" }} />
+              <div
+                key={m.label}
+                className="flex items-center gap-3 text-xs fade-rise"
+                style={{ animationDelay: `${i * 60}ms` }}
+              >
+                <div
+                  className="size-2 rounded-full"
+                  style={{
+                    background: m.passed
+                      ? color
+                      : "color-mix(in oklab, var(--muted-foreground) 40%, transparent)",
+                  }}
+                />
                 <div className="flex-1 truncate">{m.label}</div>
                 <div className="text-muted-foreground font-mono">{fmtDate(m.date)}</div>
               </div>
@@ -311,18 +355,35 @@ function OneInowPage() {
         </Widget>
 
         <div className="lg:col-span-2">
-          <Widget icon={<Activity className="size-5" />} title="Recent Activity" accent={color} accentPulse delay={0.25}>
+          <Widget
+            icon={<Activity className="size-5" />}
+            title="Recent Activity"
+            accent={color}
+            accentPulse
+            delay={0.25}
+          >
             {activity.data && activity.data.length > 0 ? (
               <ul className="space-y-2">
                 {activity.data.map((a: any, i: number) => (
-                  <li key={a.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/40 transition-colors fade-rise" style={{ animationDelay: `${i * 40}ms` }}>
-                    <div className="signal-pulse mt-1.5 size-1.5 rounded-full shrink-0" style={{ background: color }} />
+                  <li
+                    key={a.id}
+                    className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/40 transition-colors fade-rise"
+                    style={{ animationDelay: `${i * 40}ms` }}
+                  >
+                    <div
+                      className="signal-pulse mt-1.5 size-1.5 rounded-full shrink-0"
+                      style={{ background: color }}
+                    />
                     <div className="min-w-0 flex-1">
                       <div className="text-sm truncate">
                         <span className="font-medium">{a.action}</span>
-                        {a.entity_type && <span className="text-muted-foreground"> · {a.entity_type}</span>}
+                        {a.entity_type && (
+                          <span className="text-muted-foreground"> · {a.entity_type}</span>
+                        )}
                       </div>
-                      <div className="text-xs text-muted-foreground">{new Date(a.created_at).toLocaleString()}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(a.created_at).toLocaleString()}
+                      </div>
                     </div>
                   </li>
                 ))}
@@ -330,8 +391,15 @@ function OneInowPage() {
             ) : (
               <ul className="space-y-2">
                 {seedActivity(p.created_at).map((a, i) => (
-                  <li key={i} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/40 transition-colors fade-rise" style={{ animationDelay: `${i * 40}ms` }}>
-                    <div className="signal-pulse mt-1.5 size-1.5 rounded-full shrink-0" style={{ background: color }} />
+                  <li
+                    key={i}
+                    className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/40 transition-colors fade-rise"
+                    style={{ animationDelay: `${i * 40}ms` }}
+                  >
+                    <div
+                      className="signal-pulse mt-1.5 size-1.5 rounded-full shrink-0"
+                      style={{ background: color }}
+                    />
                     <div className="min-w-0 flex-1">
                       <div className="text-sm">
                         <span className="font-medium">{a.title}</span>
@@ -344,7 +412,7 @@ function OneInowPage() {
               </ul>
             )}
             <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-              <Sparkles className="size-3.5" /> Auto-summarized from project events
+              <FileText className="size-3.5" /> Auto-summarized from project events
             </div>
           </Widget>
         </div>
@@ -357,30 +425,69 @@ function OneInowPage() {
   );
 }
 
-function Stat({ label, value, sub, icon }: { label: string; value: ReactNode; sub?: ReactNode; icon?: ReactNode }) {
+function Stat({
+  label,
+  value,
+  sub,
+  icon,
+}: {
+  label: string;
+  value: ReactNode;
+  sub?: ReactNode;
+  icon?: ReactNode;
+}) {
   return (
     <div className="min-w-0">
       <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
         {icon}
         {label}
       </div>
-      <div className="mt-1 text-xl md:text-2xl font-display font-semibold tracking-tight truncate">{value}</div>
+      <div className="mt-1 text-xl md:text-2xl font-display font-semibold tracking-tight truncate">
+        {value}
+      </div>
       {sub && <div className="text-xs text-muted-foreground mt-0.5 truncate">{sub}</div>}
     </div>
   );
 }
 
-function Widget({ icon, title, accent, accentPulse, delay = 0, children }: { icon: ReactNode; title: string; accent: string; accentPulse?: boolean; delay?: number; children: ReactNode }) {
+function Widget({
+  icon,
+  title,
+  accent,
+  accentPulse,
+  delay = 0,
+  children,
+}: {
+  icon: ReactNode;
+  title: string;
+  accent: string;
+  accentPulse?: boolean;
+  delay?: number;
+  children: ReactNode;
+}) {
   return (
     <section
       className="surface-aurora shimmer-border ring-accent-soft rounded-2xl p-5 md:p-6 relative overflow-hidden fade-rise transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 hover:shadow-[0_12px_40px_-16px_color-mix(in_oklab,var(--accent)_35%,transparent)]"
       style={{ animationDelay: `${delay}s` }}
     >
-      <div className="absolute -top-20 -right-20 size-56 rounded-full blur-3xl opacity-30 pointer-events-none" style={{ background: accent }} />
+      <div
+        className="absolute -top-20 -right-20 size-56 rounded-full blur-3xl opacity-30 pointer-events-none"
+        style={{ background: accent }}
+      />
       <header className="flex items-center gap-2 mb-4 relative">
-        <span className="grid place-items-center size-8 rounded-lg text-white" style={{ background: accent }}>{icon}</span>
+        <span
+          className="grid place-items-center size-8 rounded-lg text-white"
+          style={{ background: accent }}
+        >
+          {icon}
+        </span>
         <h3 className="text-sm font-semibold tracking-tight">{title}</h3>
-        {accentPulse && <span className="signal-pulse inline-block size-1.5 rounded-full ml-1" style={{ background: accent }} />}
+        {accentPulse && (
+          <span
+            className="signal-pulse inline-block size-1.5 rounded-full ml-1"
+            style={{ background: accent }}
+          />
+        )}
       </header>
       <div className="relative">{children}</div>
     </section>

@@ -40,15 +40,15 @@ The following key areas were checked directly:
 
 No remaining Lovable references were found.
 
-| Reference | Status | Action |
-| --- | --- | --- |
-| Lovable text references | None found | No action needed |
-| `@lovable` imports | None found | No action needed |
-| `@lovable.dev/cloud-auth-js` | None found | No action needed |
+| Reference                           | Status     | Action           |
+| ----------------------------------- | ---------- | ---------------- |
+| Lovable text references             | None found | No action needed |
+| `@lovable` imports                  | None found | No action needed |
+| `@lovable.dev/cloud-auth-js`        | None found | No action needed |
 | `@lovable.dev/vite-tanstack-config` | None found | No action needed |
-| `LOVABLE_API_KEY` | None found | No action needed |
-| `ai.gateway.lovable.dev` | None found | No action needed |
-| `investspace-hub.lovable.app` | None found | No action needed |
+| `LOVABLE_API_KEY`                   | None found | No action needed |
+| `ai.gateway.lovable.dev`            | None found | No action needed |
+| `investspace-hub.lovable.app`       | None found | No action needed |
 
 ## Verification Results
 
@@ -92,11 +92,11 @@ The current Vite setup uses standard project dependencies:
 
 ## AI Route Stub Status
 
-| Route | Current behavior | External service status |
-| --- | --- | --- |
-| `/api/chat` | Returns placeholder JSON: `AI service is not connected yet.` | Disabled |
-| `/api/stt` | Returns `501 Not Implemented` with a clear placeholder message | Disabled |
-| `/api/tts` | Returns `501 Not Implemented` with a clear placeholder message | Disabled |
+| Route       | Current behavior                                               | External service status |
+| ----------- | -------------------------------------------------------------- | ----------------------- |
+| `/api/chat` | Returns placeholder JSON: `AI service is not connected yet.`   | Disabled                |
+| `/api/stt`  | Returns `501 Not Implemented` with a clear placeholder message | Disabled                |
+| `/api/tts`  | Returns `501 Not Implemented` with a clear placeholder message | Disabled                |
 
 These stubs are safe for local and Vercel builds because they do not require paid provider credentials.
 

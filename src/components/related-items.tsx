@@ -15,8 +15,21 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Plus, Link2, X, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
@@ -175,10 +188,9 @@ function LinkDialog({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {ENTITY_TYPES.map((t) => (
-              <SelectItem key={t} value={t} disabled={!isResolvable(t)}>
+            {ENTITY_TYPES.filter(isResolvable).map((t) => (
+              <SelectItem key={t} value={t}>
                 {ENTITY_LABEL[t]}
-                {!isResolvable(t) && " (coming soon)"}
               </SelectItem>
             ))}
           </SelectContent>

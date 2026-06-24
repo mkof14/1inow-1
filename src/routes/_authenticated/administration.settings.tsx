@@ -18,8 +18,12 @@ function SettingsPage() {
   const settings = useQuery({ queryKey: ["admin-settings"], queryFn: fetchSystemSettings });
 
   const update = useMutation({
-    mutationFn: ({ key, value }: { key: string; value: unknown }) => updateSystemSetting(key, value),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-settings"] }); toast.success("Saved"); },
+    mutationFn: ({ key, value }: { key: string; value: unknown }) =>
+      updateSystemSetting(key, value),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-settings"] });
+      toast.success("Saved");
+    },
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
 
@@ -27,7 +31,8 @@ function SettingsPage() {
     const map = new Map<string, SystemSetting[]>();
     (settings.data ?? []).forEach((s) => {
       const list = map.get(s.category) ?? [];
-      list.push(s); map.set(s.category, list);
+      list.push(s);
+      map.set(s.category, list);
     });
     return Array.from(map.entries());
   }, [settings.data]);
@@ -39,7 +44,9 @@ function SettingsPage() {
         <p className="text-sm text-muted-foreground mt-1">{t("page.systemSettings.subtitle")}</p>
       </div>
 
-      {settings.isLoading && <div className="text-sm text-muted-foreground">{t("common.loading")}</div>}
+      {settings.isLoading && (
+        <div className="text-sm text-muted-foreground">{t("common.loading")}</div>
+      )}
       {!settings.isLoading && grouped.length === 0 && (
         <Card className="p-6 text-center text-sm text-muted-foreground">
           {t("page.systemSettings.empty")}
@@ -48,7 +55,9 @@ function SettingsPage() {
 
       {grouped.map(([cat, list]) => (
         <Card key={cat} className="p-5 space-y-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{cat}</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            {cat}
+          </h2>
           <div className="space-y-3">
             {list.map((s) => {
               const isBool = typeof s.value === "boolean";
@@ -74,7 +83,8 @@ function SettingsPage() {
                         defaultValue={s.value as number}
                         onBlur={(e) => {
                           const n = Number(e.target.value);
-                          if (!Number.isNaN(n) && n !== s.value) update.mutate({ key: s.key, value: n });
+                          if (!Number.isNaN(n) && n !== s.value)
+                            update.mutate({ key: s.key, value: n });
                         }}
                         className="w-24 h-8 text-right"
                       />

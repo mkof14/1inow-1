@@ -4,8 +4,16 @@ import { fetchFavorites, toggleFavorite, type EntityType } from "@/lib/wave1";
 import { cn } from "@/lib/utils";
 
 export function StarButton({
-  entityType, entityId, label, className,
-}: { entityType: EntityType; entityId: string; label?: string; className?: string }) {
+  entityType,
+  entityId,
+  label,
+  className,
+}: {
+  entityType: EntityType;
+  entityId: string;
+  label?: string;
+  className?: string;
+}) {
   const qc = useQueryClient();
   const { data: favs = [] } = useQuery({ queryKey: ["favorites"], queryFn: fetchFavorites });
   const isFav = favs.some((f) => f.entity_type === entityType && f.entity_id === entityId);
@@ -16,7 +24,11 @@ export function StarButton({
   return (
     <button
       type="button"
-      onClick={(e) => { e.stopPropagation(); e.preventDefault(); mut.mutate(); }}
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        mut.mutate();
+      }}
       className={cn("p-1 rounded hover:bg-muted transition-colors", className)}
       aria-label={isFav ? "Unfavorite" : "Favorite"}
     >

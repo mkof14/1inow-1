@@ -16,7 +16,6 @@ import {
   Radio,
   Search,
   ShieldCheck,
-  Sparkles,
   Volume2,
   X,
 } from "lucide-react";
@@ -331,7 +330,7 @@ export function VoiceCommandCenter({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Radio className="size-5 text-accent" />
-              1inow AI + Voice Command Center
+              1inow Voice Command Center
             </DialogTitle>
           </DialogHeader>
 
@@ -409,7 +408,7 @@ export function VoiceCommandCenter({
             <div className="grid gap-3 md:grid-cols-2">
               <div className="rounded-2xl border border-border bg-card p-4">
                 <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                  <Sparkles className="size-4 text-accent" />
+                  <Navigation className="size-4 text-accent" />
                   Command examples
                 </div>
                 <div className="space-y-1.5">

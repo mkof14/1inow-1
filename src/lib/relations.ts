@@ -69,7 +69,10 @@ export type RelatedItem = {
   raw?: any;
 };
 
-export async function listRelations(sourceType: EntityType, sourceId: string): Promise<RelatedItem[]> {
+export async function listRelations(
+  sourceType: EntityType,
+  sourceId: string,
+): Promise<RelatedItem[]> {
   const { data, error } = await supabase
     .from("relations")
     .select("*")
@@ -139,14 +142,23 @@ export async function deleteRelation(relationId: string) {
   if (error) throw error;
 }
 
-export async function searchEntities(type: EntityType, q: string): Promise<{ id: string; label: string }[]> {
+export async function searchEntities(
+  type: EntityType,
+  q: string,
+): Promise<{ id: string; label: string }[]> {
   const res = RESOLVERS[type];
   if (!res) return [];
-  let query = supabase.from(res.table as any).select(`id, ${res.label}`).limit(20);
+  let query = supabase
+    .from(res.table as any)
+    .select(`id, ${res.label}`)
+    .limit(20);
   if (q) query = query.ilike(res.label, `%${q}%`);
   const { data, error } = await query;
   if (error) return [];
-  return ((data ?? []) as any[]).map((r) => ({ id: r.id, label: String(r[res.label] ?? "Untitled") }));
+  return ((data ?? []) as any[]).map((r) => ({
+    id: r.id,
+    label: String(r[res.label] ?? "Untitled"),
+  }));
 }
 
 export function isResolvable(type: EntityType): boolean {

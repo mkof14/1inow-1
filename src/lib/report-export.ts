@@ -34,7 +34,8 @@ export function exportReportCSV(payload: ReportPayload, filename: string) {
   lines.push(`${csvEscape(payload.filtersLabel)}`);
   lines.push("");
   lines.push(["Metric", "Value", "Hint"].map(csvEscape).join(","));
-  for (const k of payload.kpi) lines.push([k.label, k.value, k.hint ?? ""].map(csvEscape).join(","));
+  for (const k of payload.kpi)
+    lines.push([k.label, k.value, k.hint ?? ""].map(csvEscape).join(","));
   for (const s of payload.sections) {
     lines.push("");
     lines.push(csvEscape(s.title));
@@ -57,9 +58,12 @@ export function exportReportPDF(payload: ReportPayload, filename: string) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(110);
-  doc.text(payload.generatedLabel, 40, y); y += 14;
-  doc.text(payload.rangeLabel, 40, y); y += 14;
-  doc.text(payload.filtersLabel, 40, y); y += 8;
+  doc.text(payload.generatedLabel, 40, y);
+  y += 14;
+  doc.text(payload.rangeLabel, 40, y);
+  y += 14;
+  doc.text(payload.filtersLabel, 40, y);
+  y += 8;
   doc.setTextColor(0);
 
   autoTable(doc, {
@@ -79,7 +83,10 @@ export function exportReportPDF(payload: ReportPayload, filename: string) {
     if (titleY > doc.internal.pageSize.getHeight() - 60) {
       doc.addPage();
     }
-    const ty = (doc as any).lastAutoTable?.finalY && titleY <= doc.internal.pageSize.getHeight() - 60 ? titleY : 48;
+    const ty =
+      (doc as any).lastAutoTable?.finalY && titleY <= doc.internal.pageSize.getHeight() - 60
+        ? titleY
+        : 48;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.text(s.title, 40, ty);

@@ -15,9 +15,15 @@ export const Route = createFileRoute("/_authenticated/my-work")({
 });
 
 type Task = {
-  id: string; title: string; status: string; priority: string;
-  due_date: string | null; assignee_id: string | null; created_by: string | null;
-  project_id: string | null; projects?: { name: string; slug: string; color: string | null } | null;
+  id: string;
+  title: string;
+  status: string;
+  priority: string;
+  due_date: string | null;
+  assignee_id: string | null;
+  created_by: string | null;
+  project_id: string | null;
+  projects?: { name: string; slug: string; color: string | null } | null;
 };
 
 function MyWork() {
@@ -29,7 +35,9 @@ function MyWork() {
     queryFn: async (): Promise<Task[]> => {
       const { data, error } = await supabase
         .from("tasks")
-        .select("id,title,status,priority,due_date,assignee_id,created_by,project_id,projects(name,slug,color)")
+        .select(
+          "id,title,status,priority,due_date,assignee_id,created_by,project_id,projects(name,slug,color)",
+        )
         .or(`assignee_id.eq.${user!.id},created_by.eq.${user!.id}`)
         .order("due_date", { ascending: true, nullsFirst: false });
       if (error) throw error;
@@ -41,7 +49,8 @@ function MyWork() {
   const tasks = data ?? [];
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const weekEnd = new Date(today); weekEnd.setDate(today.getDate() + 7);
+  const weekEnd = new Date(today);
+  weekEnd.setDate(today.getDate() + 7);
 
   const buckets = {
     assigned: tasks.filter((t) => t.assignee_id === user?.id && t.status !== "done"),
@@ -65,7 +74,10 @@ function MyWork() {
         <TabsList className="flex-wrap h-auto">
           {Object.entries(buckets).map(([k, v]) => (
             <TabsTrigger key={k} value={k} className="capitalize gap-2">
-              {t(`myWork.bucket.${k}`, k)} <Badge variant="secondary" className="h-5">{v.length}</Badge>
+              {t(`myWork.bucket.${k}`, k)}{" "}
+              <Badge variant="secondary" className="h-5">
+                {v.length}
+              </Badge>
             </TabsTrigger>
           ))}
         </TabsList>
@@ -89,12 +101,18 @@ function MyWork() {
                       <div className="font-medium text-sm truncate">{t.title}</div>
                       <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
                         {t.projects?.name && <span>{t.projects.name}</span>}
-                        {t.due_date && <span>· Due {new Date(t.due_date).toLocaleDateString()}</span>}
+                        {t.due_date && (
+                          <span>· Due {new Date(t.due_date).toLocaleDateString()}</span>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="capitalize">{t.status.replace("_", " ")}</Badge>
-                      <Badge variant="outline" className="capitalize">{t.priority}</Badge>
+                      <Badge variant="outline" className="capitalize">
+                        {t.status.replace("_", " ")}
+                      </Badge>
+                      <Badge variant="outline" className="capitalize">
+                        {t.priority}
+                      </Badge>
                     </div>
                   </div>
                 ))}

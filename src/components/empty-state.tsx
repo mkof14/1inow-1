@@ -30,9 +30,13 @@ export function EmptyState({
         </div>
       </div>
       <h3 className="text-base font-semibold tracking-tight text-foreground">{title}</h3>
-      {description && <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">{description}</p>}
+      {description && (
+        <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">{description}</p>
+      )}
       {action && (
-        <Button className="mt-5" onClick={action.onClick}>{action.label}</Button>
+        <Button className="mt-5" onClick={action.onClick}>
+          {action.label}
+        </Button>
       )}
     </div>
   );
@@ -49,7 +53,11 @@ export function PageSkeleton() {
       <div className="h-4 w-72 bg-muted rounded animate-pulse" />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-28 rounded-lg bg-muted animate-pulse" style={{ animationDelay: `${i * 80}ms` }} />
+          <div
+            key={i}
+            className="h-28 rounded-lg bg-muted animate-pulse"
+            style={{ animationDelay: `${i * 80}ms` }}
+          />
         ))}
       </div>
     </div>

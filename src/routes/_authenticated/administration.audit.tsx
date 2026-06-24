@@ -4,7 +4,13 @@ import { useState, useMemo } from "react";
 import { fetchAuditLogs } from "@/lib/admin-queries";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Search } from "lucide-react";
 import { useT } from "@/lib/i18n";
@@ -19,16 +25,22 @@ function AuditPage() {
   const [severity, setSeverity] = useState<string>("all");
   const logs = useQuery({ queryKey: ["admin-audit"], queryFn: () => fetchAuditLogs(500) });
 
-  const filtered = useMemo(() => (logs.data ?? []).filter((l) => {
-    if (severity !== "all" && l.severity !== severity) return false;
-    if (q) {
-      const s = q.toLowerCase();
-      return l.action.toLowerCase().includes(s) ||
-        (l.entity_type ?? "").toLowerCase().includes(s) ||
-        (l.module ?? "").toLowerCase().includes(s);
-    }
-    return true;
-  }), [logs.data, q, severity]);
+  const filtered = useMemo(
+    () =>
+      (logs.data ?? []).filter((l) => {
+        if (severity !== "all" && l.severity !== severity) return false;
+        if (q) {
+          const s = q.toLowerCase();
+          return (
+            l.action.toLowerCase().includes(s) ||
+            (l.entity_type ?? "").toLowerCase().includes(s) ||
+            (l.module ?? "").toLowerCase().includes(s)
+          );
+        }
+        return true;
+      }),
+    [logs.data, q, severity],
+  );
 
   return (
     <div className="p-6 space-y-4">
@@ -40,10 +52,17 @@ function AuditPage() {
       <div className="flex gap-3">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("page.audit.searchPh")} className="pl-8" />
+          <Input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={t("page.audit.searchPh")}
+            className="pl-8"
+          />
         </div>
         <Select value={severity} onValueChange={setSeverity}>
-          <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-44">
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t("page.audit.severity.all")}</SelectItem>
             <SelectItem value="info">{t("page.audit.severity.info")}</SelectItem>
@@ -67,10 +86,18 @@ function AuditPage() {
             </thead>
             <tbody className="divide-y divide-border">
               {logs.isLoading && (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">{t("common.loading")}</td></tr>
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                    {t("common.loading")}
+                  </td>
+                </tr>
               )}
               {!logs.isLoading && filtered.length === 0 && (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">{t("page.audit.empty")}</td></tr>
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                    {t("page.audit.empty")}
+                  </td>
+                </tr>
               )}
               {filtered.map((l) => (
                 <tr key={l.id} className="hover:bg-muted/20">
@@ -80,10 +107,20 @@ function AuditPage() {
                   <td className="px-4 py-2 font-medium">{l.action}</td>
                   <td className="px-4 py-2 text-muted-foreground">{l.module ?? "—"}</td>
                   <td className="px-4 py-2 text-muted-foreground text-xs">
-                    {l.entity_type ? `${l.entity_type}${l.entity_id ? ` · ${l.entity_id.slice(0, 8)}` : ""}` : "—"}
+                    {l.entity_type
+                      ? `${l.entity_type}${l.entity_id ? ` · ${l.entity_id.slice(0, 8)}` : ""}`
+                      : "—"}
                   </td>
                   <td className="px-4 py-2">
-                    <Badge variant={l.severity === "critical" ? "destructive" : l.severity === "warning" ? "secondary" : "outline"}>
+                    <Badge
+                      variant={
+                        l.severity === "critical"
+                          ? "destructive"
+                          : l.severity === "warning"
+                            ? "secondary"
+                            : "outline"
+                      }
+                    >
                       {l.severity}
                     </Badge>
                   </td>

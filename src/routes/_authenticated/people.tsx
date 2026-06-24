@@ -19,7 +19,8 @@ function PeoplePage() {
 
   const rows = (profiles.data ?? []).filter((p: any) => {
     if (!q) return true;
-    const t = `${p.full_name ?? ""} ${p.email ?? ""} ${p.position ?? ""} ${p.department ?? ""}`.toLowerCase();
+    const t =
+      `${p.full_name ?? ""} ${p.email ?? ""} ${p.position ?? ""} ${p.department ?? ""}`.toLowerCase();
     return t.includes(q.toLowerCase());
   });
 
@@ -27,25 +28,43 @@ function PeoplePage() {
     <div className="p-4 sm:p-6 md:p-8 max-w-[1500px] mx-auto">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] sm:flex sm:items-start sm:justify-between mb-6 gap-3 sm:gap-4">
         <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-          <div className="text-accent shrink-0"><PeopleOrbit size={44} /></div>
+          <div className="text-accent shrink-0">
+            <PeopleOrbit size={44} />
+          </div>
           <div className="min-w-0">
-            <h1 className="truncate text-xl sm:text-2xl font-semibold tracking-tight font-display">{t("page.people.title")}</h1>
-            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{t("page.people.subtitle")}</p>
+            <h1 className="truncate text-xl sm:text-2xl font-semibold tracking-tight font-display">
+              {t("page.people.title")}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+              {t("page.people.subtitle")}
+            </p>
           </div>
         </div>
         <div className="col-span-2 flex flex-wrap items-center gap-2 sm:col-auto">
-          <Link to="/team-map" className="h-8 px-3 inline-flex items-center gap-1.5 rounded-md border border-border bg-card hover:bg-muted text-xs font-medium shrink-0">
-            <Globe className="size-3.5 shrink-0" /> <span className="truncate">{t("page.people.teamMap")}</span>
+          <Link
+            to="/team-map"
+            className="h-8 px-3 inline-flex items-center gap-1.5 rounded-md border border-border bg-card hover:bg-muted text-xs font-medium shrink-0"
+          >
+            <Globe className="size-3.5 shrink-0" />{" "}
+            <span className="truncate">{t("page.people.teamMap")}</span>
           </Link>
           <div className="inline-flex rounded-lg border border-border p-0.5 bg-card shrink-0">
             {[
               { id: "grid", icon: LayoutGrid, label: "Grid" },
               { id: "table", icon: List, label: "Table" },
             ].map((v) => (
-              <button key={v.id} onClick={() => setView(v.id as any)}
+              <button
+                key={v.id}
+                onClick={() => setView(v.id as any)}
                 className={`px-2.5 h-7 rounded-md text-xs font-medium inline-flex items-center gap-1.5 transition shrink-0 ${
-                  view === v.id ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}><v.icon className="size-3.5 shrink-0" /><span className="hidden xs:inline sm:inline">{v.label}</span></button>
+                  view === v.id
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <v.icon className="size-3.5 shrink-0" />
+                <span className="hidden xs:inline sm:inline">{v.label}</span>
+              </button>
             ))}
           </div>
         </div>
@@ -53,27 +72,47 @@ function PeoplePage() {
 
       <div className="relative max-w-md mb-5">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("page.people.searchPh")} className="pl-9 h-9" />
+        <Input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder={t("page.people.searchPh")}
+          className="pl-9 h-9"
+        />
       </div>
 
       {view === "grid" && (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {rows.map((p: any) => (
-            <div key={p.id} className="rounded-xl border border-border bg-card p-5 flex items-center gap-4 hover:border-accent/40 transition">
+            <div
+              key={p.id}
+              className="rounded-xl border border-border bg-card p-5 flex items-center gap-4 hover:border-accent/40 transition"
+            >
               <div className="relative">
                 <div className="size-12 rounded-full bg-gradient-to-br from-accent to-primary text-primary-foreground grid place-items-center font-semibold">
                   {(p.full_name || p.email || "?").slice(0, 2).toUpperCase()}
                 </div>
-                <span className={`absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-card ${
-                  p.online_status === "online" ? "bg-emerald-500" :
-                  p.online_status === "busy" ? "bg-rose-500" :
-                  p.online_status === "away" ? "bg-amber-500" : "bg-muted-foreground/40"
-                }`} />
+                <span
+                  className={`absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-card ${
+                    p.online_status === "online"
+                      ? "bg-emerald-500"
+                      : p.online_status === "busy"
+                        ? "bg-rose-500"
+                        : p.online_status === "away"
+                          ? "bg-amber-500"
+                          : "bg-muted-foreground/40"
+                  }`}
+                />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-medium truncate">{p.full_name ?? p.email}</div>
-                <div className="text-xs text-muted-foreground truncate">{p.position ?? t("page.people.member")} · {p.department ?? "—"}</div>
-                {p.timezone && <div className="text-[10px] text-muted-foreground/70 mt-0.5">{p.country ?? ""} · {p.timezone}</div>}
+                <div className="text-xs text-muted-foreground truncate">
+                  {p.position ?? t("page.people.member")} · {p.department ?? "—"}
+                </div>
+                {p.timezone && (
+                  <div className="text-[10px] text-muted-foreground/70 mt-0.5">
+                    {p.country ?? ""} · {p.timezone}
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -90,8 +129,19 @@ function PeoplePage() {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 border-b border-border">
               <tr className="text-left">
-                {[t("tbl.name"), t("tbl.role"), t("tbl.department"), t("tbl.timezone"), t("tbl.status")].map(h => (
-                  <th key={h} className="px-4 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{h}</th>
+                {[
+                  t("tbl.name"),
+                  t("tbl.role"),
+                  t("tbl.department"),
+                  t("tbl.timezone"),
+                  t("tbl.status"),
+                ].map((h) => (
+                  <th
+                    key={h}
+                    className="px-4 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground"
+                  >
+                    {h}
+                  </th>
                 ))}
               </tr>
             </thead>
@@ -103,12 +153,19 @@ function PeoplePage() {
                   <td className="px-4 py-3 text-muted-foreground">{p.department ?? "—"}</td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">{p.timezone ?? "—"}</td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex items-center gap-1.5 text-xs ${
-                      p.online_status === "online" ? "text-emerald-600" :
-                      p.online_status === "busy" ? "text-rose-600" :
-                      p.online_status === "away" ? "text-amber-600" : "text-muted-foreground"
-                    }`}>
-                      <span className="size-1.5 rounded-full bg-current" /> {p.online_status ?? "offline"}
+                    <span
+                      className={`inline-flex items-center gap-1.5 text-xs ${
+                        p.online_status === "online"
+                          ? "text-emerald-600"
+                          : p.online_status === "busy"
+                            ? "text-rose-600"
+                            : p.online_status === "away"
+                              ? "text-amber-600"
+                              : "text-muted-foreground"
+                      }`}
+                    >
+                      <span className="size-1.5 rounded-full bg-current" />{" "}
+                      {p.online_status ?? "offline"}
                     </span>
                   </td>
                 </tr>

@@ -48,25 +48,55 @@ export function ProjectSuggestions({ projectId }: { projectId: string }) {
     const STALE_MS = 1000 * 60 * 60 * 24 * 14; // 14 days
 
     if (p && !p.owner_id) {
-      out.push({ id: "no-owner", icon: <UserX className="size-3.5" />, label: "Missing owner", hint: "This project has no owner assigned." });
+      out.push({
+        id: "no-owner",
+        icon: <UserX className="size-3.5" />,
+        label: "Missing owner",
+        hint: "This project has no owner assigned.",
+      });
     }
     if (p && !(p as any).deadline) {
-      out.push({ id: "no-deadline", icon: <Clock className="size-3.5" />, label: "Missing deadline", hint: "No end date set for this project." });
+      out.push({
+        id: "no-deadline",
+        icon: <Clock className="size-3.5" />,
+        label: "Missing deadline",
+        hint: "No end date set for this project.",
+      });
     }
 
-    const overdue = ts.filter((t: any) => t.due_date && t.status !== "done" && new Date(t.due_date).getTime() < now);
+    const overdue = ts.filter(
+      (t: any) => t.due_date && t.status !== "done" && new Date(t.due_date).getTime() < now,
+    );
     if (overdue.length) {
-      out.push({ id: "overdue", icon: <AlertCircle className="size-3.5" />, label: `${overdue.length} overdue task${overdue.length > 1 ? "s" : ""}`, hint: "Tasks past their due date." });
+      out.push({
+        id: "overdue",
+        icon: <AlertCircle className="size-3.5" />,
+        label: `${overdue.length} overdue task${overdue.length > 1 ? "s" : ""}`,
+        hint: "Tasks past their due date.",
+      });
     }
 
-    const stale = ts.filter((t: any) => t.status !== "done" && t.updated_at && now - new Date(t.updated_at).getTime() > STALE_MS);
+    const stale = ts.filter(
+      (t: any) =>
+        t.status !== "done" && t.updated_at && now - new Date(t.updated_at).getTime() > STALE_MS,
+    );
     if (stale.length) {
-      out.push({ id: "stale", icon: <Clock className="size-3.5" />, label: `${stale.length} stale task${stale.length > 1 ? "s" : ""}`, hint: "No updates in 14+ days." });
+      out.push({
+        id: "stale",
+        icon: <Clock className="size-3.5" />,
+        label: `${stale.length} stale task${stale.length > 1 ? "s" : ""}`,
+        hint: "No updates in 14+ days.",
+      });
     }
 
     const unassigned = ts.filter((t: any) => !t.assignee_id && t.status !== "done");
     if (unassigned.length) {
-      out.push({ id: "unassigned", icon: <UserX className="size-3.5" />, label: `${unassigned.length} unassigned`, hint: "Open tasks with no assignee." });
+      out.push({
+        id: "unassigned",
+        icon: <UserX className="size-3.5" />,
+        label: `${unassigned.length} unassigned`,
+        hint: "Open tasks with no assignee.",
+      });
     }
 
     return out;
@@ -76,15 +106,21 @@ export function ProjectSuggestions({ projectId }: { projectId: string }) {
   if (suggestions.length === 0) {
     return (
       <div className="rounded-xl border border-border bg-card p-4">
-        <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Assistant</div>
-        <p className="text-xs text-muted-foreground">Nothing to flag right now. This is based only on available data.</p>
+        <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+          Assistant
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Nothing to flag right now. This is based only on available data.
+        </p>
       </div>
     );
   }
 
   return (
     <div className="rounded-xl border border-border bg-card p-4">
-      <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Assistant suggestions</div>
+      <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+        Assistant suggestions
+      </div>
       <ul className="space-y-2">
         {suggestions.map((s) => (
           <li key={s.id} className="flex items-start gap-2 text-sm">

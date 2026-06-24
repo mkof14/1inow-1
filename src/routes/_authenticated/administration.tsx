@@ -2,8 +2,17 @@ import { createFileRoute, Outlet, Link, useRouterState } from "@tanstack/react-r
 import { cn } from "@/lib/utils";
 import { isFounderModeEnabled } from "@/lib/founder-mode";
 import {
-  LayoutDashboard, Users, Shield, Mail, ScrollText, Settings as SettingsIcon,
-  FileText, Send, Mic, FlaskConical, Download,
+  LayoutDashboard,
+  Users,
+  Shield,
+  Mail,
+  ScrollText,
+  Settings as SettingsIcon,
+  FileText,
+  Send,
+  Mic,
+  FlaskConical,
+  Download,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/administration")({
@@ -11,17 +20,17 @@ export const Route = createFileRoute("/_authenticated/administration")({
 });
 
 const tabs = [
-  { to: "/administration",              label: "Dashboard",   icon: LayoutDashboard, exact: true },
-  { to: "/administration/users",        label: "Users",       icon: Users },
-  { to: "/administration/roles",        label: "Roles & Permissions", icon: Shield },
-  { to: "/administration/invitations",  label: "Invitations", icon: Mail },
-  { to: "/administration/emails",       label: "Email Templates", icon: FileText },
-  { to: "/administration/email-logs",   label: "Email Logs",  icon: Send },
-  { to: "/administration/voice",        label: "Voice Controls", icon: Mic },
-  { to: "/administration/audit",        label: "Audit Logs",  icon: ScrollText },
-  { to: "/administration/settings",     label: "Settings",    icon: SettingsIcon },
+  { to: "/administration", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { to: "/administration/users", label: "Users", icon: Users },
+  { to: "/administration/roles", label: "Roles & Permissions", icon: Shield },
+  { to: "/administration/invitations", label: "Invitations", icon: Mail },
+  { to: "/administration/emails", label: "Email Templates", icon: FileText },
+  { to: "/administration/email-logs", label: "Email Logs", icon: Send },
+  { to: "/administration/voice", label: "Voice Controls", icon: Mic },
+  { to: "/administration/audit", label: "Audit Logs", icon: ScrollText },
+  { to: "/administration/settings", label: "Settings", icon: SettingsIcon },
   { to: "/administration/role-switcher", label: "Role Switcher", icon: FlaskConical },
-  { to: "/administration/downloads",    label: "Downloads",   icon: Download },
+  { to: "/administration/downloads", label: "Downloads", icon: Download },
 ];
 
 function AdminLayout() {
@@ -34,7 +43,9 @@ function AdminLayout() {
     <div className="flex h-full min-h-[calc(100vh-3.5rem)]">
       <aside className="w-56 shrink-0 border-r border-border bg-muted/20 p-3">
         <div className="px-2 pb-3">
-          <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Admin</div>
+          <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Admin
+          </div>
           <div className="text-sm font-semibold mt-0.5">Control Center</div>
         </div>
         <nav className="space-y-0.5">

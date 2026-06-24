@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import {
+  enableFounderMode,
   FOUNDER_EMAIL,
+  isFounderAccessAvailable,
   isFounderModeEnabled,
-  restoreFounderModeForSession,
 } from "@/lib/founder-mode";
 import {
   ArrowLeft,
@@ -19,7 +20,6 @@ import {
   Fingerprint,
   LockKeyhole,
   ShieldCheck,
-  Sparkles,
 } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
@@ -36,6 +36,7 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const googleEnabled = import.meta.env.VITE_ENABLE_GOOGLE_AUTH === "true";
+  const founderAccessAvailable = isFounderAccessAvailable();
   const founderMode = isFounderModeEnabled();
 
   useEffect(() => {
@@ -50,7 +51,7 @@ function AuthPage() {
     });
   }, [founderMode]);
 
-  if (!founderMode && sessionReady && hasSession) {
+  if ((founderMode || hasSession) && sessionReady) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -74,9 +75,7 @@ function AuthPage() {
 
   const signInWithGoogle = async () => {
     if (!googleEnabled) {
-      setError(
-        "Google sign-in is prepared but not enabled yet. Configure Supabase Google OAuth first.",
-      );
+      setError("Google sign-in is available after Supabase Google OAuth is configured.");
       return;
     }
 
@@ -93,7 +92,7 @@ function AuthPage() {
   };
 
   const enterFounderWorkspace = async () => {
-    restoreFounderModeForSession();
+    enableFounderMode();
     toast.success(`Local founder access: ${FOUNDER_EMAIL}`);
     await navigate({ to: "/dashboard", replace: true });
   };
@@ -123,7 +122,7 @@ function AuthPage() {
               <BrandWordmark size={58} />
             </div>
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-cyan-100">
-              <Sparkles className="size-3.5" />
+              <Fingerprint className="size-3.5" />
               Personal command system
             </div>
             <h1 className="text-5xl font-semibold leading-[1.02] tracking-tight xl:text-6xl">
@@ -221,7 +220,7 @@ function AuthPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-5">
-              {founderMode && (
+              {founderAccessAvailable && (
                 <Button
                   type="button"
                   className="w-full justify-between"

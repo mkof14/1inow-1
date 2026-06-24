@@ -1,6 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Apple, Smartphone, Download, ExternalLink, Info, Loader2, Activity, Copy, RefreshCw, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import {
+  Apple,
+  Smartphone,
+  Download,
+  ExternalLink,
+  Info,
+  Loader2,
+  Activity,
+  Copy,
+  RefreshCw,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+} from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,15 +47,21 @@ function DiagRow({
   hint?: React.ReactNode;
 }) {
   const Icon =
-    status === "ok" ? CheckCircle2 : status === "bad" ? XCircle : status === "warn" ? AlertCircle : Info;
+    status === "ok"
+      ? CheckCircle2
+      : status === "bad"
+        ? XCircle
+        : status === "warn"
+          ? AlertCircle
+          : Info;
   const tone =
     status === "ok"
       ? "text-emerald-500"
       : status === "bad"
-      ? "text-red-500"
-      : status === "warn"
-      ? "text-amber-500"
-      : "text-sky-500";
+        ? "text-red-500"
+        : status === "warn"
+          ? "text-amber-500"
+          : "text-sky-500";
   return (
     <div className="flex items-start justify-between gap-3 py-2 border-b border-border/50 last:border-0">
       <div className="flex items-start gap-2 min-w-0 flex-1">
@@ -52,7 +71,9 @@ function DiagRow({
           {hint && <div className="text-[11px] text-muted-foreground mt-0.5">{hint}</div>}
         </div>
       </div>
-      <div className="text-xs font-mono text-foreground/90 text-right break-all max-w-[55%]">{value}</div>
+      <div className="text-xs font-mono text-foreground/90 text-right break-all max-w-[55%]">
+        {value}
+      </div>
     </div>
   );
 }
@@ -159,9 +180,13 @@ function PwaDiagnostics({
   if (!diag.isSecure) reasons.push("Не HTTPS — PWA install требует secure context");
   if (diag.dismissedActive) reasons.push("Активен dismissed-at (TTL 7 дней)");
   if (diag.platform === "iOS Safari" && !bipFired)
-    reasons.push("iOS Safari не поддерживает beforeinstallprompt — нужен ручной путь «Поделиться → На экран „Домой“»");
+    reasons.push(
+      "iOS Safari не поддерживает beforeinstallprompt — нужен ручной путь «Поделиться → На экран „Домой“»",
+    );
   if (diag.platform.startsWith("Desktop") && !bipFired && !diag.standalone && !diag.inIframe)
-    reasons.push("BIP ещё не сработал — Chrome требует engagement (клик/скролл) и пройденные критерии PWA");
+    reasons.push(
+      "BIP ещё не сработал — Chrome требует engagement (клик/скролл) и пройденные критерии PWA",
+    );
 
   return (
     <Card className="border-accent/30">
@@ -174,7 +199,9 @@ function PwaDiagnostics({
             <div>
               <CardTitle className="flex items-center gap-2">
                 Диагностика PWA
-                <Badge variant="outline" className="text-[10px]">live</Badge>
+                <Badge variant="outline" className="text-[10px]">
+                  live
+                </Badge>
               </CardTitle>
               <CardDescription>
                 Почему install-баннер не появляется на конкретном устройстве.
@@ -204,7 +231,9 @@ function PwaDiagnostics({
           label="display-mode: standalone"
           status={diag.standalone ? "ok" : "info"}
           value={diag.standalone ? "true (установлено)" : "false"}
-          hint={diag.standalone ? "Приложение уже запущено как PWA" : "Открыто в браузерной вкладке"}
+          hint={
+            diag.standalone ? "Приложение уже запущено как PWA" : "Открыто в браузерной вкладке"
+          }
         />
         <DiagRow
           label="beforeinstallprompt"
@@ -269,7 +298,11 @@ function PwaDiagnostics({
           value={diag.hasSW ? "доступен" : "недоступен"}
           hint="Сам SW не зарегистрирован — используются HTTP cache headers"
         />
-        <DiagRow label="User-Agent" status="info" value={<span className="text-[10px]">{diag.ua}</span>} />
+        <DiagRow
+          label="User-Agent"
+          status="info"
+          value={<span className="text-[10px]">{diag.ua}</span>}
+        />
 
         {reasons.length > 0 && (
           <div className="mt-3 rounded-md border border-amber-500/30 bg-amber-500/5 p-3">
@@ -335,7 +368,8 @@ function DownloadsPage() {
     setBusy("apk");
     window.open(pwaBuilderUrl, "_blank", "noopener,noreferrer");
     toast.success("Открываю PWABuilder", {
-      description: "Нажми Package For Stores → Android → Generate. Получишь подписанный .apk и .aab.",
+      description:
+        "Нажми Package For Stores → Android → Generate. Получишь подписанный .apk и .aab.",
     });
     setTimeout(() => setBusy(null), 1200);
   };
@@ -343,7 +377,8 @@ function DownloadsPage() {
   const handleInstallPwa = async () => {
     if (!installEvt) {
       toast.info("Браузер не предложил установку", {
-        description: "Открой сайт в Chrome/Edge на Android или используй кнопку «Скачать APK» ниже.",
+        description:
+          "Открой сайт в Chrome/Edge на Android или используй кнопку «Скачать APK» ниже.",
       });
       return;
     }
@@ -381,7 +416,9 @@ function DownloadsPage() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   Android APK
-                  <Badge variant="outline" className="text-[10px]">PWABuilder</Badge>
+                  <Badge variant="outline" className="text-[10px]">
+                    PWABuilder
+                  </Badge>
                 </CardTitle>
                 <CardDescription>
                   Подписанный .apk и .aab без Chrome «Install app». Генерируется за ~30 секунд.
@@ -393,13 +430,23 @@ function DownloadsPage() {
         <CardContent className="space-y-3">
           <ol className="ml-5 list-decimal space-y-1 text-sm text-muted-foreground">
             <li>Нажми кнопку — откроется PWABuilder с уже подставленным адресом сайта.</li>
-            <li>Сверху справа: <span className="font-medium text-foreground">Package For Stores → Android</span>.</li>
-            <li>Выбери <span className="font-medium text-foreground">Test Package</span> (для себя) или <span className="font-medium text-foreground">Production</span>.</li>
+            <li>
+              Сверху справа:{" "}
+              <span className="font-medium text-foreground">Package For Stores → Android</span>.
+            </li>
+            <li>
+              Выбери <span className="font-medium text-foreground">Test Package</span> (для себя)
+              или <span className="font-medium text-foreground">Production</span>.
+            </li>
             <li>Скачается .zip с .apk внутри — перенеси на телефон и открой.</li>
           </ol>
           <div className="flex flex-wrap items-center gap-2">
             <Button onClick={handleAndroidApk} disabled={busy === "apk"}>
-              {busy === "apk" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Download className="mr-2 size-4" />}
+              {busy === "apk" ? (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              ) : (
+                <Download className="mr-2 size-4" />
+              )}
               Скачать Android APK
             </Button>
             <Button variant="outline" asChild>
@@ -439,7 +486,8 @@ function DownloadsPage() {
             <div className="mb-1 flex items-center gap-1.5 font-medium text-foreground">
               <Info className="size-3.5" /> iOS Safari
             </div>
-            Поделиться (квадрат со стрелкой) → <span className="font-medium">На экран «Домой»</span> → Добавить.
+            Поделиться (квадрат со стрелкой) → <span className="font-medium">На экран «Домой»</span>{" "}
+            → Добавить.
           </div>
         </CardContent>
       </Card>
@@ -454,7 +502,9 @@ function DownloadsPage() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 macOS Desktop
-                <Badge variant="outline" className="text-[10px]">Electron · auto-update</Badge>
+                <Badge variant="outline" className="text-[10px]">
+                  Electron · auto-update
+                </Badge>
               </CardTitle>
               <CardDescription>
                 Подписанная сборка с автообновлениями через GitHub Releases.
@@ -464,22 +514,35 @@ function DownloadsPage() {
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           <p className="text-muted-foreground">
-            Сборка и подпись делаются в GitHub Actions — workflow уже добавлен в репозиторий.
-            После настройки Apple Developer ID каждый push тега <code className="rounded bg-muted px-1.5 py-0.5">v*</code> публикует
-            подписанный и нотаризованный <code className="rounded bg-muted px-1.5 py-0.5">.dmg</code> в Releases,
+            Сборка и подпись делаются в GitHub Actions — workflow уже добавлен в репозиторий. После
+            настройки Apple Developer ID каждый push тега{" "}
+            <code className="rounded bg-muted px-1.5 py-0.5">v*</code> публикует подписанный и
+            нотаризованный <code className="rounded bg-muted px-1.5 py-0.5">.dmg</code> в Releases,
             и установленное приложение само его подтягивает.
           </p>
           <div className="rounded-md border border-border bg-muted/30 p-3 text-xs">
-            <div className="mb-2 font-medium text-foreground">Что нужно один раз положить в GitHub Secrets:</div>
+            <div className="mb-2 font-medium text-foreground">
+              Что нужно один раз положить в GitHub Secrets:
+            </div>
             <ul className="ml-4 list-disc space-y-0.5 text-muted-foreground">
-              <li><code>APPLE_ID</code>, <code>APPLE_APP_SPECIFIC_PASSWORD</code>, <code>APPLE_TEAM_ID</code></li>
-              <li><code>CSC_LINK</code> (base64 от .p12 сертификата Developer ID Application)</li>
-              <li><code>CSC_KEY_PASSWORD</code> (пароль .p12)</li>
-              <li><code>GH_TOKEN</code> создаётся автоматически</li>
+              <li>
+                <code>APPLE_ID</code>, <code>APPLE_APP_SPECIFIC_PASSWORD</code>,{" "}
+                <code>APPLE_TEAM_ID</code>
+              </li>
+              <li>
+                <code>CSC_LINK</code> (base64 от .p12 сертификата Developer ID Application)
+              </li>
+              <li>
+                <code>CSC_KEY_PASSWORD</code> (пароль .p12)
+              </li>
+              <li>
+                <code>GH_TOKEN</code> создаётся автоматически
+              </li>
             </ul>
           </div>
           <p className="text-xs text-muted-foreground">
-            Подробности: <code className="rounded bg-muted px-1.5 py-0.5">desktop/README.md</code> в репозитории.
+            Подробности: <code className="rounded bg-muted px-1.5 py-0.5">desktop/README.md</code> в
+            репозитории.
           </p>
         </CardContent>
       </Card>

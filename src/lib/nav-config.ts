@@ -6,42 +6,37 @@ import {
   TimelinePulse,
   PeopleOrbit,
   KnowledgeLens,
-  VaultMark,
   DecisionDiamond,
   IntelligenceBars,
   ShieldLine,
   GearMark,
   AdvisorRing,
 } from "@/components/icons/compass-icons";
-import { BrainPulse } from "@/components/icons/brain-pulse";
-import { ThinkingLoop } from "@/components/icons/thinking-loop";
 import type { ComponentType, SVGProps } from "react";
 
 export type NavIcon = ComponentType<SVGProps<SVGSVGElement> & { size?: number | string }>;
 export type NavItem = { to: string; label: string; icon: NavIcon; adminOnly?: boolean };
 export type NavSection = { id: string; label: string; items: NavItem[]; adminOnly?: boolean };
 
-/** Primary nav — max 6 items + "More" */
+/** Primary nav — focused working surface. */
 export const primaryNav: NavItem[] = [
   { to: "/dashboard", label: "Home", icon: BrandMark },
   { to: "/projects", label: "Projects", icon: PortfolioCard },
   { to: "/tasks", label: "Tasks", icon: ExecutionNode },
   { to: "/people", label: "People", icon: PeopleOrbit },
   { to: "/communication", label: "Messages", icon: SignalWave },
-  { to: "/files", label: "Files", icon: VaultMark },
 ];
 
-/** "More" — collapsed by default */
+/** Secondary destinations remain available without competing with daily work. */
 export const moreNav: NavItem[] = [
-  { to: "/brain", label: "System Brain", icon: BrainPulse },
-  { to: "/thinking", label: "Thinking Engine", icon: ThinkingLoop },
+  { to: "/intelligence", label: "Intelligence", icon: IntelligenceBars },
+  { to: "/ai", label: "Advisor", icon: AdvisorRing },
+  { to: "/portfolio", label: "Portfolio", icon: PortfolioCard },
   { to: "/calendar", label: "Calendar", icon: TimelinePulse },
   { to: "/reports", label: "Reports", icon: IntelligenceBars },
   { to: "/approvals", label: "Decisions", icon: DecisionDiamond },
   { to: "/documents", label: "Knowledge", icon: KnowledgeLens },
-  { to: "/intelligence", label: "Intelligence", icon: IntelligenceBars },
   { to: "/principles", label: "Principles", icon: ShieldLine },
-  { to: "/simplicity", label: "Simplicity", icon: ShieldLine },
   { to: "/settings", label: "Settings", icon: GearMark },
   { to: "/administration", label: "Admin", icon: ShieldLine },
 ];
@@ -57,12 +52,10 @@ export const navSections: NavSection[] = [
     id: "intelligence",
     label: "Intelligence",
     items: [
-      { to: "/brain", label: "System Brain", icon: BrainPulse },
-      { to: "/thinking", label: "Thinking Engine", icon: ThinkingLoop },
-      { to: "/ai", label: "Advisor", icon: AdvisorRing },
-      { to: "/reports", label: "Reports", icon: IntelligenceBars },
       { to: "/intelligence", label: "Intelligence", icon: IntelligenceBars },
+      { to: "/ai", label: "Advisor", icon: AdvisorRing },
       { to: "/portfolio", label: "Portfolio", icon: PortfolioCard },
+      { to: "/reports", label: "Reports", icon: IntelligenceBars },
     ],
   },
   {
@@ -75,7 +68,6 @@ export const navSections: NavSection[] = [
       { to: "/documents", label: "Knowledge", icon: KnowledgeLens },
       { to: "/teams", label: "Teams", icon: PeopleOrbit },
       { to: "/principles", label: "Principles", icon: ShieldLine },
-      { to: "/simplicity", label: "Simplicity", icon: ShieldLine },
       { to: "/settings", label: "Settings", icon: GearMark },
     ],
   },
@@ -87,11 +79,10 @@ export const footerSections: NavSection[] = [
     id: "insights",
     label: "Insights",
     items: [
+      { to: "/intelligence", label: "Intelligence", icon: IntelligenceBars },
       { to: "/portfolio", label: "Portfolio", icon: PortfolioCard },
       { to: "/reports", label: "Reports", icon: IntelligenceBars },
       { to: "/ai", label: "Advisor", icon: AdvisorRing },
-      { to: "/devices", label: "Devices", icon: SignalWave },
-      { to: "/calendar", label: "Calendar", icon: TimelinePulse },
     ],
   },
   {

@@ -1,13 +1,18 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { PortfolioCard, ExecutionNode, TimelinePulse, BrandMark } from "@/components/icons/compass-icons";
+import {
+  PortfolioCard,
+  ExecutionNode,
+  TimelinePulse,
+  BrandMark,
+} from "@/components/icons/compass-icons";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
 
 const items = [
-  { to: "/dashboard", label: "Home",     icon: BrandMark },
-  { to: "/projects",  label: "Projects", icon: PortfolioCard },
-  { to: "/tasks",     label: "Tasks",    icon: ExecutionNode },
-  { to: "/calendar",  label: "Calendar", icon: TimelinePulse },
+  { to: "/dashboard", label: "Home", icon: BrandMark },
+  { to: "/projects", label: "Projects", icon: PortfolioCard },
+  { to: "/tasks", label: "Tasks", icon: ExecutionNode },
+  { to: "/calendar", label: "Calendar", icon: TimelinePulse },
 ];
 
 export function MobileBottomNav() {
@@ -28,7 +33,9 @@ export function MobileBottomNav() {
                 to={item.to}
                 className={cn(
                   "flex flex-col items-center justify-center gap-1 min-h-14 py-2 text-[11px] transition-colors",
-                  active ? "text-accent font-medium" : "text-muted-foreground hover:text-foreground",
+                  active
+                    ? "text-accent font-medium"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <Icon className="size-5" />

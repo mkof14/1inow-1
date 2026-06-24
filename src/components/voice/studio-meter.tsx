@@ -73,7 +73,9 @@ export function StudioMeter({
       aria-label="Microphone level"
       className={cn(
         "flex h-7 items-end gap-[2px] rounded-md border bg-background/60 px-1.5 py-1 transition-colors",
-        active ? "border-accent/40 shadow-[inset_0_0_0_1px_hsl(var(--accent)/0.08)]" : "border-dashed border-border",
+        active
+          ? "border-accent/40 shadow-[inset_0_0_0_1px_hsl(var(--accent)/0.08)]"
+          : "border-dashed border-border",
         className,
       )}
     >

@@ -43,9 +43,7 @@ export function ComingSoon({
               {eyebrow}
             </p>
           )}
-          <h1 className="font-display text-3xl mt-2 text-gradient-accent sm:text-4xl">
-            {title}
-          </h1>
+          <h1 className="font-display text-3xl mt-2 text-gradient-accent sm:text-4xl">{title}</h1>
           <p className="text-sm text-muted-foreground mt-3 max-w-md leading-relaxed">
             {description}
           </p>

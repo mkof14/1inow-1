@@ -16,7 +16,7 @@ export const Route = createFileRoute("/how-it-works")({
       {
         property: "og:description",
         content:
-          "A practical operating flow for voice capture, projects, tasks, decisions, review, and future AI assistance.",
+          "A practical operating flow for voice capture, projects, tasks, decisions, review, and controlled intelligence.",
       },
       { property: "og:type", content: "article" },
     ],

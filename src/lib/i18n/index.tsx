@@ -32,7 +32,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   // Sync from profile on login
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("preferred_language").eq("id", user.id).maybeSingle()
+    supabase
+      .from("profiles")
+      .select("preferred_language")
+      .eq("id", user.id)
+      .maybeSingle()
       .then(({ data }) => {
         const p = data?.preferred_language;
         if (p && dictionaries[p]) setLangState(p);
@@ -43,7 +47,12 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     setLangState(l);
     if (typeof window !== "undefined") window.localStorage.setItem(STORAGE_KEY, l);
     if (typeof document !== "undefined") document.documentElement.lang = l;
-    if (user) supabase.from("profiles").update({ preferred_language: l }).eq("id", user.id).then(() => {});
+    if (user)
+      supabase
+        .from("profiles")
+        .update({ preferred_language: l })
+        .eq("id", user.id)
+        .then(() => {});
   };
 
   useEffect(() => {
@@ -63,9 +72,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       formatDate: (d) => new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(toDate(d)),
       formatTime: (d) => new Intl.DateTimeFormat(locale, { timeStyle: "short" }).format(toDate(d)),
       formatNumber: (n) => new Intl.NumberFormat(locale).format(n),
-      formatCurrency: (n, currency = "USD") => new Intl.NumberFormat(locale, { style: "currency", currency }).format(n),
+      formatCurrency: (n, currency = "USD") =>
+        new Intl.NumberFormat(locale, { style: "currency", currency }).format(n),
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lang, user]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

@@ -29,7 +29,8 @@ export function TranslateButton({
       return;
     }
     if (translated) {
-      const next: Mode = mode === "original" ? "translated" : mode === "translated" ? "both" : "original";
+      const next: Mode =
+        mode === "original" ? "translated" : mode === "translated" ? "both" : "original";
       setMode(next);
       onTranslated?.(translated, next);
       return;
@@ -56,7 +57,13 @@ export function TranslateButton({
         : t("common.showOriginal");
 
   return (
-    <Button variant="ghost" size="sm" onClick={handle} disabled={busy} className="h-6 gap-1 text-xs">
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={handle}
+      disabled={busy}
+      className="h-6 gap-1 text-xs"
+    >
       {busy ? <Loader2 className="size-3 animate-spin" /> : <Languages className="size-3" />}
       {label}
     </Button>

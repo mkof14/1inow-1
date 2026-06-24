@@ -6,10 +6,28 @@ import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { MicIndicator } from "@/components/voice/mic-indicator";
-import { Mic, Volume2, Keyboard, Save, Loader2, Play, Square, Radio, Wand2, Activity, Bot, PlugZap, ShieldCheck } from "lucide-react";
+import {
+  Mic,
+  Volume2,
+  Keyboard,
+  Save,
+  Loader2,
+  Play,
+  Square,
+  Radio,
+  Wand2,
+  Activity,
+  Bot,
+  PlugZap,
+  ShieldCheck,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchSystemSettings, updateSystemSetting, type SystemSetting } from "@/lib/admin-queries";
@@ -23,17 +41,22 @@ export const Route = createFileRoute("/_authenticated/administration/voice")({
 
 const LS_KEY = "dios.voice.user";
 type UserVoicePrefs = {
-  inputGain: number;       // 0..200
-  outputVolume: number;    // 0..100
-  threshold: number;       // 0..1
-  pttKey: string;          // hotkey
+  inputGain: number; // 0..200
+  outputVolume: number; // 0..100
+  threshold: number; // 0..1
+  pttKey: string; // hotkey
   sttLang: string;
   ttsVoice: string;
   autoSend: boolean;
 };
 const defaults: UserVoicePrefs = {
-  inputGain: 100, outputVolume: 80, threshold: 0.08,
-  pttKey: "Space", sttLang: "en", ttsVoice: "default", autoSend: false,
+  inputGain: 100,
+  outputVolume: 80,
+  threshold: 0.08,
+  pttKey: "Space",
+  sttLang: "en",
+  ttsVoice: "default",
+  autoSend: false,
 };
 
 const TTS_VOICES = [
@@ -52,14 +75,26 @@ const TTS_VOICES = [
 
 const AI_PROVIDER_OPTIONS = [
   { id: "disabled", label: "Disabled", note: "No external AI calls. Safe production default." },
-  { id: "openai", label: "OpenAI", note: "Future chat, planning, voice command reasoning, and summaries." },
+  {
+    id: "openai",
+    label: "OpenAI",
+    note: "Future chat, planning, voice command reasoning, and summaries.",
+  },
   { id: "anthropic", label: "Anthropic", note: "Future reasoning and long-context work." },
   { id: "gemini", label: "Gemini", note: "Future multimodal and Google ecosystem workflows." },
-  { id: "internal", label: "Internal gateway", note: "Future controlled router across approved models." },
+  {
+    id: "internal",
+    label: "Internal gateway",
+    note: "Future controlled router across approved models.",
+  },
 ];
 
 const STT_PROVIDER_OPTIONS = [
-  { id: "browser", label: "Browser", note: "Uses supported browser speech recognition. No server secret." },
+  {
+    id: "browser",
+    label: "Browser",
+    note: "Uses supported browser speech recognition. No server secret.",
+  },
   { id: "disabled", label: "Disabled", note: "Server transcription remains unavailable." },
   { id: "openai", label: "OpenAI", note: "Future server transcription endpoint." },
   { id: "google", label: "Google Speech", note: "Future cloud STT option." },
@@ -67,7 +102,11 @@ const STT_PROVIDER_OPTIONS = [
 ];
 
 const TTS_PROVIDER_OPTIONS = [
-  { id: "disabled", label: "Disabled", note: "No server voice synthesis. Safe production default." },
+  {
+    id: "disabled",
+    label: "Disabled",
+    note: "No server voice synthesis. Safe production default.",
+  },
   { id: "browser", label: "Browser", note: "Future client speech synthesis fallback." },
   { id: "openai", label: "OpenAI", note: "Future server TTS endpoint." },
   { id: "elevenlabs", label: "ElevenLabs", note: "Future high-quality voice option." },
@@ -117,7 +156,9 @@ function loadUserPrefs(): UserVoicePrefs {
   try {
     const raw = window.localStorage.getItem(LS_KEY);
     return raw ? { ...defaults, ...JSON.parse(raw) } : defaults;
-  } catch { return defaults; }
+  } catch {
+    return defaults;
+  }
 }
 
 function VoicePage() {
@@ -127,8 +168,7 @@ function VoicePage() {
     queryFn: fetchSystemSettings,
   });
 
-  const getSetting = (key: string, fb: unknown) =>
-    settings.find((s) => s.key === key)?.value ?? fb;
+  const getSetting = (key: string, fb: unknown) => settings.find((s) => s.key === key)?.value ?? fb;
 
   const [globalEnabled, setGlobalEnabled] = useState(true);
   const [requirePermission, setRequirePermission] = useState(true);
@@ -148,7 +188,6 @@ function VoicePage() {
     setTtsProvider(String(getSetting("voice.tts_provider", "disabled")));
     setModelRouterEnabled(Boolean(getSetting("ai.model_router_enabled", false)));
     setAiAuditEnabled(Boolean(getSetting("ai.audit_logging_enabled", true)));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.length]);
 
   const [prefs, setPrefs] = useState<UserVoicePrefs>(loadUserPrefs);
@@ -223,7 +262,7 @@ function VoicePage() {
           voice: prefs.ttsVoice && prefs.ttsVoice !== "default" ? prefs.ttsVoice : "alloy",
         }),
       });
-      if (!res.ok) throw new Error(await res.text() || `TTS ${res.status}`);
+      if (!res.ok) throw new Error((await res.text()) || `TTS ${res.status}`);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = audioRef.current ?? new Audio();
@@ -252,8 +291,7 @@ function VoicePage() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
       const mimeType =
-        ["audio/webm", "audio/mp4"].find((t) => MediaRecorder.isTypeSupported(t)) ||
-        "";
+        ["audio/webm", "audio/mp4"].find((t) => MediaRecorder.isTypeSupported(t)) || "";
       const mr = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       chunksRef.current = [];
       mr.ondataavailable = (e) => e.data.size > 0 && chunksRef.current.push(e.data);
@@ -267,10 +305,14 @@ function VoicePage() {
         setSttBusy(true);
         try {
           const fd = new FormData();
-          fd.append("file", blob, `rec.${(mr.mimeType || "webm").includes("mp4") ? "mp4" : "webm"}`);
+          fd.append(
+            "file",
+            blob,
+            `rec.${(mr.mimeType || "webm").includes("mp4") ? "mp4" : "webm"}`,
+          );
           if (/^[a-z]{2}$/i.test(prefs.sttLang)) fd.append("language", prefs.sttLang);
           const res = await fetch("/api/stt", { method: "POST", body: fd });
-          if (!res.ok) throw new Error(await res.text() || `STT ${res.status}`);
+          if (!res.ok) throw new Error((await res.text()) || `STT ${res.status}`);
           const data = (await res.json()) as { text: string };
           setTranscript(data.text || "(empty)");
           toast.success("Transcribed");
@@ -294,10 +336,15 @@ function VoicePage() {
     setSttRecording(false);
   };
 
-  useEffect(() => () => {
-    streamRef.current?.getTracks().forEach((t) => t.stop());
-    mediaRef.current?.state === "recording" && mediaRef.current.stop();
-  }, []);
+  useEffect(
+    () => () => {
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      if (mediaRef.current?.state === "recording") {
+        mediaRef.current.stop();
+      }
+    },
+    [],
+  );
 
   const update = useMutation({
     mutationFn: (p: { key: string; value: unknown }) => updateSystemSetting(p.key, p.value),
@@ -331,7 +378,8 @@ function VoicePage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Voice Controls</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Professional microphone, speech, and text-to-speech configuration. Global settings apply org-wide.
+          Professional microphone, speech, and text-to-speech configuration. Global settings apply
+          org-wide.
         </p>
       </div>
 
@@ -341,7 +389,7 @@ function VoicePage() {
             <PlugZap className="size-4 text-accent" /> Connection options
           </CardTitle>
           <CardDescription>
-            Prepared provider switches for future AI, speech-to-text, and text-to-speech integrations.
+            Provider controls for approved AI, speech-to-text, and text-to-speech integrations.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
@@ -418,8 +466,8 @@ function VoicePage() {
           </div>
 
           <div className="rounded-lg border border-dashed bg-background/60 p-3 text-xs text-muted-foreground">
-            These controls store approved connection intent only. Provider secrets must be added later in private deployment
-            environment variables, never in the repository.
+            These controls store approved connection intent only. Provider secrets must be added
+            later in private deployment environment variables, never in the repository.
           </div>
         </CardContent>
       </Card>
@@ -435,10 +483,13 @@ function VoicePage() {
           <MicIndicator
             bars={24}
             threshold={prefs.threshold}
-            onLevel={(lvl) => { liveLevelRef.current = lvl; }}
+            onLevel={(lvl) => {
+              liveLevelRef.current = lvl;
+            }}
           />
           <p className="text-xs text-muted-foreground">
-            Speak into your mic. Bars turn accent-colored when input exceeds the activation threshold.
+            Speak into your mic. Bars turn accent-colored when input exceeds the activation
+            threshold.
           </p>
 
           <div className="rounded-md border bg-muted/30 p-3 space-y-3">
@@ -458,7 +509,11 @@ function VoicePage() {
                 onClick={startCalibration}
                 className="gap-2 shrink-0"
               >
-                {calibrating ? <Loader2 className="size-4 animate-spin" /> : <Activity className="size-4" />}
+                {calibrating ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Activity className="size-4" />
+                )}
                 {calibrating ? "Listening…" : "Calibrate"}
               </Button>
             </div>
@@ -499,7 +554,8 @@ function VoicePage() {
             </div>
 
             <p className="text-xs text-muted-foreground">
-              Tip: start the Live mic test first, then click Calibrate and stay quiet. The new threshold is saved with your preferences.
+              Tip: start the Live mic test first, then click Calibrate and stay quiet. The new
+              threshold is saved with your preferences.
             </p>
           </div>
         </CardContent>
@@ -525,7 +581,8 @@ function VoicePage() {
               Speak
             </Button>
             <span className="text-xs text-muted-foreground">
-              Voice: <code className="font-mono">{prefs.ttsVoice || "alloy"}</code> · Volume {prefs.outputVolume}%
+              Voice: <code className="font-mono">{prefs.ttsVoice || "alloy"}</code> · Volume{" "}
+              {prefs.outputVolume}%
             </span>
           </div>
         </CardContent>
@@ -556,9 +613,7 @@ function VoicePage() {
             )}
           </div>
           {transcript && (
-            <div className="rounded-md border bg-muted/40 p-3 text-sm">
-              {transcript}
-            </div>
+            <div className="rounded-md border bg-muted/40 p-3 text-sm">{transcript}</div>
           )}
         </CardContent>
       </Card>
@@ -572,21 +627,31 @@ function VoicePage() {
           <div className="flex items-center justify-between">
             <div>
               <Label>Enable voice features</Label>
-              <p className="text-xs text-muted-foreground">Master switch for STT, TTS and voice commands.</p>
+              <p className="text-xs text-muted-foreground">
+                Master switch for STT, TTS and voice commands.
+              </p>
             </div>
             <Switch
               checked={globalEnabled}
-              onCheckedChange={(v) => { setGlobalEnabled(v); update.mutate({ key: "voice.enabled", value: v }); }}
+              onCheckedChange={(v) => {
+                setGlobalEnabled(v);
+                update.mutate({ key: "voice.enabled", value: v });
+              }}
             />
           </div>
           <div className="flex items-center justify-between">
             <div>
               <Label>Require explicit permission</Label>
-              <p className="text-xs text-muted-foreground">Prompt each user before activating microphone.</p>
+              <p className="text-xs text-muted-foreground">
+                Prompt each user before activating microphone.
+              </p>
             </div>
             <Switch
               checked={requirePermission}
-              onCheckedChange={(v) => { setRequirePermission(v); update.mutate({ key: "voice.require_permission", value: v }); }}
+              onCheckedChange={(v) => {
+                setRequirePermission(v);
+                update.mutate({ key: "voice.require_permission", value: v });
+              }}
             />
           </div>
           <div className="grid sm:grid-cols-2 gap-3">
@@ -594,12 +659,19 @@ function VoicePage() {
               <Label>Default STT language</Label>
               <Select
                 value={defaultSttLang}
-                onValueChange={(v) => { setDefaultSttLang(v); update.mutate({ key: "voice.default_stt_lang", value: v }); }}
+                onValueChange={(v) => {
+                  setDefaultSttLang(v);
+                  update.mutate({ key: "voice.default_stt_lang", value: v });
+                }}
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {Object.keys(dictionaries).map((c) => (
-                    <SelectItem key={c} value={c}>{c.toUpperCase()}</SelectItem>
+                    <SelectItem key={c} value={c}>
+                      {c.toUpperCase()}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -620,18 +692,27 @@ function VoicePage() {
               <span className="tabular-nums text-muted-foreground">{prefs.inputGain}%</span>
             </Label>
             <Slider
-              value={[prefs.inputGain]} min={0} max={200} step={5}
+              value={[prefs.inputGain]}
+              min={0}
+              max={200}
+              step={5}
               onValueChange={([v]) => setPrefs((p) => ({ ...p, inputGain: v }))}
               className="mt-2"
             />
           </div>
           <div>
             <Label className="flex items-center justify-between">
-              <span><Volume2 className="size-3.5 inline mr-1" />Output volume</span>
+              <span>
+                <Volume2 className="size-3.5 inline mr-1" />
+                Output volume
+              </span>
               <span className="tabular-nums text-muted-foreground">{prefs.outputVolume}%</span>
             </Label>
             <Slider
-              value={[prefs.outputVolume]} min={0} max={100} step={5}
+              value={[prefs.outputVolume]}
+              min={0}
+              max={100}
+              step={5}
               onValueChange={([v]) => setPrefs((p) => ({ ...p, outputVolume: v }))}
               className="mt-2"
             />
@@ -639,10 +720,15 @@ function VoicePage() {
           <div>
             <Label className="flex items-center justify-between">
               <span>Activation threshold</span>
-              <span className="tabular-nums text-muted-foreground">{Math.round(prefs.threshold * 100)}%</span>
+              <span className="tabular-nums text-muted-foreground">
+                {Math.round(prefs.threshold * 100)}%
+              </span>
             </Label>
             <Slider
-              value={[prefs.threshold * 100]} min={0} max={50} step={1}
+              value={[prefs.threshold * 100]}
+              min={0}
+              max={50}
+              step={1}
               onValueChange={([v]) => setPrefs((p) => ({ ...p, threshold: v / 100 }))}
               className="mt-2"
             />
@@ -650,11 +736,18 @@ function VoicePage() {
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
               <Label>Speech recognition language</Label>
-              <Select value={prefs.sttLang} onValueChange={(v) => setPrefs((p) => ({ ...p, sttLang: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={prefs.sttLang}
+                onValueChange={(v) => setPrefs((p) => ({ ...p, sttLang: v }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {Object.keys(dictionaries).map((c) => (
-                    <SelectItem key={c} value={c}>{c.toUpperCase()}</SelectItem>
+                    <SelectItem key={c} value={c}>
+                      {c.toUpperCase()}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -665,10 +758,14 @@ function VoicePage() {
                 value={prefs.ttsVoice || "alloy"}
                 onValueChange={(v) => setPrefs((p) => ({ ...p, ttsVoice: v }))}
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {TTS_VOICES.map((v) => (
-                    <SelectItem key={v.id} value={v.id}>{v.label}</SelectItem>
+                    <SelectItem key={v.id} value={v.id}>
+                      {v.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -676,10 +773,21 @@ function VoicePage() {
           </div>
           <div className="flex items-end gap-3">
             <div className="flex-1">
-              <Label className="flex items-center gap-1"><Keyboard className="size-3.5" />Push-to-talk key</Label>
+              <Label className="flex items-center gap-1">
+                <Keyboard className="size-3.5" />
+                Push-to-talk key
+              </Label>
               <div className="mt-1 flex items-center gap-2">
-                <code className="rounded border bg-muted px-2 py-1 text-xs font-mono">{prefs.pttKey}</code>
-                <Button type="button" variant="outline" size="sm" onClick={() => setRecording(true)} disabled={recording}>
+                <code className="rounded border bg-muted px-2 py-1 text-xs font-mono">
+                  {prefs.pttKey}
+                </code>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setRecording(true)}
+                  disabled={recording}
+                >
                   {recording ? "Press any key…" : "Change"}
                 </Button>
               </div>
@@ -695,7 +803,11 @@ function VoicePage() {
           </div>
           <div className="pt-2">
             <Button onClick={saveUser} className="gap-2">
-              {update.isPending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+              {update.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Save className="size-4" />
+              )}
               Save preferences
             </Button>
           </div>

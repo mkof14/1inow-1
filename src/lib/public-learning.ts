@@ -11,7 +11,6 @@ import {
   Mic,
   Radar,
   ShieldCheck,
-  Sparkles,
   Target,
 } from "lucide-react";
 
@@ -35,7 +34,7 @@ export const publicLearningTopics = [
       ],
       [
         "1inow direction",
-        "The voice layer is prepared for future speech-to-text and command routing. External AI and paid speech services remain disconnected until explicit approval.",
+        "The voice layer keeps raw capture, context, and review together so useful actions can be created with clear approval boundaries.",
       ],
     ],
     takeaways: ["Capture fast", "Process later", "Keep context", "Avoid losing intent"],
@@ -58,7 +57,7 @@ export const publicLearningTopics = [
       ],
       [
         "1inow direction",
-        "The next version should support triage states: keep, convert to task, attach to project, ask later, delegate, or archive.",
+        "A strong review queue uses practical triage states: keep, convert to task, attach to project, ask later, delegate, or archive.",
       ],
     ],
     takeaways: ["Collect inputs", "Clarify meaning", "Convert to action", "Archive noise"],
@@ -114,7 +113,7 @@ export const publicLearningTopics = [
     title: "Intelligence layer",
     eyebrow: "Guided work",
     summary:
-      "Prepare the system to guide work, summarize context, and suggest next steps without connecting external AI too early.",
+      "Guide work with context, summaries, questions, and next-step suggestions inside controlled workflows.",
     icon: Brain,
     image: "/marketing/voice-capture.jpg",
     sections: [
@@ -128,7 +127,7 @@ export const publicLearningTopics = [
       ],
       [
         "1inow direction",
-        "AI routes remain safe stubs now. Later production integrations can include OpenAI, Anthropic, Gemini, model routing, permissions, and AI audit logs.",
+        "Intelligence routes should stay permissioned, auditable, and grounded in workspace context before any action is taken.",
       ],
     ],
     takeaways: [
@@ -199,10 +198,10 @@ export const publicLearningTopics = [
       ],
       [
         "Can 1inow manage projects and personal work?",
-        "Yes. The product direction combines projects, tasks, voice capture, decisions, files, communication, and future assistant workflows.",
+        "Yes. The product direction combines projects, tasks, voice capture, decisions, files, communication, and controlled advisor workflows.",
       ],
       [
-        "Are paid services connected?",
+        "How are external services controlled?",
         "No new paid external services should be connected without explicit approval and a separate implementation task.",
       ],
     ],
@@ -295,7 +294,7 @@ export const publicLearningTopics = [
     title: "Automation readiness",
     eyebrow: "Future workflows",
     summary: "Automation should come after the workflow is clear, useful, and safe for daily use.",
-    icon: Sparkles,
+    icon: ClipboardList,
     image: "/marketing/execution-momentum.jpg",
     sections: [
       [
@@ -324,7 +323,7 @@ export const publicLearningTopics = [
     sections: [
       [
         "What it means",
-        "Device connections start with safe uploads: audio, video, transcripts, and notes from tools such as PLAUD or similar AI recorders.",
+        "Device connections start with safe uploads: audio, video, transcripts, and notes from compatible recorders and meeting capture tools.",
       ],
       [
         "How it helps",
@@ -378,7 +377,7 @@ const publicLearningTranslations: Record<
         ],
         [
           "Направление 1inow",
-          "Голосовой слой подготовлен для будущего распознавания речи и маршрутизации команд. Внешний AI и платные голосовые сервисы пока не подключены.",
+          "Голосовой слой держит сырое введение, контекст и ревью вместе, чтобы полезные действия создавались в понятных границах контроля.",
         ],
       ],
       takeaways: [
@@ -469,7 +468,7 @@ const publicLearningTranslations: Record<
         ],
         [
           "Направление 1inow",
-          "AI-маршруты пока остаются безопасными заглушками. Позже можно подключить OpenAI, Anthropic, Gemini, роутер моделей, права и аудит AI-действий.",
+          "Интеллектуальные маршруты должны быть ограничены правами, аудируемы и основаны на контексте рабочего пространства до любого действия.",
         ],
       ],
       takeaways: ["Сводить контекст", "Предлагать шаги", "Уважать права", "Аудировать AI"],
@@ -533,11 +532,11 @@ const publicLearningTranslations: Record<
       sections: [
         [
           "AI уже подключен?",
-          "Нет. AI-чат, speech-to-text и text-to-speech намеренно заглушены до отдельного утверждения производственной интеграции.",
+          "Интеллектуальные сценарии должны работать только через утвержденные маршруты, права и аудит.",
         ],
         [
           "Можно управлять проектами и личными делами?",
-          "Да. Направление продукта объединяет проекты, задачи, голосовой ввод, решения, файлы, коммуникацию и будущего помощника.",
+          "Да. Направление продукта объединяет проекты, задачи, голосовой ввод, решения, файлы, коммуникацию и контролируемые сценарии советника.",
         ],
         [
           "Платные сервисы подключены?",
@@ -658,7 +657,7 @@ const publicLearningTranslations: Record<
       sections: [
         [
           "Что это значит",
-          "Интеграции устройств начинаются с безопасного upload: аудио, видео, транскрипты и заметки из PLAUD или похожих AI-рекордеров.",
+          "Интеграции устройств начинаются с безопасного upload: аудио, видео, транскрипты и заметки из совместимых рекордеров и инструментов записи встреч.",
         ],
         [
           "Как это помогает",
@@ -689,7 +688,7 @@ const publicLearningTranslations: Record<
         ],
         [
           "Напрям 1inow",
-          "Голосовий шар підготовлений для майбутнього speech-to-text і маршрутизації команд. Зовнішній AI і платні голосові сервіси поки не підключені.",
+          "Голосовий шар тримає сире введення, контекст і огляд разом, щоб корисні дії створювалися в межах чіткого контролю.",
         ],
       ],
       takeaways: [
@@ -832,7 +831,7 @@ const publicLearningTranslations: Record<
         ],
         [
           "Можна керувати проєктами й особистими справами?",
-          "Так. Напрям продукту поєднує проєкти, задачі, голос, рішення, файли, комунікацію і майбутнього помічника.",
+          "Так. Напрям продукту поєднує проєкти, задачі, голос, рішення, файли, комунікацію і контрольовані сценарії радника.",
         ],
         [
           "Платні сервіси підключені?",
@@ -948,7 +947,7 @@ const publicLearningTranslations: Record<
       sections: [
         [
           "Що це означає",
-          "Інтеграції пристроїв починаються з безпечного upload: аудіо, відео, транскрипти і нотатки з PLAUD або схожих AI-рекордерів.",
+          "Інтеграції пристроїв починаються з безпечного upload: аудіо, відео, транскрипти і нотатки із сумісних рекордерів та інструментів запису зустрічей.",
         ],
         [
           "Як це допомагає",
@@ -984,7 +983,7 @@ const publicLearningTranslations: Record<
         ],
         [
           "Dirección de 1inow",
-          "La capa de voz está preparada para speech-to-text y enrutamiento de comandos. AI externa y servicios pagos siguen desconectados.",
+          "La capa de voz mantiene captura sin procesar, contexto y revisión juntos para crear acciones con límites claros de control.",
         ],
       ],
       takeaways: [
@@ -1229,7 +1228,7 @@ const publicLearningTranslations: Record<
         ],
         [
           "Dirección de 1inow",
-          "Automatizaciones futuras: reminders, summaries, task creation, notification routing y AI-assisted reviews tras aprobación.",
+          "Automatización útil: reminders, summaries, task creation, notification routing y reviews asistidas cuando permisos y auditoría son claros.",
         ],
       ],
       takeaways: ["Workflow primero", "Permisos antes", "Auditar todo", "Automatizar después"],
@@ -1242,7 +1241,7 @@ const publicLearningTranslations: Record<
       sections: [
         [
           "Qué significa",
-          "Las conexiones empiezan con upload seguro: audio, video, transcripciones y notas desde PLAUD o grabadoras AI similares.",
+          "Las conexiones empiezan con upload seguro: audio, video, transcripciones y notas desde grabadoras compatibles y herramientas de captura de reuniones.",
         ],
         [
           "Cómo ayuda",
@@ -1278,7 +1277,7 @@ const publicLearningTranslations: Record<
         ],
         [
           "1inow Richtung",
-          "Die Voice-Ebene ist für künftiges Speech-to-Text und Command Routing vorbereitet. Externe AI und bezahlte Voice-Services bleiben aus.",
+          "Die Voice-Ebene hält rohe Erfassung, Kontext und Review zusammen, damit Aktionen mit klaren Kontrollgrenzen entstehen.",
         ],
       ],
       takeaways: [
@@ -1437,7 +1436,7 @@ const publicLearningTranslations: Record<
         ],
         [
           "Kann 1inow Projekte und persönliche Arbeit verwalten?",
-          "Ja. Die Richtung verbindet Projekte, Aufgaben, Voice Capture, Entscheidungen, Dateien, Kommunikation und künftige Assistant-Flows.",
+          "Ja. Die Richtung verbindet Projekte, Aufgaben, Voice Capture, Entscheidungen, Dateien, Kommunikation und kontrollierte Advisor-Flows.",
         ],
         [
           "Sind bezahlte Services verbunden?",
@@ -1558,7 +1557,7 @@ const publicLearningTranslations: Record<
       sections: [
         [
           "Was es bedeutet",
-          "Geräteintegrationen beginnen mit sicherem Upload: Audio, Video, Transkripte und Notizen aus PLAUD oder ähnlichen AI-Recordern.",
+          "Geräteintegrationen beginnen mit sicherem Upload: Audio, Video, Transkripte und Notizen aus kompatiblen Recordern und Meeting-Capture-Tools.",
         ],
         [
           "Wie es hilft",

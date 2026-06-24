@@ -153,9 +153,8 @@ export function AppShell({ children }: { children: ReactNode }) {
     { to: "/projects", label: "Projects", icon: PortfolioCard },
     { to: "/tasks", label: "Tasks", icon: ExecutionNode },
     { to: "/calendar", label: "Calendar", icon: TimelinePulse },
-    { to: "/reports", label: "Reports", icon: IntelligenceBars },
     { to: "/communication", label: "Messages", icon: SignalWave },
-    { to: "/devices", label: "Devices", icon: SignalWave },
+    { to: "/intelligence", label: "Intelligence", icon: IntelligenceBars },
     { to: "/settings", label: "Settings", icon: GearMark },
     ...(isAdmin
       ? [{ to: "/administration", label: "Admin Console", icon: ShieldLine } as NavItem]
@@ -198,10 +197,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                 ? "gradient-compass text-primary-foreground border-transparent shadow-md"
                 : "border-accent/30 bg-accent/5 text-foreground hover:bg-accent/10",
             )}
-            title="1inow AI + Voice"
+            title="1inow Advisor"
           >
             <BrandMark className="size-4 shrink-0" />
-            <span className="flex-1 text-left">AI + Voice</span>
+            <span className="flex-1 text-left">Advisor</span>
             <kbd
               className={cn(
                 "text-[10px] font-mono px-1.5 py-0.5 rounded border",
@@ -314,10 +313,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                 aiOpen && "border-accent/50 bg-accent/10 text-accent",
               )}
               onClick={() => setAiOpen((v) => !v)}
-              title="1inow AI + Voice"
+              title="1inow Advisor"
             >
               <BrandMark className="size-4" />
-              <span>AI + Voice</span>
+              <span>Advisor</span>
               {aiOpen && (
                 <span className="absolute top-2 right-2 size-1.5 rounded-full bg-accent" />
               )}
@@ -384,7 +383,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             onCreate={() => setQuickOpen((n) => n + 1)}
             onAsk={() => setAiOpen(true)}
           />
-          <div className="min-w-0 w-full flex-1 pb-20 pt-5 md:pb-0 md:pt-6">{children}</div>
+          <div className="min-w-0 w-full flex-1 pb-20 pt-10 md:pb-0 md:pt-12 lg:pt-14">
+            {children}
+          </div>
           <footer className="mt-16 border-t border-border">
             <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
               <div className="mb-8">
@@ -634,9 +635,9 @@ function getLiveContext(pathname: string, unread: number) {
     pathname.startsWith("/thinking")
   ) {
     return {
-      status: "Thinking",
-      next: "Capture context, questions, and rules. AI execution stays intentionally disabled.",
-      signals: ["memory", "rules", "review"],
+      status: "Context",
+      next: "Capture context, questions, rules, and evidence before action.",
+      signals: ["memory", "rules", "confidence"],
     };
   }
   if (pathname.startsWith("/administration")) {

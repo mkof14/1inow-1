@@ -19,18 +19,17 @@ export function PageContainer({
   ...rest
 }: HTMLAttributes<HTMLDivElement> & { size?: "default" | "narrow" | "wide" | "full" }) {
   const max =
-    size === "narrow" ? "max-w-3xl"
-    : size === "wide" ? "max-w-7xl"
-    : size === "full" ? "max-w-none"
-    : "max-w-6xl";
+    size === "narrow"
+      ? "max-w-3xl"
+      : size === "wide"
+        ? "max-w-7xl"
+        : size === "full"
+          ? "max-w-none"
+          : "max-w-6xl";
   return (
     <div
       {...rest}
-      className={cn(
-        "mx-auto w-full min-w-0 px-4 py-5 sm:px-6 sm:py-6 lg:px-8",
-        max,
-        className,
-      )}
+      className={cn("mx-auto w-full min-w-0 px-4 py-5 sm:px-6 sm:py-6 lg:px-8", max, className)}
     >
       {children}
     </div>
@@ -56,7 +55,9 @@ export function SectionHeader({
       )}
     >
       <div className="min-w-0">
-        <h1 className="truncate text-xl font-semibold tracking-tight sm:text-2xl text-gradient-accent">{title}</h1>
+        <h1 className="truncate text-xl font-semibold tracking-tight sm:text-2xl text-gradient-accent">
+          {title}
+        </h1>
         {description && (
           <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{description}</p>
         )}
@@ -78,7 +79,10 @@ export function ResponsiveGrid({
     <div
       {...rest}
       className={cn("grid w-full min-w-0", gap, className)}
-      style={{ gridTemplateColumns: `repeat(auto-fill, minmax(min(${min}px, 100%), 1fr))`, ...(rest.style || {}) }}
+      style={{
+        gridTemplateColumns: `repeat(auto-fill, minmax(min(${min}px, 100%), 1fr))`,
+        ...(rest.style || {}),
+      }}
     >
       {children}
     </div>
@@ -109,18 +113,38 @@ export function SafeText({
   ...rest
 }: HTMLAttributes<HTMLElement> & { as?: any; lines?: number }) {
   const clamp = lines <= 1 ? "truncate" : "";
-  const style = lines > 1 ? { display: "-webkit-box", WebkitLineClamp: lines, WebkitBoxOrient: "vertical" as const, overflow: "hidden" } : undefined;
+  const style =
+    lines > 1
+      ? {
+          display: "-webkit-box",
+          WebkitLineClamp: lines,
+          WebkitBoxOrient: "vertical" as const,
+          overflow: "hidden",
+        }
+      : undefined;
   return (
-    <Tag {...rest} className={cn("min-w-0 break-words", clamp, className)} style={{ ...style, ...(rest as any).style }}>
+    <Tag
+      {...rest}
+      className={cn("min-w-0 break-words", clamp, className)}
+      style={{ ...style, ...(rest as any).style }}
+    >
       {children}
     </Tag>
   );
 }
 
 /** Wraps a table so it scrolls horizontally on small screens. */
-export function ResponsiveTable({ className, children }: { className?: string; children: ReactNode }) {
+export function ResponsiveTable({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
   return (
-    <div className={cn("w-full min-w-0 overflow-x-auto rounded-lg border border-border", className)}>
+    <div
+      className={cn("w-full min-w-0 overflow-x-auto rounded-lg border border-border", className)}
+    >
       <div className="min-w-full">{children}</div>
     </div>
   );
@@ -139,14 +163,14 @@ export function ImageFrame({
   className,
   rounded = true,
   ...rest
-}: ImgHTMLAttributes<HTMLImageElement> & { ratio?: string; fit?: "cover" | "contain"; rounded?: boolean }) {
+}: ImgHTMLAttributes<HTMLImageElement> & {
+  ratio?: string;
+  fit?: "cover" | "contain";
+  rounded?: boolean;
+}) {
   return (
     <div
-      className={cn(
-        "relative w-full overflow-hidden bg-muted",
-        rounded && "rounded-lg",
-        className,
-      )}
+      className={cn("relative w-full overflow-hidden bg-muted", rounded && "rounded-lg", className)}
       style={{ aspectRatio: ratio }}
     >
       <img
@@ -164,7 +188,13 @@ export function ImageFrame({
 }
 
 /** Centers a modal body and keeps it inside the viewport. */
-export function ModalContainer({ className, children }: { className?: string; children: ReactNode }) {
+export function ModalContainer({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
   return (
     <div
       className={cn(
@@ -191,13 +221,21 @@ export function SidePanel({
 }) {
   if (overlay) {
     return (
-      <aside className={cn("fixed inset-y-0 right-0 z-30 max-w-[90vw] border-l border-border bg-card shadow-xl", width, className)}>
+      <aside
+        className={cn(
+          "fixed inset-y-0 right-0 z-30 max-w-[90vw] border-l border-border bg-card shadow-xl",
+          width,
+          className,
+        )}
+      >
         <div className="h-full overflow-y-auto p-4">{children}</div>
       </aside>
     );
   }
   return (
-    <aside className={cn("hidden shrink-0 border-l border-border bg-card xl:block", width, className)}>
+    <aside
+      className={cn("hidden shrink-0 border-l border-border bg-card xl:block", width, className)}
+    >
       <div className="sticky top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto p-4">{children}</div>
     </aside>
   );
@@ -210,13 +248,28 @@ export function SidePanel({
 type TextProps = HTMLAttributes<HTMLElement> & { as?: ElementType };
 
 export function PageTitle({ as: Tag = "h1", className, ...r }: TextProps) {
-  return <Tag {...r} className={cn("min-w-0 truncate text-xl font-semibold leading-tight tracking-tight sm:text-2xl", className)} />;
+  return (
+    <Tag
+      {...r}
+      className={cn(
+        "min-w-0 truncate text-xl font-semibold leading-tight tracking-tight sm:text-2xl",
+        className,
+      )}
+    />
+  );
 }
 export function SectionTitle({ as: Tag = "h2", className, ...r }: TextProps) {
-  return <Tag {...r} className={cn("min-w-0 truncate text-base font-semibold leading-snug sm:text-lg", className)} />;
+  return (
+    <Tag
+      {...r}
+      className={cn("min-w-0 truncate text-base font-semibold leading-snug sm:text-lg", className)}
+    />
+  );
 }
 export function CardTitle({ as: Tag = "h3", className, ...r }: TextProps) {
-  return <Tag {...r} className={cn("min-w-0 truncate text-sm font-semibold leading-snug", className)} />;
+  return (
+    <Tag {...r} className={cn("min-w-0 truncate text-sm font-semibold leading-snug", className)} />
+  );
 }
 export function Body({ as: Tag = "p", className, ...r }: TextProps) {
   return <Tag {...r} className={cn("text-sm leading-relaxed text-foreground", className)} />;
@@ -225,7 +278,12 @@ export function Small({ as: Tag = "p", className, ...r }: TextProps) {
   return <Tag {...r} className={cn("text-xs leading-relaxed text-muted-foreground", className)} />;
 }
 export function Label({ as: Tag = "span", className, ...r }: TextProps) {
-  return <Tag {...r} className={cn("text-xs font-medium uppercase tracking-wide text-muted-foreground", className)} />;
+  return (
+    <Tag
+      {...r}
+      className={cn("text-xs font-medium uppercase tracking-wide text-muted-foreground", className)}
+    />
+  );
 }
 
 /* -------------------------------------------------------------- */
@@ -248,12 +306,21 @@ export function DataCard({
   className?: string;
 }) {
   return (
-    <SafeCard className={cn("relative flex flex-col gap-2 surface-aurora shimmer-border ring-accent-soft", className)}>
+    <SafeCard
+      className={cn(
+        "relative flex flex-col gap-2 surface-aurora shimmer-border ring-accent-soft",
+        className,
+      )}
+    >
       <div className="flex min-w-0 items-center justify-between gap-2">
-        <span className="truncate text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</span>
+        <span className="truncate text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          {label}
+        </span>
         {Icon && <Icon className="size-4 shrink-0 text-muted-foreground" />}
       </div>
-      <div className="min-w-0 truncate text-2xl font-semibold leading-tight text-gradient-accent">{value}</div>
+      <div className="min-w-0 truncate text-2xl font-semibold leading-tight text-gradient-accent">
+        {value}
+      </div>
       {hint && <div className="line-clamp-2 text-xs text-muted-foreground">{hint}</div>}
       {footer && <div className="mt-1 border-t border-border pt-2 text-xs">{footer}</div>}
     </SafeCard>
@@ -288,7 +355,12 @@ export function ModalShell({
   const max = size === "sm" ? "sm:max-w-md" : size === "lg" ? "sm:max-w-3xl" : "sm:max-w-xl";
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn("flex max-h-[90vh] w-[calc(100vw-2rem)] flex-col gap-0 overflow-hidden p-0", max)}>
+      <DialogContent
+        className={cn(
+          "flex max-h-[90vh] w-[calc(100vw-2rem)] flex-col gap-0 overflow-hidden p-0",
+          max,
+        )}
+      >
         <DialogHeader className="border-b border-border p-5">
           <DialogTitle className="truncate text-base font-semibold">{title}</DialogTitle>
           {description && (
@@ -326,24 +398,44 @@ export function EmptyState({
   className?: string;
 }) {
   return (
-    <div className={cn("relative overflow-hidden rounded-2xl border border-border surface-aurora shimmer-border ring-accent-soft flex flex-col items-center justify-center px-6 py-16 text-center", className)}>
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-2xl border border-border surface-aurora shimmer-border ring-accent-soft flex flex-col items-center justify-center px-6 py-16 text-center",
+        className,
+      )}
+    >
       <div className="absolute inset-x-8 top-6 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
       <div className="relative mb-4 grid size-12 place-items-center rounded-xl border border-accent/25 bg-accent/10 text-accent">
         <Icon className="size-6" />
         <span className="absolute -right-1 -top-1 size-2.5 rounded-full bg-accent live-dot" />
       </div>
       <h3 className="text-base font-semibold text-foreground">{title}</h3>
-      {description && <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">{description}</p>}
+      {description && (
+        <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">{description}</p>
+      )}
       {action && (
-        <Button className="mt-5" onClick={action.onClick}>{action.label}</Button>
+        <Button className="mt-5" onClick={action.onClick}>
+          {action.label}
+        </Button>
       )}
     </div>
   );
 }
 
-export function LoadingState({ label = "Loading…", className }: { label?: string; className?: string }) {
+export function LoadingState({
+  label = "Loading…",
+  className,
+}: {
+  label?: string;
+  className?: string;
+}) {
   return (
-    <div className={cn("flex flex-col items-center justify-center gap-3 px-6 py-16 text-sm text-muted-foreground", className)}>
+    <div
+      className={cn(
+        "flex flex-col items-center justify-center gap-3 px-6 py-16 text-sm text-muted-foreground",
+        className,
+      )}
+    >
       <div className="relative grid size-12 place-items-center rounded-xl border border-accent/25 bg-accent/10 text-accent">
         <Loader2 className="size-5 animate-spin" />
         <span className="absolute -right-1 -top-1 size-2.5 rounded-full bg-accent live-dot" />
@@ -365,14 +457,20 @@ export function ErrorState({
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-col items-center justify-center px-6 py-16 text-center", className)}>
+    <div
+      className={cn("flex flex-col items-center justify-center px-6 py-16 text-center", className)}
+    >
       <div className="mb-4 grid size-12 place-items-center rounded-xl bg-destructive/10 text-destructive">
         <AlertCircle className="size-6" />
       </div>
       <h3 className="text-base font-semibold text-foreground">{title}</h3>
-      {description && <p className="mt-1.5 max-w-md text-sm text-muted-foreground">{description}</p>}
+      {description && (
+        <p className="mt-1.5 max-w-md text-sm text-muted-foreground">{description}</p>
+      )}
       {retry && (
-        <Button variant="outline" className="mt-5" onClick={retry}>Try again</Button>
+        <Button variant="outline" className="mt-5" onClick={retry}>
+          Try again
+        </Button>
       )}
     </div>
   );

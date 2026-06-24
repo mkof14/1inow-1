@@ -9,26 +9,31 @@ export function Fab({ aiOpen, aiMode }: { aiOpen?: boolean; aiMode?: string }) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
-  const go = (to: string) => () => { setOpen(false); navigate({ to }); };
+  const go = (to: string) => () => {
+    setOpen(false);
+    navigate({ to });
+  };
 
   const actions: Action[] = [
-    { label: "New project",  icon: FolderPlus,    onClick: go("/projects") },
-    { label: "New task",     icon: CheckSquare,   onClick: go("/tasks") },
-    { label: "New message",  icon: MessageSquare, onClick: go("/communication") },
-    { label: "New meeting",  icon: Calendar,      onClick: go("/calendar") },
-    { label: "New document", icon: FileText,      onClick: go("/documents") },
+    { label: "New project", icon: FolderPlus, onClick: go("/projects") },
+    { label: "New task", icon: CheckSquare, onClick: go("/tasks") },
+    { label: "New message", icon: MessageSquare, onClick: go("/communication") },
+    { label: "New meeting", icon: Calendar, onClick: go("/calendar") },
+    { label: "New document", icon: FileText, onClick: go("/documents") },
   ];
 
   const isDockedOpen = aiOpen && aiMode === "docked";
   const isFloatingOpen = aiOpen && aiMode === "floating";
 
   return (
-    <div className={cn(
-      "fixed bottom-20 md:bottom-6 z-20 flex flex-col items-end gap-2 transition-[right,bottom] duration-300",
-      isDockedOpen && "right-5 lg:right-[410px]",
-      isFloatingOpen && "right-5 lg:right-[456px]",
-      !isDockedOpen && !isFloatingOpen && "right-5"
-    )}>
+    <div
+      className={cn(
+        "fixed bottom-20 md:bottom-6 z-20 flex flex-col items-end gap-2 transition-[right,bottom] duration-300",
+        isDockedOpen && "right-5 lg:right-[410px]",
+        isFloatingOpen && "right-5 lg:right-[456px]",
+        !isDockedOpen && !isFloatingOpen && "right-5",
+      )}
+    >
       {open && (
         <div className="flex flex-col items-end gap-2 mb-1 fade-rise">
           {actions.map((a) => (

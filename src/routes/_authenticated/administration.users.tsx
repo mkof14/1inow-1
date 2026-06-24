@@ -1,12 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
-import { fetchProfiles, fetchUserRoles, setUserRole, updateProfileStatus, ROLES, ROLE_LABELS, type AppRole } from "@/lib/admin-queries";
+import {
+  fetchProfiles,
+  fetchUserRoles,
+  setUserRole,
+  updateProfileStatus,
+  ROLES,
+  ROLE_LABELS,
+  type AppRole,
+} from "@/lib/admin-queries";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Search } from "lucide-react";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
@@ -29,21 +43,31 @@ function UsersPage() {
   }, [roles.data]);
 
   const setRole = useMutation({
-    mutationFn: ({ user_id, role }: { user_id: string; role: AppRole }) => setUserRole(user_id, role),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-user-roles"] }); toast.success("Role updated"); },
+    mutationFn: ({ user_id, role }: { user_id: string; role: AppRole }) =>
+      setUserRole(user_id, role),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-user-roles"] });
+      toast.success("Role updated");
+    },
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
 
   const setStatus = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: "active" | "inactive" }) => updateProfileStatus(id, status),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-profiles"] }); toast.success("Status updated"); },
+    mutationFn: ({ id, status }: { id: string; status: "active" | "inactive" }) =>
+      updateProfileStatus(id, status),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-profiles"] });
+      toast.success("Status updated");
+    },
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
 
   const filtered = (profiles.data ?? []).filter((p) => {
     const s = q.toLowerCase();
     if (!s) return true;
-    return (p.email ?? "").toLowerCase().includes(s) || (p.full_name ?? "").toLowerCase().includes(s);
+    return (
+      (p.email ?? "").toLowerCase().includes(s) || (p.full_name ?? "").toLowerCase().includes(s)
+    );
   });
 
   return (
@@ -55,7 +79,12 @@ function UsersPage() {
         </div>
         <div className="relative w-72">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("page.users.searchPh")} className="pl-8" />
+          <Input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={t("page.users.searchPh")}
+            className="pl-8"
+          />
         </div>
       </div>
 
@@ -75,12 +104,18 @@ function UsersPage() {
             </thead>
             <tbody className="divide-y divide-border">
               {profiles.isLoading && (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">{t("common.loading")}</td></tr>
+                <tr>
+                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                    {t("common.loading")}
+                  </td>
+                </tr>
               )}
               {!profiles.isLoading && filtered.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                  {profiles.error ? t("page.users.signInPrompt") : t("page.users.empty")}
-                </td></tr>
+                <tr>
+                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                    {profiles.error ? t("page.users.signInPrompt") : t("page.users.empty")}
+                  </td>
+                </tr>
               )}
               {filtered.map((p) => {
                 const role = roleByUser.get(p.id) ?? "guest";
@@ -96,10 +131,19 @@ function UsersPage() {
                     </td>
                     <td className="px-4 py-2.5 text-muted-foreground">{p.email}</td>
                     <td className="px-4 py-2.5">
-                      <Select value={role} onValueChange={(v) => setRole.mutate({ user_id: p.id, role: v as AppRole })}>
-                        <SelectTrigger className="h-8 w-40 text-xs"><SelectValue /></SelectTrigger>
+                      <Select
+                        value={role}
+                        onValueChange={(v) => setRole.mutate({ user_id: p.id, role: v as AppRole })}
+                      >
+                        <SelectTrigger className="h-8 w-40 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
                         <SelectContent>
-                          {ROLES.map((r) => <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>)}
+                          {ROLES.map((r) => (
+                            <SelectItem key={r} value={r}>
+                              {ROLE_LABELS[r]}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </td>
@@ -108,14 +152,22 @@ function UsersPage() {
                         {p.status ?? "active"}
                       </Badge>
                     </td>
-                    <td className="px-4 py-2.5 text-muted-foreground uppercase text-xs">{p.language ?? "en"}</td>
+                    <td className="px-4 py-2.5 text-muted-foreground uppercase text-xs">
+                      {p.language ?? "en"}
+                    </td>
                     <td className="px-4 py-2.5 text-muted-foreground text-xs">
                       {new Date(p.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-2.5 text-right">
                       <Button
-                        size="sm" variant="ghost"
-                        onClick={() => setStatus.mutate({ id: p.id, status: p.status === "active" ? "inactive" : "active" })}
+                        size="sm"
+                        variant="ghost"
+                        onClick={() =>
+                          setStatus.mutate({
+                            id: p.id,
+                            status: p.status === "active" ? "inactive" : "active",
+                          })
+                        }
                       >
                         {p.status === "active" ? t("btn.deactivate") : t("btn.activate")}
                       </Button>

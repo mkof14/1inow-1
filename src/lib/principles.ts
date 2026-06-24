@@ -71,7 +71,7 @@ export const productPrinciples: Principle[] = [
   {
     id: "no-fake-intelligence",
     title: "No fake intelligence",
-    rule: "Never invent facts, names, numbers, documents, deadlines, promises or summaries. If no source exists, say: \"No source found.\"",
+    rule: 'Never invent facts, names, numbers, documents, deadlines, promises or summaries. If no source exists, say: "No source found."',
   },
   {
     id: "verified-memory",
@@ -125,7 +125,15 @@ export const assistantBehavior = {
     "This is based on available data.",
     "This needs your approval.",
   ] as const,
-  neverInvent: ["facts", "names", "numbers", "documents", "deadlines", "promises", "summaries"] as const,
+  neverInvent: [
+    "facts",
+    "names",
+    "numbers",
+    "documents",
+    "deadlines",
+    "promises",
+    "summaries",
+  ] as const,
   notifyOnly: [
     "risk",
     "overdue items",

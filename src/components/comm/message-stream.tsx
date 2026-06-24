@@ -8,7 +8,8 @@ import { MessageComposer } from "./message-composer";
 import { Hash, Lock, Globe, Pin } from "lucide-react";
 
 export function MessageStream({
-  channel, onOpenThread,
+  channel,
+  onOpenThread,
 }: {
   channel: Channel;
   onOpenThread: (id: string) => void;
@@ -32,12 +33,18 @@ export function MessageStream({
   useEffect(() => {
     const ch = supabase
       .channel(`stream-${channel.id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "messages", filter: `channel_id=eq.${channel.id}` },
-          () => qc.invalidateQueries({ queryKey: ["messages", channel.id] }))
-      .on("postgres_changes", { event: "*", schema: "public", table: "message_reactions" },
-          () => qc.invalidateQueries({ queryKey: ["reactions", channel.id] }))
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "messages", filter: `channel_id=eq.${channel.id}` },
+        () => qc.invalidateQueries({ queryKey: ["messages", channel.id] }),
+      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "message_reactions" }, () =>
+        qc.invalidateQueries({ queryKey: ["reactions", channel.id] }),
+      )
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [channel.id, qc]);
 
   // Mark read on focus / when messages load
@@ -58,7 +65,9 @@ export function MessageStream({
         <Icon className="size-4 text-muted-foreground" />
         <div>
           <div className="text-sm font-semibold leading-tight">{channel.name}</div>
-          {channel.description && <div className="text-xs text-muted-foreground leading-tight">{channel.description}</div>}
+          {channel.description && (
+            <div className="text-xs text-muted-foreground leading-tight">{channel.description}</div>
+          )}
         </div>
       </div>
 

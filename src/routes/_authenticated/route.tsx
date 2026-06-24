@@ -17,5 +17,9 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 function AuthedLayout() {
-  return <AppShell><Outlet /></AppShell>;
+  return (
+    <AppShell>
+      <Outlet />
+    </AppShell>
+  );
 }

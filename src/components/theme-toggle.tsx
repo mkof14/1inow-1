@@ -3,7 +3,13 @@ import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export function ThemeToggle({ className, showLabel = false }: { className?: string; showLabel?: boolean }) {
+export function ThemeToggle({
+  className,
+  showLabel = false,
+}: {
+  className?: string;
+  showLabel?: boolean;
+}) {
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
@@ -28,7 +34,13 @@ export function ThemeToggle({ className, showLabel = false }: { className?: stri
   }
 
   return (
-    <Button variant="ghost" size="icon" onClick={toggle} className={className} aria-label="Toggle theme">
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggle}
+      className={className}
+      aria-label="Toggle theme"
+    >
       {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
     </Button>
   );

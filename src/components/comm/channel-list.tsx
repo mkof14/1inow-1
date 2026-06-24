@@ -8,7 +8,11 @@ import { NewChannelDialog } from "./new-channel-dialog";
 import { useT } from "@/lib/i18n";
 
 const ICONS: Record<string, typeof Hash> = {
-  company: Globe, project: Hash, private: Lock, group: Users, dm: Hash,
+  company: Globe,
+  project: Hash,
+  private: Lock,
+  group: Users,
+  dm: Hash,
 };
 
 const GROUP_ORDER = ["company", "project", "group", "private", "dm"] as const;
@@ -20,18 +24,29 @@ const GROUP_KEY: Record<string, string> = {
   dm: "comm.section.dm",
 };
 
-export function ChannelList({ activeId, onSelect }: { activeId: string | null; onSelect: (c: Channel) => void }) {
+export function ChannelList({
+  activeId,
+  onSelect,
+}: {
+  activeId: string | null;
+  onSelect: (c: Channel) => void;
+}) {
   const t = useT();
   const { data: channels = [] } = useQuery({ queryKey: ["channels"], queryFn: fetchChannels });
   const [creating, setCreating] = useState(false);
 
-  const grouped = GROUP_ORDER.map((g) => ({ key: g, items: channels.filter((c) => c.type === g) })).filter((g) => g.items.length > 0);
+  const grouped = GROUP_ORDER.map((g) => ({
+    key: g,
+    items: channels.filter((c) => c.type === g),
+  })).filter((g) => g.items.length > 0);
 
   return (
     <aside className="w-64 shrink-0 border-r border-border bg-sidebar/40 flex flex-col">
       <div className="h-14 px-4 flex items-center justify-between border-b border-border">
         <div className="text-sm font-semibold">{t("comm.channels")}</div>
-        <Button variant="ghost" size="icon" onClick={() => setCreating(true)}><Plus className="size-4" /></Button>
+        <Button variant="ghost" size="icon" onClick={() => setCreating(true)}>
+          <Plus className="size-4" />
+        </Button>
       </div>
       <div className="flex-1 overflow-y-auto py-2">
         {grouped.map((g) => (
@@ -48,7 +63,9 @@ export function ChannelList({ activeId, onSelect }: { activeId: string | null; o
                   onClick={() => onSelect(c)}
                   className={cn(
                     "w-full flex items-center gap-2 px-4 py-1.5 text-sm text-left transition-colors",
-                    active ? "bg-card text-foreground font-medium" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+                    active
+                      ? "bg-card text-foreground font-medium"
+                      : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
                   )}
                 >
                   <Icon className="size-3.5 shrink-0" />

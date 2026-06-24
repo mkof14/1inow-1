@@ -64,19 +64,19 @@
 :root {
   --radius: 0.75rem;
   /* 1inow — cream + deep navy graphite + sage green */
-  --background: oklch(0.965 0.022 90);          /* richer cream */
-  --foreground: oklch(0.22 0.02 230);           /* graphite navy */
+  --background: oklch(0.965 0.022 90); /* richer cream */
+  --foreground: oklch(0.22 0.02 230); /* graphite navy */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.22 0.02 230);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.22 0.02 230);
-  --primary: oklch(0.2 0.025 220);              /* deep navy graphite */
+  --primary: oklch(0.2 0.025 220); /* deep navy graphite */
   --primary-foreground: oklch(0.97 0.012 90);
   --secondary: oklch(0.94 0.012 150);
   --secondary-foreground: oklch(0.2 0.025 220);
   --muted: oklch(0.93 0.018 150);
   --muted-foreground: oklch(0.5 0.015 230);
-  --accent: oklch(0.74 0.07 155);               /* sage green */
+  --accent: oklch(0.74 0.07 155); /* sage green */
   --accent-foreground: oklch(0.18 0.025 220);
   --destructive: oklch(0.6 0.19 27);
   --destructive-foreground: oklch(0.99 0 0);
@@ -108,7 +108,9 @@
   --surface-panel: oklch(0.985 0.01 90);
   --surface-raised: oklch(0.975 0.01 90);
   --divider-platinum: oklch(0.9 0.01 150);
-  --glow-cyan: 0 0 0 1px color-mix(in oklab, var(--accent) 30%, transparent), 0 8px 30px -12px color-mix(in oklab, var(--accent) 35%, transparent);
+  --glow-cyan:
+    0 0 0 1px color-mix(in oklab, var(--accent) 30%, transparent),
+    0 8px 30px -12px color-mix(in oklab, var(--accent) 35%, transparent);
   --gradient-compass: linear-gradient(135deg, oklch(0.2 0.025 220), oklch(0.3 0.04 200));
 }
 
@@ -157,7 +159,9 @@
   --surface-panel: oklch(0.22 0.02 220);
   --surface-raised: oklch(0.26 0.022 220);
   --divider-platinum: oklch(1 0 0 / 14%);
-  --glow-cyan: 0 0 0 1px color-mix(in oklab, var(--accent) 30%, transparent), 0 12px 40px -16px color-mix(in oklab, var(--accent) 45%, transparent);
+  --glow-cyan:
+    0 0 0 1px color-mix(in oklab, var(--accent) 30%, transparent),
+    0 12px 40px -16px color-mix(in oklab, var(--accent) 45%, transparent);
   --gradient-compass: linear-gradient(135deg, oklch(0.22 0.02 220), oklch(0.3 0.04 200));
 }
 
@@ -169,7 +173,12 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: "Inter", "Inter Tight", system-ui, -apple-system, sans-serif;
+    font-family:
+      "Inter",
+      "Inter Tight",
+      system-ui,
+      -apple-system,
+      sans-serif;
     font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
   }
@@ -210,31 +219,55 @@
 
 /* Display font for headlines / wordmarks — 1inow uses Inter throughout */
 .font-display {
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
   letter-spacing: -0.02em;
   font-weight: 600;
 }
 
 /* Compass motion language */
 @keyframes compass-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 @keyframes signal-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--signal) 45%, transparent); }
-  50% { box-shadow: 0 0 0 6px color-mix(in oklab, var(--signal) 0%, transparent); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--signal) 45%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in oklab, var(--signal) 0%, transparent);
+  }
 }
 @keyframes fade-rise {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 @keyframes slide-inspector {
-  from { transform: translateX(24px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 @keyframes live-dot {
-  0%, 100% {
-    opacity: .55;
-    transform: scale(.9);
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.9);
     box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 45%, transparent);
   }
   50% {
@@ -244,9 +277,10 @@
   }
 }
 @keyframes live-breathe {
-  0%, 100% {
-    opacity: .55;
-    transform: scale(.96);
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.96);
   }
   50% {
     opacity: 1;
@@ -261,10 +295,10 @@
   animation: signal-pulse 2.2s ease-out infinite;
 }
 @utility fade-rise {
-  animation: fade-rise .35s ease-out both;
+  animation: fade-rise 0.35s ease-out both;
 }
 @utility slide-inspector {
-  animation: slide-inspector .25s ease-out both;
+  animation: slide-inspector 0.25s ease-out both;
 }
 @utility live-dot {
   animation: live-dot 2.4s ease-in-out infinite;
@@ -393,9 +427,21 @@ img[width][height] {
 
 @utility surface-aurora {
   background:
-    radial-gradient(60% 80% at 12% 0%, color-mix(in oklab, var(--accent) 14%, transparent), transparent 70%),
-    radial-gradient(50% 70% at 100% 20%, color-mix(in oklab, var(--primary) 14%, transparent), transparent 75%),
-    radial-gradient(40% 60% at 50% 110%, color-mix(in oklab, var(--accent) 10%, transparent), transparent 70%),
+    radial-gradient(
+      60% 80% at 12% 0%,
+      color-mix(in oklab, var(--accent) 14%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      50% 70% at 100% 20%,
+      color-mix(in oklab, var(--primary) 14%, transparent),
+      transparent 75%
+    ),
+    radial-gradient(
+      40% 60% at 50% 110%,
+      color-mix(in oklab, var(--accent) 10%, transparent),
+      transparent 70%
+    ),
     var(--card);
 }
 
@@ -424,7 +470,7 @@ img[width][height] {
       linear-gradient(#000 0 0) content-box,
       linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
-            mask-composite: exclude;
+    mask-composite: exclude;
     pointer-events: none;
   }
 }

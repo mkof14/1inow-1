@@ -4,13 +4,13 @@ Electron-обёртка с **автообновлениями** через GitHu
 
 ## Что положить в GitHub Secrets
 
-| Secret | Где взять |
-| --- | --- |
-| `APPLE_ID` | Apple ID разработчика |
-| `APPLE_APP_SPECIFIC_PASSWORD` | appleid.apple.com → Security → App-Specific Passwords |
-| `APPLE_TEAM_ID` | developer.apple.com → Membership → Team ID |
-| `CSC_LINK` | `base64 -i DeveloperID.p12 \| pbcopy` — содержимое .p12 сертификата Developer ID Application |
-| `CSC_KEY_PASSWORD` | пароль, который ты ввёл при экспорте .p12 |
+| Secret                        | Где взять                                                                                    |
+| ----------------------------- | -------------------------------------------------------------------------------------------- |
+| `APPLE_ID`                    | Apple ID разработчика                                                                        |
+| `APPLE_APP_SPECIFIC_PASSWORD` | appleid.apple.com → Security → App-Specific Passwords                                        |
+| `APPLE_TEAM_ID`               | developer.apple.com → Membership → Team ID                                                   |
+| `CSC_LINK`                    | `base64 -i DeveloperID.p12 \| pbcopy` — содержимое .p12 сертификата Developer ID Application |
+| `CSC_KEY_PASSWORD`            | пароль, который ты ввёл при экспорте .p12                                                    |
 
 `GITHUB_TOKEN` создаётся автоматически — отдельно ничего класть не надо.
 
@@ -30,6 +30,7 @@ git push --tags
 ```
 
 Workflow `.github/workflows/release-mac.yml` сам:
+
 - соберёт `.dmg` и `.zip` под Apple Silicon и Intel,
 - подпишет сертификатом Developer ID,
 - нотаризует через Apple,

@@ -1,9 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import {
-  getServerConfig,
-  requireDevOwnerToolsEnabled,
-} from "@/lib/config.server";
+import { getServerConfig, requireDevOwnerToolsEnabled } from "@/lib/config.server";
 
 type AppRole =
   | "super_admin"
@@ -19,9 +16,7 @@ type AppRole =
 
 async function assertOwner(userId: string) {
   const config = getServerConfig();
-  const { supabaseAdmin } = await import(
-    "@/integrations/supabase/client.server"
-  );
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin.auth.admin.getUserById(userId);
   if (error) throw new Error(error.message);
   const email = data.user?.email?.toLowerCase();
@@ -85,10 +80,9 @@ export const resetDemoData = createServerFn({ method: "POST" })
     // Restore owner role
     await supabaseAdmin
       .from("user_roles")
-      .upsert(
-        { user_id: context.userId, role: "super_admin" } as never,
-        { onConflict: "user_id,role" },
-      );
+      .upsert({ user_id: context.userId, role: "super_admin" } as never, {
+        onConflict: "user_id,role",
+      });
     return { ok: true };
   });
 

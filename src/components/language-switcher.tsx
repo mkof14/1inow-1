@@ -1,8 +1,12 @@
 import { Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useI18n } from "@/lib/i18n";
 import { dictionaries } from "@/lib/i18n/dictionaries";
@@ -24,7 +28,9 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size={compact ? "icon" : "sm"} className="gap-1.5">
-          {compact ? <Languages className="size-4" /> : (
+          {compact ? (
+            <Languages className="size-4" />
+          ) : (
             <>
               <span>{cur.flag}</span>
               <span className="text-sm">{cur.native}</span>

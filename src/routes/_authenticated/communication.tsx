@@ -66,15 +66,27 @@ function Communication() {
         </div>
       </div>
       <div className="flex min-h-0 flex-1 overflow-hidden">
-        <ChannelList activeId={activeId} onSelect={(c) => { setActiveId(c.id); setThread(null); }} />
+        <ChannelList
+          activeId={activeId}
+          onSelect={(c) => {
+            setActiveId(c.id);
+            setThread(null);
+          }}
+        />
         {active ? (
           <MessageStream channel={active} onOpenThread={(id) => setThread(id)} />
         ) : (
           <div className="flex-1 grid place-items-center">
-            <EmptyState icon={MessageSquare} title={t("comm.noChannelTitle")} description={t("comm.noChannelDesc")} />
+            <EmptyState
+              icon={MessageSquare}
+              title={t("comm.noChannelTitle")}
+              description={t("comm.noChannelDesc")}
+            />
           </div>
         )}
-        {active && thread && <ThreadPanel channel={active} threadRootId={thread} onClose={() => setThread(null)} />}
+        {active && thread && (
+          <ThreadPanel channel={active} threadRootId={thread} onClose={() => setThread(null)} />
+        )}
       </div>
     </div>
   );

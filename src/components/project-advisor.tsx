@@ -2,11 +2,17 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { askProjectAdvisor } from "@/lib/project-advisor.functions";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Send, AlertTriangle, TrendingUp, Calendar, Loader2 } from "lucide-react";
+import { Lightbulb, Send, AlertTriangle, TrendingUp, Calendar, Loader2 } from "lucide-react";
 import { useT, useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 
-export function ProjectAdvisor({ projectId, projectName }: { projectId: string; projectName: string }) {
+export function ProjectAdvisor({
+  projectId,
+  projectName,
+}: {
+  projectId: string;
+  projectName: string;
+}) {
   const t = useT();
   const { lang } = useI18n();
   const ask = useServerFn(askProjectAdvisor);
@@ -30,34 +36,46 @@ export function ProjectAdvisor({ projectId, projectName }: { projectId: string; 
 
   const presets = [
     { icon: AlertTriangle, label: t("padv.preset.risks"), q: t("padv.preset.risks.q") },
-    { icon: Calendar,      label: t("padv.preset.week"),  q: t("padv.preset.week.q") },
-    { icon: TrendingUp,    label: t("padv.preset.progress"), q: t("padv.preset.progress.q") },
+    { icon: Calendar, label: t("padv.preset.week"), q: t("padv.preset.week.q") },
+    { icon: TrendingUp, label: t("padv.preset.progress"), q: t("padv.preset.progress.q") },
   ];
 
   return (
     <div className="surface-aurora shimmer-border rounded-2xl p-4 space-y-3">
       <div className="flex items-center gap-2">
         <div className="size-7 rounded-lg bg-accent/15 text-accent grid place-items-center">
-          <Sparkles className="size-3.5" />
+          <Lightbulb className="size-3.5" />
         </div>
         <div className="text-sm font-semibold font-display">{t("padv.title")}</div>
       </div>
-      <p className="text-xs text-muted-foreground leading-relaxed">{t("padv.subtitle").replace("{name}", projectName)}</p>
+      <p className="text-xs text-muted-foreground leading-relaxed">
+        {t("padv.subtitle").replace("{name}", projectName)}
+      </p>
 
       <div className="flex flex-wrap gap-1.5">
         {presets.map((p) => (
           <button
             key={p.label}
-            onClick={() => { setPrompt(p.q); run(p.q); }}
+            onClick={() => {
+              setPrompt(p.q);
+              run(p.q);
+            }}
             disabled={loading}
             className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1.5 rounded-full border border-border bg-card/60 hover:bg-card hover:border-accent/40 transition-colors disabled:opacity-50"
           >
-            <p.icon className="size-3" />{p.label}
+            <p.icon className="size-3" />
+            {p.label}
           </button>
         ))}
       </div>
 
-      <form onSubmit={(e) => { e.preventDefault(); run(prompt); }} className="flex gap-2">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          run(prompt);
+        }}
+        className="flex gap-2"
+      >
         <input
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}

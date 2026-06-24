@@ -20,10 +20,20 @@ export const Route = createFileRoute("/_authenticated/administration/role-switch
 });
 
 const OPTIONS = [
-  { role: "super_admin", label: "Super Admin", icon: ShieldCheck, hint: "Full control — every page and action." },
-  { role: "admin",       label: "Admin",       icon: Shield,      hint: "Manages users, content, settings." },
-  { role: "project_manager", label: "Manager", icon: Briefcase,   hint: "Plans projects, assigns tasks." },
-  { role: "employee",    label: "Member",      icon: User,        hint: "Standard team member access." },
+  {
+    role: "super_admin",
+    label: "Super Admin",
+    icon: ShieldCheck,
+    hint: "Full control — every page and action.",
+  },
+  { role: "admin", label: "Admin", icon: Shield, hint: "Manages users, content, settings." },
+  {
+    role: "project_manager",
+    label: "Manager",
+    icon: Briefcase,
+    hint: "Plans projects, assigns tasks.",
+  },
+  { role: "employee", label: "Member", icon: User, hint: "Standard team member access." },
 ] as const;
 
 function RoleSwitcherPage() {
@@ -80,7 +90,11 @@ function RoleSwitcherPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <div className="font-medium">{o.label}</div>
-                  {active && <span className="text-[10px] uppercase tracking-wider text-accent">current</span>}
+                  {active && (
+                    <span className="text-[10px] uppercase tracking-wider text-accent">
+                      current
+                    </span>
+                  )}
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">{o.hint}</div>
                 <Button
@@ -99,7 +113,8 @@ function RoleSwitcherPage() {
       </div>
 
       <p className="text-[11px] text-muted-foreground">
-        After switching, the sidebar and protected pages update immediately. To return to full access, pick Super Admin again.
+        After switching, the sidebar and protected pages update immediately. To return to full
+        access, pick Super Admin again.
       </p>
     </div>
   );

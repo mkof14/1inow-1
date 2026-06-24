@@ -17,10 +17,13 @@ const AiPageContext = createContext<Ctx>({ context: {}, setPageContext: () => {}
 
 export function AiPageContextProvider({ children }: { children: ReactNode }) {
   const [context, setContext] = useState<PageContext>({});
-  const value = useMemo<Ctx>(() => ({
-    context,
-    setPageContext: (c) => setContext(c ?? {}),
-  }), [context]);
+  const value = useMemo<Ctx>(
+    () => ({
+      context,
+      setPageContext: (c) => setContext(c ?? {}),
+    }),
+    [context],
+  );
   return <AiPageContext.Provider value={value}>{children}</AiPageContext.Provider>;
 }
 
@@ -34,6 +37,5 @@ export function useSetPageContext(ctx: PageContext, deps: unknown[] = []) {
   useEffect(() => {
     setPageContext(ctx);
     return () => setPageContext(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 }

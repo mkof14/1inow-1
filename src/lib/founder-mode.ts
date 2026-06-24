@@ -1,27 +1,31 @@
-const FOUNDER_SIGNED_OUT_KEY = "1inow_founder_signed_out";
+const FOUNDER_SESSION_KEY = "1inow_founder_session";
 
-export function isFounderModeEnabled() {
-  if (!import.meta.env.DEV) return false;
-
-  if (typeof window !== "undefined" && window.localStorage.getItem(FOUNDER_SIGNED_OUT_KEY)) {
-    return false;
-  }
-
-  if (import.meta.env.VITE_ENABLE_FOUNDER_MODE === "true") return true;
-
-  if (typeof window === "undefined") return true;
-
+function isLocalHost() {
+  if (typeof window === "undefined") return false;
   return window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
 }
 
-export function disableFounderModeForSession() {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(FOUNDER_SIGNED_OUT_KEY, "true");
+export function isFounderAccessAvailable() {
+  if (import.meta.env.VITE_ENABLE_FOUNDER_MODE === "true") return true;
+  return import.meta.env.DEV || isLocalHost();
 }
 
-export function restoreFounderModeForSession() {
+export function isFounderModeEnabled() {
+  if (!isFounderAccessAvailable()) return false;
+
+  if (typeof window === "undefined") return import.meta.env.VITE_ENABLE_FOUNDER_MODE === "true";
+
+  return window.localStorage.getItem(FOUNDER_SESSION_KEY) === "true";
+}
+
+export function enableFounderMode() {
   if (typeof window === "undefined") return;
-  window.localStorage.removeItem(FOUNDER_SIGNED_OUT_KEY);
+  window.localStorage.setItem(FOUNDER_SESSION_KEY, "true");
+}
+
+export function disableFounderMode() {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(FOUNDER_SESSION_KEY);
 }
 
 export const FOUNDER_EMAIL = "dnainform@gmail.com";

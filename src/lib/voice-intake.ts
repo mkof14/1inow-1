@@ -1,4 +1,12 @@
-export type VoiceInboxKind = "task" | "project" | "note" | "reminder" | "risk" | "search" | "navigation" | "unknown";
+export type VoiceInboxKind =
+  | "task"
+  | "project"
+  | "note"
+  | "reminder"
+  | "risk"
+  | "search"
+  | "navigation"
+  | "unknown";
 export type VoiceInboxStatus = "new" | "processed" | "dismissed";
 
 export type VoiceInboxItem = {
@@ -54,7 +62,7 @@ export function saveVoiceInboxItem(input: {
 }
 
 export function updateVoiceInboxItem(id: string, patch: Partial<VoiceInboxItem>) {
-  const next = getVoiceInboxItems().map((item) => item.id === id ? { ...item, ...patch } : item);
+  const next = getVoiceInboxItems().map((item) => (item.id === id ? { ...item, ...patch } : item));
   writeVoiceInboxItems(next);
 }
 
@@ -80,23 +88,61 @@ export function subscribeVoiceInbox(callback: () => void) {
   };
 }
 
-export function classifyVoiceInboxText(raw: string): Pick<VoiceInboxItem, "kind" | "title" | "confidence" | "summary"> {
+export function classifyVoiceInboxText(
+  raw: string,
+): Pick<VoiceInboxItem, "kind" | "title" | "confidence" | "summary"> {
   const text = raw.trim();
   const lower = normalize(text);
 
-  if (includesAny(lower, ["create task", "new task", "add task", "создай задачу", "добавь задачу", "задача", "сделать", "купить", "позвони"])) {
+  if (
+    includesAny(lower, [
+      "create task",
+      "new task",
+      "add task",
+      "создай задачу",
+      "добавь задачу",
+      "задача",
+      "сделать",
+      "купить",
+      "позвони",
+    ])
+  ) {
     return {
       kind: "task",
-      title: stripLeadingIntent(text, ["create task", "new task", "add task", "создай задачу", "добавь задачу", "задача"]),
+      title: stripLeadingIntent(text, [
+        "create task",
+        "new task",
+        "add task",
+        "создай задачу",
+        "добавь задачу",
+        "задача",
+      ]),
       confidence: "high",
       summary: "Likely task. Review and create when ready.",
     };
   }
 
-  if (includesAny(lower, ["create project", "new project", "add project", "создай проект", "добавь проект", "проект", "запуск"])) {
+  if (
+    includesAny(lower, [
+      "create project",
+      "new project",
+      "add project",
+      "создай проект",
+      "добавь проект",
+      "проект",
+      "запуск",
+    ])
+  ) {
     return {
       kind: "project",
-      title: stripLeadingIntent(text, ["create project", "new project", "add project", "создай проект", "добавь проект", "проект"]),
+      title: stripLeadingIntent(text, [
+        "create project",
+        "new project",
+        "add project",
+        "создай проект",
+        "добавь проект",
+        "проект",
+      ]),
       confidence: "high",
       summary: "Likely project. Review scope before creating.",
     };
@@ -105,7 +151,13 @@ export function classifyVoiceInboxText(raw: string): Pick<VoiceInboxItem, "kind"
   if (includesAny(lower, ["remind", "reminder", "напомни", "напоминание"])) {
     return {
       kind: "reminder",
-      title: stripLeadingIntent(text, ["remind me", "remind", "reminder", "напомни", "напоминание"]),
+      title: stripLeadingIntent(text, [
+        "remind me",
+        "remind",
+        "reminder",
+        "напомни",
+        "напоминание",
+      ]),
       confidence: "medium",
       summary: "Reminder draft. Needs date/time flow before execution.",
     };
@@ -151,7 +203,8 @@ export function classifyVoiceInboxText(raw: string): Pick<VoiceInboxItem, "kind"
     kind: "unknown",
     title: text,
     confidence: "low",
-    summary: "Captured thought. Decide later whether it is a task, project, note, reminder, or risk.",
+    summary:
+      "Captured thought. Decide later whether it is a task, project, note, reminder, or risk.",
   };
 }
 
@@ -168,7 +221,11 @@ function makeId() {
 }
 
 function normalize(value: string) {
-  return value.toLowerCase().replace(/[.,!?;:]+/g, " ").replace(/\s+/g, " ").trim();
+  return value
+    .toLowerCase()
+    .replace(/[.,!?;:]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function includesAny(value: string, words: string[]) {

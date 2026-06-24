@@ -3,7 +3,7 @@ name: Release macOS
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
   workflow_dispatch:
 
 jobs:

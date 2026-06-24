@@ -23,14 +23,23 @@
     "appId": "app.oneinow.desktop",
     "productName": "1inow",
     "asar": true,
-    "files": ["main.cjs", "preload.cjs", "icons/**/*", "package.json"],
-    "directories": { "output": "release" },
-    "publish": [{
-      "provider": "github",
-      "owner": "REPLACE_OWNER",
-      "repo": "REPLACE_REPO",
-      "releaseType": "release"
-    }],
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "icons/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "REPLACE_OWNER",
+        "repo": "REPLACE_REPO",
+        "releaseType": "release"
+      }
+    ],
     "mac": {
       "category": "public.app-category.productivity",
       "icon": "icons/icon.icns",
@@ -40,8 +49,20 @@
       "entitlementsInherit": "entitlements.mac.plist",
       "notarize": true,
       "target": [
-        { "target": "dmg", "arch": ["arm64", "x64"] },
-        { "target": "zip", "arch": ["arm64", "x64"] }
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
       ]
     },
     "dmg": {

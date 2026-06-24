@@ -8,7 +8,7 @@ import { useI18n } from "@/lib/i18n";
 const footerCopy = {
   en: {
     description:
-      "A personal command center for projects, life tasks, voice capture, decisions, and future AI assistance.",
+      "A personal command center for projects, life tasks, voice capture, decisions, and controlled intelligence.",
     contact: "Contact 1inow",
     email: "Email",
     message: "Message",
@@ -61,7 +61,7 @@ const footerCopy = {
   },
   ru: {
     description:
-      "Персональный командный центр для проектов, жизненных задач, голосовых записей, решений и будущего AI-помощника.",
+      "Персональный командный центр для проектов, жизненных задач, голосовых записей, решений и контролируемого интеллекта.",
     contact: "Связаться с 1inow",
     email: "Email",
     message: "Сообщение",
@@ -114,7 +114,7 @@ const footerCopy = {
   },
   uk: {
     description:
-      "Персональний командний центр для проєктів, життєвих задач, голосових записів, рішень і майбутнього AI-помічника.",
+      "Персональний командний центр для проєктів, життєвих задач, голосових записів, рішень і контрольованого інтелекту.",
     contact: "Зв'язатися з 1inow",
     email: "Email",
     message: "Повідомлення",
@@ -167,7 +167,7 @@ const footerCopy = {
   },
   es: {
     description:
-      "Centro de mando personal para proyectos, tareas de vida, voz, decisiones y futura asistencia AI.",
+      "Centro de mando personal para proyectos, tareas de vida, voz, decisiones e inteligencia controlada.",
     contact: "Contactar 1inow",
     email: "Email",
     message: "Mensaje",
@@ -220,7 +220,7 @@ const footerCopy = {
   },
   de: {
     description:
-      "Persönliches Command Center für Projekte, Lebensaufgaben, Voice Capture, Entscheidungen und künftige AI-Unterstützung.",
+      "Persönliches Command Center für Projekte, Lebensaufgaben, Voice Capture, Entscheidungen und kontrollierte Intelligenz.",
     contact: "1inow kontaktieren",
     email: "Email",
     message: "Nachricht",

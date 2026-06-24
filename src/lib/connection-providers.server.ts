@@ -4,7 +4,13 @@ export type AiProvider = "disabled" | "openai" | "anthropic" | "gemini" | "inter
 export type SpeechProvider = "disabled" | "browser" | "openai" | "google" | "azure";
 export type VoiceProvider = "disabled" | "browser" | "openai" | "elevenlabs" | "azure";
 
-export type ConnectionCapability = "chat" | "stt" | "tts" | "voice-commands" | "model-router" | "audit";
+export type ConnectionCapability =
+  | "chat"
+  | "stt"
+  | "tts"
+  | "voice-commands"
+  | "model-router"
+  | "audit";
 
 export type ProviderState = {
   service: "chat" | "stt" | "tts";
@@ -84,7 +90,14 @@ export function getSttProviderState(): ProviderState {
     provider,
     disabled: !ready,
     connected: ready,
-    status: provider === "disabled" ? "disabled" : browserOnly ? "browser_only" : ready ? "ready" : "not_configured",
+    status:
+      provider === "disabled"
+        ? "disabled"
+        : browserOnly
+          ? "browser_only"
+          : ready
+            ? "ready"
+            : "not_configured",
     message: browserOnly
       ? "Server speech-to-text is not connected yet. Browser speech recognition can be used on supported devices."
       : ready
@@ -109,7 +122,14 @@ export function getTtsProviderState(): ProviderState {
     provider,
     disabled: !ready,
     connected: ready,
-    status: provider === "disabled" ? "disabled" : browserOnly ? "browser_only" : ready ? "ready" : "not_configured",
+    status:
+      provider === "disabled"
+        ? "disabled"
+        : browserOnly
+          ? "browser_only"
+          : ready
+            ? "ready"
+            : "not_configured",
     message: browserOnly
       ? "Server text-to-speech is not connected yet. Browser speech synthesis can be used on supported devices."
       : ready
@@ -123,7 +143,11 @@ export function getTtsProviderState(): ProviderState {
   };
 }
 
-function normalizeProvider<T extends string>(value: string | undefined, allowed: readonly T[], fallback: T): T {
+function normalizeProvider<T extends string>(
+  value: string | undefined,
+  allowed: readonly T[],
+  fallback: T,
+): T {
   const normalized = value?.trim().toLowerCase();
   return allowed.includes(normalized as T) ? (normalized as T) : fallback;
 }
