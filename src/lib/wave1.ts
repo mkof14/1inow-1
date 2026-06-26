@@ -69,7 +69,7 @@ import {
   markNotification,
 } from "@/lib/notifications";
 
-export { createNotification, markNotification };
+export { createNotification, deliverInAppNotification, markNotification };
 export type {
   CreateNotificationInput,
   NotificationRow,

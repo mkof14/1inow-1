@@ -2,6 +2,7 @@ import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { ROLE_LABELS, type AppRole } from "@/lib/admin-queries";
 import { ensureCurrentProfile } from "@/lib/profile-bootstrap";
+import { deliverInAppNotification } from "@/lib/notifications";
 
 export const INVITE_TOKEN_STORAGE_KEY = "1inow-pending-invite-token";
 
@@ -45,7 +46,32 @@ export async function fetchInvitationPreview(token: string): Promise<InvitationP
 export async function acceptInvitation(token: string) {
   const { data, error } = await supabase.rpc("accept_invitation", { _token: token });
   if (error) throw error;
-  return data as string;
+  const invitationId = data as string;
+
+  const [{ data: inv }, { data: authData }] = await Promise.all([
+    supabase
+      .from("invitations")
+      .select("invited_by, email, full_name")
+      .eq("id", invitationId)
+      .maybeSingle(),
+    supabase.auth.getUser(),
+  ]);
+
+  const actorId = authData.user?.id ?? null;
+  if (inv?.invited_by && actorId && inv.invited_by !== actorId) {
+    await deliverInAppNotification({
+      userId: inv.invited_by,
+      type: "system",
+      title: "Invitation accepted",
+      body: inv.full_name?.trim() || inv.email,
+      actorId,
+      entityType: "invitation",
+      entityId: invitationId,
+      url: "/administration/invitations",
+    }).catch(() => undefined);
+  }
+
+  return invitationId;
 }
 
 export async function completeAuthenticatedInvite(user: User, token?: string | null) {

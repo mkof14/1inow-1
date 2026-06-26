@@ -2,7 +2,22 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
 export type NotificationRow = Database["public"]["Tables"]["notifications"]["Row"];
-export type NotificationType = NotificationRow["type"];
+export type NotificationType =
+  | "mention"
+  | "task_update"
+  | "comment"
+  | "approval"
+  | "message"
+  | "deadline"
+  | "assignment"
+  | "system";
+
+type NotificationPrefs = {
+  email?: boolean;
+  inapp?: boolean;
+  mentions?: boolean;
+  deadlines?: boolean;
+};
 
 export type CreateNotificationInput = {
   userId: string;
@@ -53,6 +68,26 @@ export async function createNotification(input: CreateNotificationInput) {
 
   if (error) throw error;
   return data;
+}
+
+async function isInAppNotificationsEnabled(userId: string) {
+  const { data, error } = await supabase
+    .from("user_settings")
+    .select("notifications")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw error;
+
+  const prefs = (data?.notifications ?? {}) as NotificationPrefs;
+  return prefs.inapp !== false;
+}
+
+/** Creates an in-app notification when recipient prefs allow and actor !== recipient. */
+export async function deliverInAppNotification(input: CreateNotificationInput) {
+  if (input.actorId && input.actorId === input.userId) return null;
+  const enabled = await isInAppNotificationsEnabled(input.userId);
+  if (!enabled) return null;
+  return createNotification(input);
 }
 
 export async function markNotification(

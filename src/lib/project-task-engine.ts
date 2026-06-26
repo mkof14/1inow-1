@@ -1,6 +1,7 @@
 import type { User } from "@supabase/supabase-js";
 import { resolveUserPermission } from "@/lib/auth-roles";
 import { resolveActiveOrganizationId } from "@/lib/organization-model";
+import { deliverInAppNotification } from "@/lib/notifications";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -56,6 +57,8 @@ export async function createTaskRecord(input: CreateTaskInput) {
   const title = input.title.trim();
   if (!title) throw new Error("Task title is required");
 
+  const assigneeId = input.assigneeId ?? user.id;
+
   const { data, error } = await supabase
     .from("tasks")
     .insert({
@@ -65,12 +68,36 @@ export async function createTaskRecord(input: CreateTaskInput) {
       status: input.status ?? "todo",
       priority: input.priority ?? "medium",
       created_by: user.id,
-      assignee_id: input.assigneeId ?? user.id,
+      assignee_id: assigneeId,
     })
     .select("id")
     .single();
 
   if (error) throw error;
+
+  if (assigneeId !== user.id) {
+    let url = "/tasks";
+    if (input.projectId) {
+      const { data: project } = await supabase
+        .from("projects")
+        .select("slug")
+        .eq("id", input.projectId)
+        .maybeSingle();
+      if (project?.slug) url = `/projects/${project.slug}`;
+    }
+
+    await deliverInAppNotification({
+      userId: assigneeId,
+      type: "assignment",
+      title: "Task assigned to you",
+      body: title,
+      actorId: user.id,
+      entityType: "task",
+      entityId: data.id,
+      url,
+    }).catch(() => undefined);
+  }
+
   return data;
 }
 
@@ -105,6 +132,14 @@ export async function updateTaskStatus(taskId: string, status: TaskStatus) {
   const user = await requireWorkspaceActor();
   await requirePermission(user.id, "edit_tasks");
 
+  const { data: task, error: fetchError } = await supabase
+    .from("tasks")
+    .select("id, title, status, assignee_id, project_id, projects(slug)")
+    .eq("id", taskId)
+    .maybeSingle();
+  if (fetchError) throw fetchError;
+  if (!task) throw new Error("Task not found");
+
   const { error } = await supabase
     .from("tasks")
     .update({
@@ -114,6 +149,24 @@ export async function updateTaskStatus(taskId: string, status: TaskStatus) {
     .eq("id", taskId);
 
   if (error) throw error;
+
+  const assigneeId = task.assignee_id;
+  if (assigneeId && assigneeId !== user.id && task.status !== status) {
+    const projectSlug = (task.projects as { slug?: string } | null)?.slug;
+    const url = projectSlug ? `/projects/${projectSlug}` : "/tasks";
+    const statusLabel = status.replace(/_/g, " ");
+
+    await deliverInAppNotification({
+      userId: assigneeId,
+      type: "task_update",
+      title: `Task moved to ${statusLabel}`,
+      body: task.title,
+      actorId: user.id,
+      entityType: "task",
+      entityId: taskId,
+      url,
+    }).catch(() => undefined);
+  }
 }
 
 export async function deleteTaskRecord(taskId: string) {
@@ -128,6 +181,14 @@ export async function archiveProjectRecord(projectId: string) {
   const user = await requireWorkspaceActor();
   await requirePermission(user.id, "archive_projects");
 
+  const { data: project, error: fetchError } = await supabase
+    .from("projects")
+    .select("id, name, slug, owner_id")
+    .eq("id", projectId)
+    .maybeSingle();
+  if (fetchError) throw fetchError;
+  if (!project) throw new Error("Project not found");
+
   const { error } = await supabase
     .from("projects")
     .update({
@@ -137,4 +198,17 @@ export async function archiveProjectRecord(projectId: string) {
     .eq("id", projectId);
 
   if (error) throw error;
+
+  if (project.owner_id && project.owner_id !== user.id) {
+    await deliverInAppNotification({
+      userId: project.owner_id,
+      type: "system",
+      title: "Project archived",
+      body: project.name,
+      actorId: user.id,
+      entityType: "project",
+      entityId: projectId,
+      url: project.slug ? `/projects/${project.slug}` : "/projects",
+    }).catch(() => undefined);
+  }
 }

@@ -42,13 +42,13 @@ No Supabase migrations were created. No UI was changed.
 
 ## Issues Found
 
-| Issue | Severity |
-| --- | --- |
-| `fetchNotifications()` does not filter by `user_id` | High — may leak cross-user rows depending on RLS |
-| No shared `createNotification()` helper | Medium — creation paths inconsistent |
-| No event triggers from task/project mutations | Expected gap for foundation phase |
-| Email/push channels not implemented | Intentionally deferred |
-| Preference JSON not enforced on delivery | Settings exist but are not applied |
+| Issue | Severity | Status |
+| --- | --- | --- |
+| `fetchNotifications()` does not filter by `user_id` | High | Fixed — uses `fetchMyNotifications()` |
+| No shared `createNotification()` helper | Medium | Fixed — `src/lib/notifications.ts` |
+| No event triggers from task/project mutations | Medium | Fixed — `project-task-engine.ts` delivers in-app notifications |
+| Email/push channels not implemented | — | Intentionally deferred |
+| Preference JSON not enforced on delivery | Medium | Fixed — `deliverInAppNotification()` checks `inapp` pref |
 
 ### RLS note
 
@@ -92,7 +92,9 @@ Fix `fetchNotifications()` to filter by current user.
 
 ## Recommended Next Task
 
-Phase 2 Step 8: Future AI gateway planning. See `docs/ai-gateway-planning.md`.
+Wire invitation-accepted notifications for inviters and extend triggers to decision/comment events in later passes.
+
+Phase 2 Step 8 (AI gateway planning) is documented in `docs/ai-gateway-planning.md`.
 
 ## Validation
 
