@@ -1693,6 +1693,7 @@ export type Database = {
           icon: string | null;
           id: string;
           name: string;
+          organization_id: string | null;
           owner_id: string | null;
           priority: Database["public"]["Enums"]["project_priority"];
           progress: number;
@@ -1714,6 +1715,7 @@ export type Database = {
           icon?: string | null;
           id?: string;
           name: string;
+          organization_id?: string | null;
           owner_id?: string | null;
           priority?: Database["public"]["Enums"]["project_priority"];
           progress?: number;
@@ -1735,6 +1737,7 @@ export type Database = {
           icon?: string | null;
           id?: string;
           name?: string;
+          organization_id?: string | null;
           owner_id?: string | null;
           priority?: Database["public"]["Enums"]["project_priority"];
           progress?: number;
@@ -1743,7 +1746,15 @@ export type Database = {
           status?: Database["public"]["Enums"]["project_status"];
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "projects_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       recent_items: {
         Row: {
@@ -2293,6 +2304,10 @@ export type Database = {
       is_super_admin: { Args: { _user_id: string }; Returns: boolean };
       default_organization_id: { Args: Record<string, never>; Returns: string };
       ensure_profile_organization: {
+        Args: { _user_id?: string };
+        Returns: string;
+      };
+      current_organization_id: {
         Args: { _user_id?: string };
         Returns: string;
       };

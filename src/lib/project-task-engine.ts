@@ -1,5 +1,6 @@
 import type { User } from "@supabase/supabase-js";
 import { resolveUserPermission } from "@/lib/auth-roles";
+import { resolveActiveOrganizationId } from "@/lib/organization-model";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -78,6 +79,7 @@ export async function createProjectRecord(input: CreateProjectInput) {
   const name = input.name.trim();
   if (!name) throw new Error("Project name is required");
 
+  const organizationId = await resolveActiveOrganizationId(user.id);
   const { data, error } = await supabase
     .from("projects")
     .insert({
@@ -88,6 +90,7 @@ export async function createProjectRecord(input: CreateProjectInput) {
       priority: input.priority ?? "medium",
       created_by: user.id,
       owner_id: user.id,
+      organization_id: organizationId,
     })
     .select("id, slug")
     .single();

@@ -1,4 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
+import { resolveUserPermission } from "@/lib/auth-roles";
+import { resolveActiveOrganizationId } from "@/lib/organization-model";
 
 export type Permission = { id: string; key: string; category: string; description: string | null };
 export type RolePermission = { role: string; permission_key: string };
@@ -183,10 +185,26 @@ export async function createInvitation(input: {
   role: AppRole;
   custom_message?: string;
   language?: string;
+  team_id?: string;
+  department_id?: string;
 }) {
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  if (authError) throw authError;
+  const userId = authData.user?.id;
+  if (!userId) throw new Error("Sign in required");
+
+  const canInvite = await resolveUserPermission(userId, "invite_users");
+  if (!canInvite) throw new Error("Missing permission: invite_users");
+
+  const organizationId = await resolveActiveOrganizationId(userId);
   const { data, error } = await supabase
     .from("invitations")
-    .insert({ ...input, status: "sent" } as any)
+    .insert({
+      ...input,
+      status: "sent",
+      organization_id: organizationId,
+      invited_by: userId,
+    } as any)
     .select()
     .single();
   if (error) throw error;

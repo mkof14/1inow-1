@@ -2,7 +2,8 @@ import type { Database } from "@/integrations/supabase/types";
 
 type ProjectRow = Database["public"]["Tables"]["projects"]["Row"];
 
-export type DigitalInvestProject = ProjectRow & {
+export type DigitalInvestProject = Omit<ProjectRow, "organization_id"> & {
+  organization_id?: string | null;
   portfolio_group: string;
   tags: string[];
   source_url: string;
