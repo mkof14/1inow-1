@@ -106,14 +106,7 @@ Do not address in this step:
 
 ## Recommended Next Task
 
-Phase 2 Step 6: Admin foundation review.
-
-Focus:
-
-- User management flows vs RBAC keys
-- Organization admin visibility
-- Role assignment UI vs `user_roles` table
-- Audit log write paths
+Phase 2 Step 6: Admin foundation review — completed. See `docs/admin-foundation.md`.
 
 ## Validation
 
