@@ -28,6 +28,7 @@ import { PageHeader } from "@/components/page-header";
 import { SignalWave } from "@/components/icons/compass-icons";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { createProjectRecord, createTaskRecord } from "@/lib/project-task-engine";
 import { useAuth } from "@/hooks/use-auth";
 import { useT } from "@/lib/i18n";
 import {
@@ -209,7 +210,6 @@ function InboxPage() {
         <TabsContent value="voice" className="mt-5">
           <VoiceInboxPanel
             items={voiceItems}
-            userId={user?.id}
             onChanged={() => setVoiceItems(getVoiceInboxItems())}
           />
         </TabsContent>
@@ -292,15 +292,7 @@ function InboxPage() {
   );
 }
 
-function VoiceInboxPanel({
-  items,
-  userId,
-  onChanged,
-}: {
-  items: VoiceInboxItem[];
-  userId?: string;
-  onChanged: () => void;
-}) {
+function VoiceInboxPanel({ items, onChanged }: { items: VoiceInboxItem[]; onChanged: () => void }) {
   const qc = useQueryClient();
   const [filter, setFilter] = useState<VoiceInboxKind | "all">("all");
   const active = items.filter((item) => item.status === "new");
@@ -325,54 +317,34 @@ function VoiceInboxPanel({
   };
 
   const createTask = async (item: VoiceInboxItem) => {
-    if (!userId) {
-      toast.error("Sign in required");
-      return;
+    try {
+      await createTaskRecord({
+        title: item.title,
+        description: `Captured by voice: ${item.raw}`,
+        priority: item.kind === "risk" ? "high" : "medium",
+      });
+      updateVoiceInboxItem(item.id, { status: "processed", processedAt: new Date().toISOString() });
+      await qc.invalidateQueries({ queryKey: ["tasks"] });
+      onChanged();
+      toast.success("Task created from Voice Inbox");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to create task");
     }
-    const { error } = await supabase.from("tasks").insert({
-      title: item.title,
-      description: `Captured by voice: ${item.raw}`,
-      status: "todo",
-      priority: item.kind === "risk" ? "high" : "medium",
-      created_by: userId,
-    });
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    updateVoiceInboxItem(item.id, { status: "processed", processedAt: new Date().toISOString() });
-    await qc.invalidateQueries({ queryKey: ["tasks"] });
-    onChanged();
-    toast.success("Task created from Voice Inbox");
   };
 
   const createProject = async (item: VoiceInboxItem) => {
-    if (!userId) {
-      toast.error("Sign in required");
-      return;
+    try {
+      await createProjectRecord({
+        name: item.title || "Voice project",
+        description: `Captured by voice: ${item.raw}`,
+      });
+      updateVoiceInboxItem(item.id, { status: "processed", processedAt: new Date().toISOString() });
+      await qc.invalidateQueries({ queryKey: ["projects"] });
+      onChanged();
+      toast.success("Project created from Voice Inbox");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to create project");
     }
-    const base = item.title || "voice-project";
-    const slug = `${base
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "")}-${Math.random().toString(36).slice(2, 6)}`;
-    const { error } = await supabase.from("projects").insert({
-      name: item.title,
-      slug,
-      description: `Captured by voice: ${item.raw}`,
-      status: "planning",
-      priority: "medium",
-      created_by: userId,
-      owner_id: userId,
-    });
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    updateVoiceInboxItem(item.id, { status: "processed", processedAt: new Date().toISOString() });
-    await qc.invalidateQueries({ queryKey: ["projects"] });
-    onChanged();
-    toast.success("Project created from Voice Inbox");
   };
 
   return (

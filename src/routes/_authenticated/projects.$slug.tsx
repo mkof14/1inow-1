@@ -17,6 +17,8 @@ import { ProjectSuggestions } from "@/components/ai-suggestions";
 import { ProjectAdvisor } from "@/components/project-advisor";
 import { TaskTimer } from "@/components/task-timer";
 import { createRelation } from "@/lib/relations";
+import { createTaskRecord, updateTaskStatus } from "@/lib/project-task-engine";
+import type { Database } from "@/integrations/supabase/types";
 import { useSetPageContext } from "@/lib/ai-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -76,19 +78,11 @@ function ProjectDetail() {
 
   const createTask = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase
-        .from("tasks")
-        .insert({
-          project_id: project.data!.id,
-          title,
-          status: status as any,
-          created_by: user!.id,
-          priority: "medium",
-        })
-        .select("id")
-        .single();
-      if (error) throw error;
-      // Auto-link the new task to this project
+      const data = await createTaskRecord({
+        projectId: project.data!.id,
+        title,
+        status: status as Database["public"]["Enums"]["task_status"],
+      });
       if (data?.id && user?.id) {
         await createRelation({
           sourceType: "project",
@@ -109,16 +103,9 @@ function ProjectDetail() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  const updateTaskStatus = useMutation({
+  const updateTaskStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await supabase
-        .from("tasks")
-        .update({
-          status: status as any,
-          completed_at: status === "done" ? new Date().toISOString() : null,
-        })
-        .eq("id", id);
-      if (error) throw error;
+      await updateTaskStatus(id, status as Database["public"]["Enums"]["task_status"]);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
   });
@@ -252,7 +239,9 @@ function ProjectDetail() {
                         <div className="flex items-center gap-1.5">
                           <Select
                             value={t.status}
-                            onValueChange={(v) => updateTaskStatus.mutate({ id: t.id, status: v })}
+                            onValueChange={(v) =>
+                              updateTaskStatusMutation.mutate({ id: t.id, status: v })
+                            }
                           >
                             <SelectTrigger className="h-7 text-xs w-auto">
                               <SelectValue />

@@ -2,8 +2,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { fetchProjects, PROJECT_STATUSES, PROJECT_STATUS_LABEL } from "@/lib/queries";
+import { createProjectRecord } from "@/lib/project-task-engine";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,7 +47,6 @@ function ProjectsPage() {
   const t = useT();
   const projects = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
   const qc = useQueryClient();
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
@@ -77,31 +76,14 @@ function ProjectsPage() {
   }, [selectedId]);
 
   const create = useMutation({
-    mutationFn: async () => {
-      const slug =
-        form.name
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-|-$/g, "") +
-        "-" +
-        Math.random().toString(36).slice(2, 6);
-      const { data, error } = await supabase
-        .from("projects")
-        .insert({
-          name: form.name,
-          slug,
-          description: form.description,
-          status: form.status as any,
-          priority: form.priority as any,
-          color: form.color,
-          created_by: user!.id,
-          owner_id: user!.id,
-        })
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: async () =>
+      createProjectRecord({
+        name: form.name,
+        description: form.description || null,
+        status: form.status as any,
+        priority: form.priority as any,
+        color: form.color,
+      }),
     onSuccess: (p) => {
       toast.success("Project created");
       qc.invalidateQueries({ queryKey: ["projects"] });

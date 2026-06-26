@@ -23,6 +23,7 @@ export type CreateProjectInput = {
   description?: string | null;
   status?: ProjectStatus;
   priority?: ProjectPriority;
+  color?: string | null;
 };
 
 export async function requireWorkspaceActor(): Promise<User> {
@@ -88,6 +89,7 @@ export async function createProjectRecord(input: CreateProjectInput) {
       description: input.description ?? null,
       status: input.status ?? "planning",
       priority: input.priority ?? "medium",
+      color: input.color ?? null,
       created_by: user.id,
       owner_id: user.id,
       organization_id: organizationId,
