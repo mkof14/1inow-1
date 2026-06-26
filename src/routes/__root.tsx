@@ -15,6 +15,8 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { Toaster } from "sonner";
 import { I18nProvider } from "@/lib/i18n";
 import { AiPageContextProvider } from "@/lib/ai-context";
+import { AnalyticsConsentBanner } from "@/components/analytics-consent-banner";
+import { AnalyticsRuntime } from "@/components/analytics-runtime";
 
 function NotFoundComponent() {
   return (
@@ -177,6 +179,8 @@ function RootComponent() {
         <I18nProvider>
           <AiPageContextProvider>
             <Outlet />
+            <AnalyticsRuntime />
+            <AnalyticsConsentBanner />
             <Toaster richColors position="top-right" />
           </AiPageContextProvider>
         </I18nProvider>

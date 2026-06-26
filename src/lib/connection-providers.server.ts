@@ -1,5 +1,6 @@
 import process from "node:process";
 import { getInvitationEmailState } from "@/lib/email-delivery.server";
+import { getBillingState } from "@/lib/billing.server";
 
 export type AiProvider = "disabled" | "openai" | "anthropic" | "gemini" | "internal";
 export type SpeechProvider = "disabled" | "browser" | "openai" | "google" | "azure";
@@ -66,13 +67,12 @@ const TTS_SECRET_BY_PROVIDER: Partial<Record<VoiceProvider, string[]>> = {
   azure: ["AZURE_SPEECH_KEY", "AZURE_SPEECH_REGION"],
 };
 
-const BILLING_PROVIDERS: BillingProvider[] = ["disabled", "stripe"];
 const ANALYTICS_PROVIDERS: AnalyticsProvider[] = ["disabled", "plausible", "posthog", "ga4"];
 const MONITORING_PROVIDERS: MonitoringProvider[] = ["disabled", "sentry"];
 
 const ANALYTICS_SECRET_BY_PROVIDER: Partial<Record<AnalyticsProvider, string[]>> = {
-  plausible: ["PLAUSIBLE_DOMAIN"],
-  posthog: ["POSTHOG_API_KEY", "POSTHOG_HOST"],
+  plausible: ["VITE_PLAUSIBLE_DOMAIN"],
+  posthog: ["VITE_POSTHOG_KEY", "VITE_POSTHOG_HOST"],
   ga4: ["VITE_GA4_MEASUREMENT_ID"],
 };
 
@@ -194,41 +194,26 @@ export function getEmailIntegrationState(): IntegrationState {
 }
 
 export function getBillingIntegrationState(): IntegrationState {
-  const enabled = process.env.ENABLE_STRIPE === "true";
-  const provider: BillingProvider = enabled
-    ? normalizeProvider(process.env.BILLING_PROVIDER, BILLING_PROVIDERS, "stripe")
-    : "disabled";
-  const missingSecrets = enabled
-    ? getMissingSecrets([
-        "STRIPE_SECRET_KEY",
-        "STRIPE_WEBHOOK_SECRET",
-        "VITE_STRIPE_PUBLISHABLE_KEY",
-      ])
-    : [];
-
-  const connected = enabled && provider !== "disabled" && missingSecrets.length === 0;
+  const billing = getBillingState();
+  const provider: BillingProvider = billing.enabled ? "stripe" : "disabled";
 
   return {
     service: "billing",
     provider,
-    disabled: !enabled,
-    connected,
-    status: !enabled ? "disabled" : connected ? "ready" : "not_configured",
-    message: !enabled
-      ? "Stripe billing is disabled. No checkout or subscription calls are made."
-      : connected
-        ? "Stripe secrets are present but checkout/webhooks are not wired yet."
-        : "Stripe is enabled but required secrets are missing.",
-    missingSecrets,
-    nextStep: connected
-      ? "Implement checkout session + webhook handler in a dedicated billing task."
+    disabled: !billing.enabled,
+    connected: billing.connected,
+    status: billing.status,
+    message: billing.message,
+    missingSecrets: billing.missingSecrets,
+    nextStep: billing.connected
+      ? "Configure Stripe webhook endpoint at /api/stripe-webhook and test checkout in Stripe test mode."
       : "Set ENABLE_STRIPE=true and add Stripe keys only after billing scope is approved.",
   };
 }
 
 export function getAnalyticsIntegrationState(): IntegrationState {
   const provider = normalizeProvider(
-    process.env.ANALYTICS_PROVIDER,
+    process.env.ANALYTICS_PROVIDER || process.env.VITE_ANALYTICS_PROVIDER,
     ANALYTICS_PROVIDERS,
     "disabled",
   );
@@ -245,13 +230,13 @@ export function getAnalyticsIntegrationState(): IntegrationState {
       provider === "disabled"
         ? "Analytics beacons are disabled."
         : connected
-          ? `${provider} is configured but client beacons are not wired yet.`
+          ? "Consent banner and client beacons are wired; analytics load only after consent."
           : `${provider} selected but required env vars are missing.`,
     missingSecrets,
     nextStep:
       provider === "disabled"
         ? "Complete privacy review before enabling analytics."
-        : "Add consent UX and provider snippet in a dedicated analytics task.",
+        : "Set VITE_ANALYTICS_PROVIDER in production and verify consent UX on public pages.",
   };
 }
 

@@ -15,8 +15,8 @@ Phase 2 step: plan external providers without connecting paid services yet.
 | Service | Env gate | Required secrets | Runtime today | Next task |
 | --- | --- | --- | --- | --- |
 | Email (Resend) | `ENABLE_INVITATION_EMAIL=true` | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Send on invite create/resend when ready | Verify domain + template QA |
-| Billing (Stripe) | `ENABLE_STRIPE=true` | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `VITE_STRIPE_PUBLISHABLE_KEY` | Not wired | Checkout + webhook handler |
-| Analytics | `ANALYTICS_PROVIDER` | Provider-specific (see below) | Not wired | Privacy review + consent banner |
+| Billing (Stripe) | `ENABLE_STRIPE=true` | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID`, `VITE_STRIPE_PUBLISHABLE_KEY` | Checkout + `/api/stripe-webhook` | Test mode checkout + webhook signing |
+| Analytics | `VITE_ANALYTICS_PROVIDER` | Provider-specific (see below) | Consent banner + client beacons | Privacy review + production property |
 | Monitoring | `MONITORING_PROVIDER=sentry` | `SENTRY_DSN` | Not wired | Error boundary + server capture |
 | AI chat | `AI_PROVIDER` | Provider API keys | Sense local engine only | AI gateway adapter |
 | STT / TTS | `STT_PROVIDER`, `TTS_PROVIDER` | Provider keys | Browser fallback / 501 stubs | Voice adapter task |
@@ -26,8 +26,8 @@ Phase 2 step: plan external providers without connecting paid services yet.
 | Provider | Env | Notes |
 | --- | --- | --- |
 | `disabled` | default | No client beacons |
-| `plausible` | `PLAUSIBLE_DOMAIN` | Privacy-friendly page views |
-| `posthog` | `POSTHOG_API_KEY`, `POSTHOG_HOST` | Product analytics; requires consent |
+| `plausible` | `VITE_PLAUSIBLE_DOMAIN` | Privacy-friendly page views |
+| `posthog` | `VITE_POSTHOG_KEY`, `VITE_POSTHOG_HOST` | Product analytics; requires consent |
 | `ga4` | `VITE_GA4_MEASUREMENT_ID` | Google Analytics; requires consent |
 
 ## Admin visibility
@@ -53,14 +53,15 @@ Statuses:
 ### Stripe
 
 - [ ] Products/prices created in Stripe dashboard
-- [ ] Webhook endpoint deployed and signing secret set
+- [ ] `STRIPE_PRICE_ID` set to the subscription price
+- [ ] Webhook endpoint deployed at `/api/stripe-webhook` with signing secret set
 - [ ] Test mode checkout verified before live keys
 
 ### Analytics
 
 - [ ] Privacy policy updated
-- [ ] Cookie/consent UX approved
-- [ ] Production property/domain registered
+- [ ] Cookie/consent UX verified on public and authenticated pages
+- [ ] `VITE_ANALYTICS_PROVIDER` and provider env vars set in production
 
 ### Monitoring
 

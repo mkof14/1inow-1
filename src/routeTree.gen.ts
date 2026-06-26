@@ -23,6 +23,7 @@ import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as LearnSlugRouteImport } from './routes/learn.$slug'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
+import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe-webhook'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedThinkingRouteImport } from './routes/_authenticated/thinking'
 import { Route as AuthenticatedTeamsRouteImport } from './routes/_authenticated/teams'
@@ -134,6 +135,11 @@ const ApiTtsRoute = ApiTtsRouteImport.update({
 const ApiSttRoute = ApiSttRouteImport.update({
   id: '/api/stt',
   path: '/api/stt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
+  id: '/api/stripe-webhook',
+  path: '/api/stripe-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -399,6 +405,7 @@ export interface FileRoutesByFullPath {
   '/teams': typeof AuthenticatedTeamsRoute
   '/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/stripe-webhook': typeof ApiStripeWebhookRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/learn/$slug': typeof LearnSlugRoute
@@ -455,6 +462,7 @@ export interface FileRoutesByTo {
   '/teams': typeof AuthenticatedTeamsRoute
   '/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/stripe-webhook': typeof ApiStripeWebhookRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/learn/$slug': typeof LearnSlugRoute
@@ -514,6 +522,7 @@ export interface FileRoutesById {
   '/_authenticated/teams': typeof AuthenticatedTeamsRoute
   '/_authenticated/thinking': typeof AuthenticatedThinkingRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/stripe-webhook': typeof ApiStripeWebhookRoute
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/learn/$slug': typeof LearnSlugRoute
@@ -573,6 +582,7 @@ export interface FileRouteTypes {
     | '/teams'
     | '/thinking'
     | '/api/chat'
+    | '/api/stripe-webhook'
     | '/api/stt'
     | '/api/tts'
     | '/learn/$slug'
@@ -629,6 +639,7 @@ export interface FileRouteTypes {
     | '/teams'
     | '/thinking'
     | '/api/chat'
+    | '/api/stripe-webhook'
     | '/api/stt'
     | '/api/tts'
     | '/learn/$slug'
@@ -687,6 +698,7 @@ export interface FileRouteTypes {
     | '/_authenticated/teams'
     | '/_authenticated/thinking'
     | '/api/chat'
+    | '/api/stripe-webhook'
     | '/api/stt'
     | '/api/tts'
     | '/learn/$slug'
@@ -721,6 +733,7 @@ export interface RootRouteChildren {
   SecurityTrustRoute: typeof SecurityTrustRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
   LearnSlugRoute: typeof LearnSlugRoute
@@ -827,6 +840,13 @@ declare module '@tanstack/react-router' {
       path: '/api/stt'
       fullPath: '/api/stt'
       preLoaderRoute: typeof ApiSttRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stripe-webhook': {
+      id: '/api/stripe-webhook'
+      path: '/api/stripe-webhook'
+      fullPath: '/api/stripe-webhook'
+      preLoaderRoute: typeof ApiStripeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -1251,6 +1271,7 @@ const rootRouteChildren: RootRouteChildren = {
   SecurityTrustRoute: SecurityTrustRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiStripeWebhookRoute: ApiStripeWebhookRoute,
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
   LearnSlugRoute: LearnSlugRoute,

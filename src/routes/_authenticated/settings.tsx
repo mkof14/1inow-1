@@ -20,6 +20,8 @@ import { dictionaries } from "@/lib/i18n/dictionaries";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { ensureCurrentProfile } from "@/lib/profile-bootstrap";
+import { BillingPanel } from "@/components/billing-panel";
+import { AnalyticsPrivacyPanel } from "@/components/analytics-privacy-panel";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsPage,
@@ -56,6 +58,15 @@ function SettingsPage() {
     number_format: "en-US",
     auto_translate: false,
   });
+  useEffect(() => {
+    const billing = new URLSearchParams(window.location.search).get("billing");
+    if (billing === "success") {
+      toast.success("Checkout completed. Subscription updates may take a moment.");
+    } else if (billing === "cancelled") {
+      toast.message("Checkout cancelled.");
+    }
+  }, []);
+
   useEffect(() => {
     if (!profile) return;
     setPf({
@@ -368,6 +379,18 @@ function SettingsPage() {
             v={form.notif_deadlines}
             onChange={(b) => setForm({ ...form, notif_deadlines: b })}
           />
+        </Section>
+
+        <Section title="Billing">
+          <div className="sm:col-span-2">
+            <BillingPanel />
+          </div>
+        </Section>
+
+        <Section title="Privacy">
+          <div className="sm:col-span-2">
+            <AnalyticsPrivacyPanel />
+          </div>
         </Section>
 
         <div className="flex justify-end">
