@@ -44,13 +44,32 @@ export async function fetchOrganizationSummary(
   return data;
 }
 
+/** Attach the profile to the default workspace organization when missing. */
+export async function ensureProfileOrganization(userId: string) {
+  const { data, error } = await supabase.rpc("ensure_profile_organization", {
+    _user_id: userId,
+  });
+  if (error) throw error;
+  return (data as string | null) ?? null;
+}
+
+/** Resolve organization id for the current user, bootstrapping when needed. */
+export async function resolveActiveOrganizationId(userId: string) {
+  const scope = await fetchProfileWorkspaceScope(userId);
+  if (scope.organizationId) return scope.organizationId;
+
+  return ensureProfileOrganization(userId);
+}
+
 /** Resolve the current user's organization context from profile scope. */
 export async function fetchCurrentOrganizationContext(userId: string) {
+  const organizationId = await resolveActiveOrganizationId(userId);
   const scope = await fetchProfileWorkspaceScope(userId);
-  if (!scope.organizationId) {
+
+  if (!organizationId) {
     return { scope, organization: null as OrganizationSummary | null };
   }
 
-  const organization = await fetchOrganizationSummary(scope.organizationId);
-  return { scope, organization };
+  const organization = await fetchOrganizationSummary(organizationId);
+  return { scope: { ...scope, organizationId }, organization };
 }

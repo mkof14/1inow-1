@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Users, Building2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { resolveActiveOrganizationId } from "@/lib/organization-model";
 import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/teams")({ component: TeamsPage });
@@ -136,9 +137,13 @@ function TeamsList() {
   });
   const create = useMutation({
     mutationFn: async ({ name, description }: { name: string; description: string }) => {
-      const { error } = await (supabase as any)
-        .from("teams")
-        .insert({ name, description, created_by: user!.id });
+      const organizationId = user?.id ? await resolveActiveOrganizationId(user.id) : null;
+      const { error } = await (supabase as any).from("teams").insert({
+        name,
+        description,
+        created_by: user!.id,
+        organization_id: organizationId,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -219,9 +224,13 @@ function DepartmentsList() {
   });
   const create = useMutation({
     mutationFn: async ({ name, description }: { name: string; description: string }) => {
-      const { error } = await (supabase as any)
-        .from("departments")
-        .insert({ name, description, created_by: user!.id });
+      const organizationId = user?.id ? await resolveActiveOrganizationId(user.id) : null;
+      const { error } = await (supabase as any).from("departments").insert({
+        name,
+        description,
+        created_by: user!.id,
+        organization_id: organizationId,
+      });
       if (error) throw error;
     },
     onSuccess: () => {

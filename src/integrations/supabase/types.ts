@@ -2291,6 +2291,11 @@ export type Database = {
         Returns: boolean;
       };
       is_super_admin: { Args: { _user_id: string }; Returns: boolean };
+      default_organization_id: { Args: Record<string, never>; Returns: string };
+      ensure_profile_organization: {
+        Args: { _user_id?: string };
+        Returns: string;
+      };
       log_audit: {
         Args: {
           _action: string;
