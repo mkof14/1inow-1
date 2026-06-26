@@ -7,11 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { ensureCurrentProfile } from "@/lib/profile-bootstrap";
 import {
+  disableFounderMode,
   enableFounderMode,
+  enforceFounderModePolicy,
   FOUNDER_EMAIL,
   isFounderAccessAvailable,
   isFounderModeEnabled,
+  syncFounderModeWithSession,
 } from "@/lib/founder-mode";
 import {
   ArrowLeft,
@@ -40,12 +44,14 @@ function AuthPage() {
   const founderMode = isFounderModeEnabled();
 
   useEffect(() => {
+    enforceFounderModePolicy();
     if (founderMode) {
       setSessionReady(true);
       return;
     }
 
     supabase.auth.getSession().then(({ data }) => {
+      syncFounderModeWithSession(Boolean(data.session));
       setHasSession(Boolean(data.session));
       setSessionReady(true);
     });
@@ -61,8 +67,12 @@ function AuthPage() {
     setError(null);
 
     try {
+      disableFounderMode();
       const result = await supabase.auth.signInWithPassword({ email, password });
       if (result.error) throw result.error;
+      if (result.data.user) {
+        await ensureCurrentProfile(result.data.user);
+      }
 
       toast.success("Signed in");
       await navigate({ to: "/dashboard", replace: true });

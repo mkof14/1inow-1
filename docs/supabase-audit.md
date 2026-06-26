@@ -343,11 +343,6 @@ Approved migration candidates later (not now):
 
 ## 12. Recommended Next Task
 
-Phase 2 Step 2: Auth and profile stabilization.
+Phase 2 Step 2: Auth and profile stabilization — completed. See `docs/auth-stabilization.md`.
 
-Focus:
-
-- Confirm production auth policy (no founder bypass outside local/dev)
-- Wire `is_super_admin` into client admin checks
-- Ensure profile bootstrap runs on every real sign-in
-- Document organization/project ownership assumptions before RBAC expansion
+Next: Phase 2 Step 3 — Organization and team model review.

@@ -28,6 +28,20 @@ export function disableFounderMode() {
   window.localStorage.removeItem(FOUNDER_SESSION_KEY);
 }
 
+/** Drop stale founder bypass when a real Supabase session exists. */
+export function syncFounderModeWithSession(hasSession: boolean) {
+  if (hasSession && isFounderModeEnabled()) {
+    disableFounderMode();
+  }
+}
+
+/** Clear founder bypass outside trusted local/dev environments. */
+export function enforceFounderModePolicy() {
+  if (!isFounderAccessAvailable()) {
+    disableFounderMode();
+  }
+}
+
 export const FOUNDER_EMAIL = "dnainform@gmail.com";
 
 export const FOUNDER_USER = {

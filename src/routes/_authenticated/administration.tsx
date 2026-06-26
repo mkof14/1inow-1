@@ -1,5 +1,6 @@
-import { createFileRoute, Outlet, Link, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Outlet, Link, useRouterState, redirect } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+import { requireAdminSession } from "@/lib/auth-roles";
 import { isDevOwnerToolsAvailable } from "@/lib/dev-owner-tools";
 import {
   LayoutDashboard,
@@ -16,6 +17,12 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/administration")({
+  beforeLoad: async () => {
+    const gate = await requireAdminSession();
+    if (!gate.allowed) {
+      throw redirect({ to: gate.reason === "no_session" ? "/auth" : "/dashboard" });
+    }
+  },
   component: AdminLayout,
 });
 
