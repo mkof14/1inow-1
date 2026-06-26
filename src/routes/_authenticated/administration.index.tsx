@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { fetchAdminStats, fetchAuditLogs } from "@/lib/admin-queries";
+import { fetchIntegrationsOverview } from "@/lib/integrations-overview.functions";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Users,
   Mail,
@@ -9,6 +12,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   RotateCcw,
+  PlugZap,
   Database,
 } from "lucide-react";
 import { useT } from "@/lib/i18n";
@@ -52,9 +56,14 @@ function StatCard({
 function AdminDashboard() {
   const t = useT();
   const qc = useQueryClient();
+  const loadIntegrations = useServerFn(fetchIntegrationsOverview);
   const [busy, setBusy] = useState<"reset" | "seed" | "both" | null>(null);
   const stats = useQuery({ queryKey: ["admin-stats"], queryFn: fetchAdminStats });
   const audit = useQuery({ queryKey: ["admin-audit-recent"], queryFn: () => fetchAuditLogs(10) });
+  const integrations = useQuery({
+    queryKey: ["admin-integrations-overview"],
+    queryFn: () => loadIntegrations(),
+  });
   const devToolsAvailable = isDevOwnerToolsAvailable();
   const s = stats.data;
 
@@ -135,6 +144,52 @@ function AdminDashboard() {
           tone="warning"
         />
       </div>
+
+      <Card className="p-5">
+        <div className="mb-4 flex items-center gap-2">
+          <PlugZap className="size-4 text-accent" />
+          <h2 className="font-semibold">Production integrations</h2>
+        </div>
+        {integrations.isLoading ? (
+          <div className="text-sm text-muted-foreground">{t("common.loading")}</div>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {integrations.data &&
+              Object.entries(integrations.data)
+                .filter(([key]) => !["modelRouterEnabled", "auditLoggingEnabled"].includes(key))
+                .map(([key, value]) => {
+                  const row = value as {
+                    service?: string;
+                    provider?: string;
+                    status?: string;
+                    message?: string;
+                  };
+                  const status = row.status ?? "disabled";
+                  const variant =
+                    status === "ready"
+                      ? "default"
+                      : status === "not_configured"
+                        ? "secondary"
+                        : "outline";
+                  return (
+                    <div
+                      key={key}
+                      className="rounded-xl border border-border bg-muted/20 px-4 py-3 text-sm"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-medium capitalize">{row.service ?? key}</span>
+                        <Badge variant={variant}>{status.replace("_", " ")}</Badge>
+                      </div>
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        {row.provider ?? "—"}
+                      </div>
+                      <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.message}</p>
+                    </div>
+                  );
+                })}
+          </div>
+        )}
+      </Card>
 
       <Card className="p-5">
         <div className="flex items-center justify-between mb-4">

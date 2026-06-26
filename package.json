@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "smoke": "bash scripts/smoke-check.sh",
+    "verify:production": "bash scripts/verify-production-supabase.sh",
     "format": "prettier --write .",
     "deploy": "bash scripts/deploy-vercel.sh",
     "deploy:prod": "bash scripts/deploy-vercel.sh --prod"
