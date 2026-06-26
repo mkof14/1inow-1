@@ -17,6 +17,7 @@ import { I18nProvider } from "@/lib/i18n";
 import { AiPageContextProvider } from "@/lib/ai-context";
 import { AnalyticsConsentBanner } from "@/components/analytics-consent-banner";
 import { AnalyticsRuntime } from "@/components/analytics-runtime";
+import { MonitoringRuntime } from "@/components/monitoring-runtime";
 
 function NotFoundComponent() {
   return (
@@ -180,6 +181,7 @@ function RootComponent() {
           <AiPageContextProvider>
             <Outlet />
             <AnalyticsRuntime />
+            <MonitoringRuntime />
             <AnalyticsConsentBanner />
             <Toaster richColors position="top-right" />
           </AiPageContextProvider>

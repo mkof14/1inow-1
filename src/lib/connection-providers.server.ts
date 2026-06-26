@@ -1,6 +1,7 @@
 import process from "node:process";
 import { getInvitationEmailState } from "@/lib/email-delivery.server";
 import { getBillingState } from "@/lib/billing.server";
+import { getMonitoringState } from "@/lib/monitoring.server";
 
 export type AiProvider = "disabled" | "openai" | "anthropic" | "gemini" | "internal";
 export type SpeechProvider = "disabled" | "browser" | "openai" | "google" | "azure";
@@ -68,7 +69,6 @@ const TTS_SECRET_BY_PROVIDER: Partial<Record<VoiceProvider, string[]>> = {
 };
 
 const ANALYTICS_PROVIDERS: AnalyticsProvider[] = ["disabled", "plausible", "posthog", "ga4"];
-const MONITORING_PROVIDERS: MonitoringProvider[] = ["disabled", "sentry"];
 
 const ANALYTICS_SECRET_BY_PROVIDER: Partial<Record<AnalyticsProvider, string[]>> = {
   plausible: ["VITE_PLAUSIBLE_DOMAIN"],
@@ -241,30 +241,19 @@ export function getAnalyticsIntegrationState(): IntegrationState {
 }
 
 export function getMonitoringIntegrationState(): IntegrationState {
-  const provider = normalizeProvider(
-    process.env.MONITORING_PROVIDER,
-    MONITORING_PROVIDERS,
-    "disabled",
-  );
-  const missingSecrets = provider === "sentry" ? getMissingSecrets(["SENTRY_DSN"]) : [];
-  const connected = provider !== "disabled" && missingSecrets.length === 0;
+  const monitoring = getMonitoringState();
 
   return {
     service: "monitoring",
-    provider,
-    disabled: provider === "disabled",
-    connected,
-    status: provider === "disabled" ? "disabled" : connected ? "ready" : "not_configured",
-    message:
-      provider === "disabled"
-        ? "Error monitoring is disabled."
-        : connected
-          ? "Sentry DSN is configured but SDK capture is not wired yet."
-          : "Monitoring provider selected but SENTRY_DSN is missing.",
-    missingSecrets,
-    nextStep: connected
-      ? "Wire Sentry in client + server error boundaries."
-      : "Choose monitoring provider after on-call process is defined.",
+    provider: monitoring.enabled ? "sentry" : "disabled",
+    disabled: !monitoring.enabled,
+    connected: monitoring.connected,
+    status: monitoring.status,
+    message: monitoring.message,
+    missingSecrets: monitoring.missingSecrets,
+    nextStep: monitoring.connected
+      ? "Confirm events appear in Sentry after a test client/server error."
+      : "Set MONITORING_PROVIDER=sentry and DSN env vars after on-call process is defined.",
   };
 }
 

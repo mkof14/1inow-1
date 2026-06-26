@@ -74,6 +74,10 @@ echo "Org foundation migrations"
 bash "$ROOT/scripts/verify-org-migrations.sh" | sed 's/^/  /'
 
 echo
+echo "Migration runbook"
+echo "  See docs/supabase-migration-runbook.md for apply order and post-check SQL."
+
+echo
 echo "Manual Supabase SQL checks (run in Dashboard → SQL)"
 cat <<'SQL'
 -- Owner account exists and is bootstrapped
@@ -107,6 +111,27 @@ SELECT count(*) AS profiles_without_org
 FROM public.profiles
 WHERE organization_id IS NULL;
 SQL
+
+echo
+echo "Integration flags (should stay disabled until configured)"
+for pair in \
+  "ENABLE_STRIPE:false" \
+  "ENABLE_INVITATION_EMAIL:false" \
+  "VITE_ANALYTICS_PROVIDER:disabled" \
+  "VITE_MONITORING_PROVIDER:disabled"
+do
+  key="${pair%%:*}"
+  expected="${pair##*:}"
+  actual="${!key:-}"
+  if [[ -z "$actual" ]]; then
+    actual="$expected"
+  fi
+  if [[ "$actual" == "$expected" ]]; then
+    pass "$key=$expected"
+  else
+    warn "$key is '$actual' (expected '$expected' unless go-live approved)"
+  fi
+done
 
 echo
 echo "Sign-in smoke (manual)"

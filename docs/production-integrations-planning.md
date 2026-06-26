@@ -17,7 +17,7 @@ Phase 2 step: plan external providers without connecting paid services yet.
 | Email (Resend) | `ENABLE_INVITATION_EMAIL=true` | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Send on invite create/resend when ready | Verify domain + template QA |
 | Billing (Stripe) | `ENABLE_STRIPE=true` | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID`, `VITE_STRIPE_PUBLISHABLE_KEY` | Checkout + `/api/stripe-webhook` | Test mode checkout + webhook signing |
 | Analytics | `VITE_ANALYTICS_PROVIDER` | Provider-specific (see below) | Consent banner + client beacons | Privacy review + production property |
-| Monitoring | `MONITORING_PROVIDER=sentry` | `SENTRY_DSN` | Not wired | Error boundary + server capture |
+| Monitoring | `MONITORING_PROVIDER=sentry` | `SENTRY_DSN`, `VITE_SENTRY_DSN` | Client + server capture | Test error in staging |
 | AI chat | `AI_PROVIDER` | Provider API keys | Sense local engine only | AI gateway adapter |
 | STT / TTS | `STT_PROVIDER`, `TTS_PROVIDER` | Provider keys | Browser fallback / 501 stubs | Voice adapter task |
 
@@ -66,7 +66,8 @@ Statuses:
 ### Monitoring
 
 - [ ] Sentry project created
-- [ ] Source maps upload configured in CI
+- [ ] `SENTRY_DSN` and `VITE_SENTRY_DSN` set in production
+- [ ] Test client error (root boundary) and server error appear in Sentry
 - [ ] Alert rules for error rate spikes
 
 ## Validation
