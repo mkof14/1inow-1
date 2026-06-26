@@ -13,7 +13,8 @@ for file in \
   "$ROOT/supabase/migrations/20260626160000_invitation_acceptance.sql" \
   "$ROOT/supabase/migrations/20260626163000_audit_log_organization.sql" \
   "$ROOT/supabase/migrations/20260626170000_communication_decisions_org_scoping.sql" \
-  "$ROOT/supabase/migrations/20260626180000_user_roles_org_scoping.sql"
+  "$ROOT/supabase/migrations/20260626180000_user_roles_org_scoping.sql" \
+  "$ROOT/supabase/migrations/20260626183000_task_comments.sql"
 do
   if [[ -f "$file" ]]; then
     echo "  - $(basename "$file")"

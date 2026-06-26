@@ -20,6 +20,7 @@ Run each file in **Supabase Dashboard → SQL Editor** (or `supabase db push`), 
 | 4 | `supabase/migrations/20260626163000_audit_log_organization.sql` |
 | 5 | `supabase/migrations/20260626170000_communication_decisions_org_scoping.sql` |
 | 6 | `supabase/migrations/20260626180000_user_roles_org_scoping.sql` |
+| 7 | `supabase/migrations/20260626183000_task_comments.sql` |
 
 List locally:
 

@@ -15,6 +15,7 @@ import { RelatedItems } from "@/components/related-items";
 import { ProjectSuggestions } from "@/components/ai-suggestions";
 import { ProjectAdvisor } from "@/components/project-advisor";
 import { TaskTimer } from "@/components/task-timer";
+import { TaskComments } from "@/components/task-comments";
 import { createRelation } from "@/lib/relations";
 import { createTaskRecord, deleteTaskRecord, updateTaskStatus } from "@/lib/project-task-engine";
 import type { Database } from "@/integrations/supabase/types";
@@ -259,6 +260,7 @@ function ProjectDetail() {
                           <Trash2 className="size-3.5" />
                         </button>
                       </div>
+                      <TaskComments taskId={t.id} />
                     </div>
                   ))}
                 </div>

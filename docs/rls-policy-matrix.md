@@ -27,6 +27,7 @@ Legend:
 | --- | --- | --- | --- | --- | --- | --- |
 | `projects` | Org + membership | Org, owner, creator, member | Creator + org match | Owner/admin policies | Owner/admin | `organization_id` required in app writes |
 | `tasks` | Org + assignment | Org project path, assignee, creator | Authenticated create | Assignee/owner/admin | Assignee/owner/admin | Orphan tasks scoped via creator org |
+| `task_comments` | Org + task access | Task viewers in org | Author + `send_messages`/`edit_tasks` | Author/admin soft delete | — | Soft delete via `deleted_at` |
 | `project_members` | Project | Project access | Project admin | Project admin | Project admin | Inherited via project |
 | `decisions` | Org | Same org or project path | Requester + org match | Same org | Requester/admin in org | `organization_id` on writes |
 | `notifications` | Personal | Own rows | Self or admin | Own rows | Own rows | User-scoped |
