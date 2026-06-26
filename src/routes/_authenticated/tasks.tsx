@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
 import { fetchTasks, TASK_STATUS_LABEL, TASK_STATUSES, type TaskStatus } from "@/lib/queries";
-import { supabase } from "@/integrations/supabase/client";
+import { createTaskRecord, updateTaskStatus } from "@/lib/project-task-engine";
 import {
   Select,
   SelectContent,
@@ -50,14 +50,7 @@ function ExecutionPage() {
 
   const update = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await supabase
-        .from("tasks")
-        .update({
-          status: status as any,
-          completed_at: status === "done" ? new Date().toISOString() : null,
-        })
-        .eq("id", id);
-      if (error) throw error;
+      await updateTaskStatus(id, status as TaskStatus);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["tasks"] });
@@ -67,16 +60,7 @@ function ExecutionPage() {
 
   const createTask = useMutation({
     mutationFn: async () => {
-      const user = (await supabase.auth.getUser()).data.user;
-      if (!user) throw new Error("Sign in to create a task.");
-      const { error } = await supabase.from("tasks").insert({
-        title: newTaskTitle.trim(),
-        status: "todo",
-        priority: "medium",
-        created_by: user.id,
-        assignee_id: user.id,
-      } as never);
-      if (error) throw error;
+      await createTaskRecord({ title: newTaskTitle });
     },
     onSuccess: () => {
       setNewTaskTitle("");

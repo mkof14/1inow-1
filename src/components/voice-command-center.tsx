@@ -24,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { buildSenseResponse } from "@/lib/sense-engine";
+import { createProjectRecord, createTaskRecord } from "@/lib/project-task-engine";
 import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
 import { saveVoiceInboxItem, type VoiceInboxKind } from "@/lib/voice-intake";
 
@@ -242,35 +243,18 @@ export function VoiceCommandCenter({
         return;
       }
 
-      const { data } = await supabase.auth.getUser();
-      if (!data.user) throw new Error("Sign in required");
-
       if (plan.intent === "create_task") {
-        const title = plan.title?.trim() || "Untitled task";
-        const { error } = await supabase.from("tasks").insert({
-          title,
+        await createTaskRecord({
+          title: plan.title?.trim() || "Untitled task",
           description: plan.description || null,
-          status: "todo",
-          priority: "medium",
-          created_by: data.user.id,
         });
-        if (error) throw error;
         await queryClient.invalidateQueries({ queryKey: ["tasks"] });
         toast.success("Task created from voice command");
       } else if (plan.intent === "create_project") {
-        const name = plan.title?.trim() || "Untitled project";
-        const base = name.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "new-project";
-        const slug = `${base.replace(/(^-|-$)/g, "")}-${Math.random().toString(36).slice(2, 6)}`;
-        const { error } = await supabase.from("projects").insert({
-          name,
-          slug,
+        await createProjectRecord({
+          name: plan.title?.trim() || "Untitled project",
           description: plan.description || null,
-          status: "planning",
-          priority: "medium",
-          created_by: data.user.id,
-          owner_id: data.user.id,
         });
-        if (error) throw error;
         await queryClient.invalidateQueries({ queryKey: ["projects"] });
         toast.success("Project created from voice command");
       } else {

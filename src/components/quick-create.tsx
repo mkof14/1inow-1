@@ -11,8 +11,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { createProjectRecord, createTaskRecord } from "@/lib/project-task-engine";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
 
@@ -38,33 +38,13 @@ export function QuickCreate({ openSignal = 0 }: { openSignal?: number }) {
 
   async function submit() {
     if (!title.trim()) return;
-    const user = (await supabase.auth.getUser()).data.user;
-    if (!user) return;
     try {
       if (tab === "task") {
-        const { error } = await supabase.from("tasks").insert({
-          title,
-          description: desc || null,
-          status: "todo",
-          priority: "medium",
-          created_by: user.id,
-        });
-        if (error) throw error;
+        await createTaskRecord({ title, description: desc || null });
         qc.invalidateQueries({ queryKey: ["tasks"] });
         toast.success(t("quick.taskCreated"));
       } else if (tab === "project") {
-        const slug = title
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/(^-|-$)/g, "");
-        const { error } = await supabase.from("projects").insert({
-          name: title,
-          slug,
-          description: desc || null,
-          status: "planning",
-          created_by: user.id,
-        });
-        if (error) throw error;
+        await createProjectRecord({ name: title, description: desc || null });
         qc.invalidateQueries({ queryKey: ["projects"] });
         toast.success(t("quick.projectCreated"));
       }
