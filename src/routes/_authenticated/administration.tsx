@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, Link, useRouterState } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
-import { isFounderModeEnabled } from "@/lib/founder-mode";
+import { isDevOwnerToolsAvailable } from "@/lib/dev-owner-tools";
 import {
   LayoutDashboard,
   Users,
@@ -35,7 +35,7 @@ const tabs = [
 
 function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const visibleTabs = isFounderModeEnabled()
+  const visibleTabs = isDevOwnerToolsAvailable()
     ? tabs
     : tabs.filter((tab) => tab.to !== "/administration/role-switcher");
 

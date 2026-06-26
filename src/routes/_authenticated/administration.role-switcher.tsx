@@ -8,11 +8,11 @@ import { Shield, ShieldCheck, Briefcase, User } from "lucide-react";
 import { setSelfRole } from "@/lib/api/dev-tools.functions";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import { isFounderModeEnabled } from "@/lib/founder-mode";
+import { isDevOwnerToolsAvailable } from "@/lib/dev-owner-tools";
 
 export const Route = createFileRoute("/_authenticated/administration/role-switcher")({
   beforeLoad: () => {
-    if (!isFounderModeEnabled()) {
+    if (!isDevOwnerToolsAvailable()) {
       throw redirect({ to: "/administration" });
     }
   },

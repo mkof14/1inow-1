@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
 import { resetDemoData, seedDemoData } from "@/lib/api/dev-tools.functions";
+import { isDevOwnerToolsAvailable } from "@/lib/dev-owner-tools";
 
 export const Route = createFileRoute("/_authenticated/administration/")({
   component: AdminDashboard,
@@ -54,6 +55,7 @@ function AdminDashboard() {
   const [busy, setBusy] = useState<"reset" | "seed" | "both" | null>(null);
   const stats = useQuery({ queryKey: ["admin-stats"], queryFn: fetchAdminStats });
   const audit = useQuery({ queryKey: ["admin-audit-recent"], queryFn: () => fetchAuditLogs(10) });
+  const devToolsAvailable = isDevOwnerToolsAvailable();
   const s = stats.data;
 
   const runReset = async () => {
@@ -170,32 +172,36 @@ function AdminDashboard() {
         )}
       </Card>
 
-      <details className="group rounded-2xl border border-border bg-card p-5">
-        <summary className="cursor-pointer list-none">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="font-semibold">Owner maintenance</h2>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                Local-only workspace reset and executive sample data controls.
-              </p>
+      {devToolsAvailable && (
+        <details className="group rounded-2xl border border-border bg-card p-5">
+          <summary className="cursor-pointer list-none">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="font-semibold">Owner maintenance</h2>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Local-only workspace reset and executive sample data controls.
+                </p>
+              </div>
+              <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
+                Restricted
+              </span>
             </div>
-            <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
-              Restricted
-            </span>
+          </summary>
+          <div className="mt-4 flex flex-wrap gap-2 border-t border-border pt-4">
+            <Button variant="outline" size="sm" disabled={busy !== null} onClick={runReset}>
+              <RotateCcw className="size-4" />{" "}
+              {busy === "reset" ? "Clearing…" : "Clear sample data"}
+            </Button>
+            <Button variant="outline" size="sm" disabled={busy !== null} onClick={runSeed}>
+              <Database className="size-4" />{" "}
+              {busy === "seed" ? "Loading…" : "Load executive sample"}
+            </Button>
+            <Button size="sm" disabled={busy !== null} onClick={runFresh}>
+              {busy === "both" ? "Working…" : "Refresh sample workspace"}
+            </Button>
           </div>
-        </summary>
-        <div className="mt-4 flex flex-wrap gap-2 border-t border-border pt-4">
-          <Button variant="outline" size="sm" disabled={busy !== null} onClick={runReset}>
-            <RotateCcw className="size-4" /> {busy === "reset" ? "Clearing…" : "Clear sample data"}
-          </Button>
-          <Button variant="outline" size="sm" disabled={busy !== null} onClick={runSeed}>
-            <Database className="size-4" /> {busy === "seed" ? "Loading…" : "Load executive sample"}
-          </Button>
-          <Button size="sm" disabled={busy !== null} onClick={runFresh}>
-            {busy === "both" ? "Working…" : "Refresh sample workspace"}
-          </Button>
-        </div>
-      </details>
+        </details>
+      )}
     </div>
   );
 }
