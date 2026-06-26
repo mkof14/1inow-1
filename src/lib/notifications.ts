@@ -90,6 +90,45 @@ export async function deliverInAppNotification(input: CreateNotificationInput) {
   return createNotification(input);
 }
 
+/** Notify channel members about important message types. */
+export async function notifyChannelMessage(input: {
+  channelId: string;
+  authorId: string;
+  messageId: string;
+  title: string;
+  body: string;
+  messageType: string;
+  url?: string;
+}) {
+  const notifyTypes = new Set(["decision", "approval", "blocker", "announcement", "question"]);
+  if (!notifyTypes.has(input.messageType)) return;
+
+  const { data: members, error } = await supabase
+    .from("channel_members")
+    .select("user_id")
+    .eq("channel_id", input.channelId);
+  if (error) throw error;
+
+  const recipients = (members ?? [])
+    .map((row) => row.user_id)
+    .filter((userId): userId is string => !!userId && userId !== input.authorId);
+
+  await Promise.all(
+    recipients.map((userId) =>
+      deliverInAppNotification({
+        userId,
+        type: input.messageType === "approval" ? "approval" : "message",
+        title: input.title,
+        body: input.body,
+        actorId: input.authorId,
+        entityType: "message",
+        entityId: input.messageId,
+        url: input.url ?? "/communication",
+      }).catch(() => undefined),
+    ),
+  );
+}
+
 export async function markNotification(
   id: string,
   fields: { read_at?: string | null; resolved_at?: string | null },

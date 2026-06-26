@@ -1,5 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
+import { resolveUserPermission } from "@/lib/auth-roles";
 import { resolveActiveOrganizationId } from "@/lib/organization-model";
+import { notifyChannelMessage } from "@/lib/notifications";
+import { createTaskRecord } from "@/lib/project-task-engine";
 
 export const MESSAGE_TYPES = [
   "normal",
@@ -61,6 +64,18 @@ export type Message = {
   profiles?: { id: string; full_name: string | null; avatar_url: string | null } | null;
 };
 
+async function requireSignedInUser() {
+  const { data, error } = await supabase.auth.getUser();
+  if (error) throw error;
+  if (!data.user) throw new Error("Not signed in");
+  return data.user;
+}
+
+async function requireCommPermission(userId: string, permissionKey: string) {
+  const allowed = await resolveUserPermission(userId, permissionKey);
+  if (!allowed) throw new Error(`Missing permission: ${permissionKey}`);
+}
+
 // ============ CHANNELS ============
 export async function fetchChannels(): Promise<Channel[]> {
   const { data, error } = await supabase
@@ -79,8 +94,8 @@ export async function createChannel(input: {
   description?: string;
   project_id?: string;
 }) {
-  const user = (await supabase.auth.getUser()).data.user;
-  if (!user) throw new Error("Not signed in");
+  const user = await requireSignedInUser();
+  await requireCommPermission(user.id, "create_channels");
   const organizationId = await resolveActiveOrganizationId(user.id);
   const slug =
     input.name
@@ -107,8 +122,8 @@ export async function createChannel(input: {
 }
 
 export async function joinChannel(channelId: string) {
-  const user = (await supabase.auth.getUser()).data.user;
-  if (!user) throw new Error("Not signed in");
+  const user = await requireSignedInUser();
+  await requireCommPermission(user.id, "view_messages");
   await supabase
     .from("channel_members")
     .upsert(
@@ -159,9 +174,9 @@ export async function sendMessage(input: {
   thread_root_id?: string | null;
   original_language?: string;
 }) {
-  const user = (await supabase.auth.getUser()).data.user;
-  if (!user) throw new Error("Not signed in");
-  // Ensure membership (for non-company channels)
+  const user = await requireSignedInUser();
+  await requireCommPermission(user.id, "send_messages");
+  const messageType = input.message_type ?? "normal";
   await supabase
     .from("channel_members")
     .upsert(
@@ -174,17 +189,31 @@ export async function sendMessage(input: {
       channel_id: input.channel_id,
       author_id: user.id,
       body: input.body,
-      message_type: input.message_type ?? "normal",
+      message_type: messageType,
       thread_root_id: input.thread_root_id ?? null,
       original_language: input.original_language ?? null,
     })
     .select()
     .single();
   if (error) throw error;
+
+  const meta = MESSAGE_TYPE_META[messageType];
+  await notifyChannelMessage({
+    channelId: input.channel_id,
+    authorId: user.id,
+    messageId: data.id,
+    title: meta?.label ? `New ${meta.label.toLowerCase()}` : "New channel message",
+    body: input.body.slice(0, 160),
+    messageType,
+    url: "/communication",
+  }).catch(() => undefined);
+
   return data;
 }
 
 export async function editMessage(id: string, body: string) {
+  const user = await requireSignedInUser();
+  await requireCommPermission(user.id, "edit_messages");
   const { error } = await supabase
     .from("messages")
     .update({ body, edited_at: new Date().toISOString() })
@@ -193,6 +222,8 @@ export async function editMessage(id: string, body: string) {
 }
 
 export async function deleteMessage(id: string) {
+  const user = await requireSignedInUser();
+  await requireCommPermission(user.id, "delete_messages");
   const { error } = await supabase
     .from("messages")
     .update({ deleted_at: new Date().toISOString() })
@@ -201,6 +232,8 @@ export async function deleteMessage(id: string) {
 }
 
 export async function pinMessage(id: string, pinned: boolean) {
+  const user = await requireSignedInUser();
+  await requireCommPermission(user.id, "manage_channels");
   const { error } = await supabase
     .from("messages")
     .update({ pinned_at: pinned ? new Date().toISOString() : null })
@@ -256,22 +289,12 @@ export async function toggleSavedMessage(message_id: string) {
 
 // ============ CONVERSIONS ============
 export async function convertMessageToTask(m: Message, projectId?: string | null) {
-  const user = (await supabase.auth.getUser()).data.user;
-  if (!user) throw new Error("Not signed in");
-  const { data, error } = await supabase
-    .from("tasks")
-    .insert({
-      title: m.body.slice(0, 120),
-      description: `From #message ${m.id}\n\n${m.body}`,
-      status: "todo",
-      priority: m.message_type === "blocker" ? "high" : "medium",
-      project_id: projectId ?? null,
-      created_by: user.id,
-    })
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
+  return createTaskRecord({
+    title: m.body.slice(0, 120),
+    description: `From #message ${m.id}\n\n${m.body}`,
+    projectId: projectId ?? null,
+    priority: m.message_type === "blocker" ? "high" : "medium",
+  });
 }
 
 // ============ READ TRACKING ============

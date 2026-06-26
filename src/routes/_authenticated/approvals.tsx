@@ -1,9 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/use-auth";
-import { resolveActiveOrganizationId } from "@/lib/organization-model";
 import {
   fetchDecisions,
   fetchProjects,
@@ -11,6 +8,7 @@ import {
   type DecisionStatus,
   type DecisionImpact,
 } from "@/lib/queries";
+import { createDecisionRecord, updateDecisionStatus } from "@/lib/decision-engine";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,7 +52,6 @@ const IMPACT_DOT: Record<DecisionImpact, string> = {
 
 function DecisionsPage() {
   const t = useT();
-  const { user } = useAuth();
   const qc = useQueryClient();
   const decisions = useQuery({ queryKey: ["decisions"], queryFn: fetchDecisions });
   const projects = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
@@ -70,17 +67,13 @@ function DecisionsPage() {
 
   const create = useMutation({
     mutationFn: async () => {
-      const organizationId = await resolveActiveOrganizationId(user!.id);
-      const { error } = await (supabase as any).from("decisions").insert({
+      await createDecisionRecord({
         title: form.title,
         context: form.context,
         recommendation: form.recommendation,
         impact: form.impact,
-        requested_by: user!.id,
-        organization_id: organizationId,
-        project_id: form.project_id === "none" ? null : form.project_id,
+        projectId: form.project_id === "none" ? null : form.project_id,
       });
-      if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Decision opened");
@@ -93,15 +86,7 @@ function DecisionsPage() {
 
   const decide = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: DecisionStatus }) => {
-      const { error } = await (supabase as any)
-        .from("decisions")
-        .update({
-          status,
-          decided_by: user!.id,
-          decided_at: new Date().toISOString(),
-        })
-        .eq("id", id);
-      if (error) throw error;
+      await updateDecisionStatus(id, status);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["decisions"] });

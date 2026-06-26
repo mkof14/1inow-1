@@ -102,7 +102,9 @@ export function getChatProviderState(): ProviderState {
     connected: ready,
     status: provider === "disabled" ? "disabled" : ready ? "ready" : "not_configured",
     message: ready
-      ? `AI provider ${provider} is configured but not wired to runtime calls yet.`
+      ? provider === "openai"
+        ? "OpenAI chat gateway is wired with local Sense fallback and audit logging."
+        : `AI provider ${provider} is configured but not wired to runtime calls yet.`
       : "AI service is not connected yet.",
     capabilities: ["chat", "model-router", "audit"],
     missingSecrets,

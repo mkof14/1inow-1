@@ -10,7 +10,7 @@ No runtime provider integration was added. No UI was changed.
 
 | Component | Status |
 | --- | --- |
-| `/api/chat` | Local Sense engine (`sense-engine.ts`) via AI SDK streaming |
+| `/api/chat` | Local Sense engine + optional OpenAI gateway (`ai-gateway.server.ts`) |
 | `/api/stt` | 501 stub; browser STT fallback in UI |
 | `/api/tts` | 501 stub; browser speech synthesis fallback |
 | Advisor / translate / rewrite server fns | Disabled placeholders |
@@ -127,13 +127,13 @@ This allows production demos without API keys and gradual provider rollout.
 
 Steps 1–8 foundation reviews and initial stabilizations are documented.
 
-Next product implementation phases (outside this foundation pass):
+Implemented after foundation pass (no migrations required):
 
-1. Organization bootstrap migration
-2. Notification create helper + user scoping fix
-3. Permission-key guards on mutations
-4. RLS tightening per organization
-5. Approved AI provider integration Phase A
+1. Organization bootstrap migration — deferred to manual Supabase apply
+2. Notification helpers + event triggers — wired in project/task/decision/comm flows
+3. Permission-key guards — comm, decisions, project-task engine
+4. RLS tightening — migration prepared, apply on Supabase when ready
+5. AI provider Phase A — OpenAI gateway with local Sense fallback + `ai_actions` audit
 
 ## Validation
 

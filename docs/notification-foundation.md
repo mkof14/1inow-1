@@ -94,6 +94,12 @@ Fix `fetchNotifications()` to filter by current user.
 
 Wire invitation-accepted notifications for inviters and extend triggers to decision/comment events in later passes.
 
+Implemented:
+
+- `decision-engine.ts` with `edit_projects` / `approve_documents` guards
+- Comm message notifications for decision/approval/blocker/announcement/question types
+- Comm permission guards on channel/message mutations
+
 Phase 2 Step 8 (AI gateway planning) is documented in `docs/ai-gateway-planning.md`.
 
 ## Validation

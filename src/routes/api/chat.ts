@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createUIMessageStream, createUIMessageStreamResponse, type UIMessage } from "ai";
-import { getChatProviderState } from "@/lib/connection-providers.server";
-import { buildSenseResponse, formatSenseResponse } from "@/lib/sense-engine";
+import { runChatGateway } from "@/lib/ai-gateway.server";
 
 export const Route = createFileRoute("/api/chat")({
   server: {
@@ -14,17 +13,20 @@ export const Route = createFileRoute("/api/chat")({
           return new Response("Invalid JSON", { status: 400 });
         }
 
-        const service = getChatProviderState();
         const lang = body.lang ?? request.headers.get("x-user-language") ?? "en";
         const text = getLatestUserText(body) || "Help me understand the current workspace.";
-        const sense = buildSenseResponse(text, body.pageContext, lang);
-        const answer = formatSenseResponse(sense, lang);
+        const result = await runChatGateway({
+          prompt: text,
+          lang,
+          pageContext: body.pageContext,
+          authorizationHeader: request.headers.get("authorization"),
+        });
         const textId = `sense-${Date.now()}`;
 
         const stream = createUIMessageStream({
           execute: ({ writer }) => {
             writer.write({ type: "text-start", id: textId });
-            writer.write({ type: "text-delta", id: textId, delta: answer });
+            writer.write({ type: "text-delta", id: textId, delta: result.text });
             writer.write({ type: "text-end", id: textId });
           },
           onError: () => "Sense could not answer this request.",
@@ -34,8 +36,8 @@ export const Route = createFileRoute("/api/chat")({
           stream,
           headers: {
             "Cache-Control": "no-store",
-            "x-1inow-sense-provider": service.provider,
-            "x-1inow-sense-status": service.status,
+            "x-1inow-sense-provider": result.provider,
+            "x-1inow-sense-mode": result.mode,
           },
         });
       },
