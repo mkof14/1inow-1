@@ -1,4 +1,5 @@
 import type { User } from "@supabase/supabase-js";
+import { logWorkspaceActivity } from "@/lib/activity-log";
 import { resolveUserPermission } from "@/lib/auth-roles";
 import { resolveActiveOrganizationId } from "@/lib/organization-model";
 import { deliverInAppNotification } from "@/lib/notifications";
@@ -101,6 +102,15 @@ export async function createDecisionRecord(input: CreateDecisionInput) {
     });
   }
 
+  await logWorkspaceActivity({
+    userId: user.id,
+    action: "decision.created",
+    entityType: "decision",
+    entityId: data.id,
+    projectId: input.projectId ?? null,
+    metadata: { title, impact: input.impact ?? "medium" },
+  });
+
   return data;
 }
 
@@ -139,6 +149,15 @@ export async function updateDecisionStatus(decisionId: string, status: DecisionS
       url: projectSlug ? `/projects/${projectSlug}` : "/approvals",
     }).catch(() => undefined);
   }
+
+  await logWorkspaceActivity({
+    userId: user.id,
+    action: "decision.status_updated",
+    entityType: "decision",
+    entityId: decisionId,
+    projectId: decision.project_id,
+    metadata: { from: decision.status, to: status, title: decision.title },
+  });
 
   return { id: decisionId, status };
 }

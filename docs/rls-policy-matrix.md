@@ -39,7 +39,7 @@ Legend:
 | --- | --- | --- | --- | --- | --- |
 | `permissions` | Global catalog | All authenticated | — | — | — |
 | `role_permissions` | Global catalog | All authenticated | `manage_permissions` | — | `manage_permissions` |
-| `user_roles` | Global | All authenticated | Admin policy | Admin policy | Admin policy |
+| `user_roles` | Org + permission | Self, same org + `view_users`, super admin | Admin policy | Admin policy | Admin policy |
 | `user_permissions_overrides` | Personal/admin | Self or admin | `manage_permissions` | `manage_permissions` | `manage_permissions` |
 | `audit_logs` | Org + permission | `view_audit_logs` | Actor = self | — | — |
 | `system_settings` | Global | All authenticated | `manage_settings` | `manage_settings` | `manage_settings` |
@@ -53,7 +53,7 @@ Legend:
 
 ## Remaining gaps (next RLS pass)
 
-1. **`user_roles` SELECT** — visible to all authenticated; acceptable for admin UI but noisy for multi-tenant.
+1. **`user_roles` SELECT** — org-scoped via `20260626180000_user_roles_org_scoping.sql` (self, super admin, or `view_users` in same org).
 2. **AI / translation tables** — mostly catalog or authenticated-wide; no org boundary yet.
 3. **Cross-org project membership** — project_members can still grant access without org check on membership table itself.
 

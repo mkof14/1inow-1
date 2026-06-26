@@ -202,8 +202,25 @@ export async function deleteTaskRecord(taskId: string) {
   const user = await requireWorkspaceActor();
   await requirePermission(user.id, "delete_tasks");
 
+  const { data: task, error: fetchError } = await supabase
+    .from("tasks")
+    .select("id, title, project_id")
+    .eq("id", taskId)
+    .maybeSingle();
+  if (fetchError) throw fetchError;
+  if (!task) throw new Error("Task not found");
+
   const { error } = await supabase.from("tasks").delete().eq("id", taskId);
   if (error) throw error;
+
+  await logWorkspaceActivity({
+    userId: user.id,
+    action: "task.deleted",
+    entityType: "task",
+    entityId: taskId,
+    projectId: task.project_id,
+    metadata: { title: task.title },
+  });
 }
 
 export async function archiveProjectRecord(projectId: string) {

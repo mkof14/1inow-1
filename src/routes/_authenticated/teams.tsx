@@ -19,7 +19,13 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Users, Building2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { resolveActiveOrganizationId } from "@/lib/organization-model";
+import {
+  archiveDepartmentRecord,
+  archiveTeamRecord,
+  canManageTeams,
+  createDepartmentRecord,
+  createTeamRecord,
+} from "@/lib/team-engine";
 import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/teams")({ component: TeamsPage });
@@ -123,6 +129,11 @@ function TeamsList() {
   const t = useT();
   const qc = useQueryClient();
   const { user } = useAuth();
+  const canManage = useQuery({
+    queryKey: ["can-manage-teams", user?.id],
+    enabled: !!user?.id,
+    queryFn: () => canManageTeams(user!.id),
+  });
   const teams = useQuery({
     queryKey: ["teams-list"],
     queryFn: async () => {
@@ -137,14 +148,7 @@ function TeamsList() {
   });
   const create = useMutation({
     mutationFn: async ({ name, description }: { name: string; description: string }) => {
-      const organizationId = user?.id ? await resolveActiveOrganizationId(user.id) : null;
-      const { error } = await (supabase as any).from("teams").insert({
-        name,
-        description,
-        created_by: user!.id,
-        organization_id: organizationId,
-      });
-      if (error) throw error;
+      await createTeamRecord({ name, description: description || null });
     },
     onSuccess: () => {
       toast.success("Team created");
@@ -154,11 +158,7 @@ function TeamsList() {
   });
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any)
-        .from("teams")
-        .update({ deleted_at: new Date().toISOString() })
-        .eq("id", id);
-      if (error) throw error;
+      await archiveTeamRecord(id);
     },
     onSuccess: () => {
       toast.success("Removed");
@@ -168,12 +168,14 @@ function TeamsList() {
   });
   return (
     <div>
-      <div className="flex justify-end mb-3">
-        <NewDialog
-          onCreate={(name, description) => create.mutate({ name, description })}
-          busy={create.isPending}
-        />
-      </div>
+      {canManage.data && (
+        <div className="flex justify-end mb-3">
+          <NewDialog
+            onCreate={(name, description) => create.mutate({ name, description })}
+            busy={create.isPending}
+          />
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {(teams.data ?? []).map((tm: any) => (
           <div key={tm.id} className="surface-aurora shimmer-border rounded-2xl p-4 group">
@@ -186,12 +188,14 @@ function TeamsList() {
                   </div>
                 )}
               </div>
-              <button
-                onClick={() => remove.mutate(tm.id)}
-                className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition"
-              >
-                <Trash2 className="size-3.5" />
-              </button>
+              {canManage.data && (
+                <button
+                  onClick={() => remove.mutate(tm.id)}
+                  className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              )}
             </div>
             <div className="mt-3 text-[10px] uppercase tracking-widest text-muted-foreground">
               {tm.team_members?.length ?? 0} {t("teams.members")}
@@ -210,6 +214,11 @@ function DepartmentsList() {
   const t = useT();
   const qc = useQueryClient();
   const { user } = useAuth();
+  const canManage = useQuery({
+    queryKey: ["can-manage-teams", user?.id],
+    enabled: !!user?.id,
+    queryFn: () => canManageTeams(user!.id),
+  });
   const depts = useQuery({
     queryKey: ["departments-list"],
     queryFn: async () => {
@@ -224,14 +233,7 @@ function DepartmentsList() {
   });
   const create = useMutation({
     mutationFn: async ({ name, description }: { name: string; description: string }) => {
-      const organizationId = user?.id ? await resolveActiveOrganizationId(user.id) : null;
-      const { error } = await (supabase as any).from("departments").insert({
-        name,
-        description,
-        created_by: user!.id,
-        organization_id: organizationId,
-      });
-      if (error) throw error;
+      await createDepartmentRecord({ name, description: description || null });
     },
     onSuccess: () => {
       toast.success("Department created");
@@ -241,11 +243,7 @@ function DepartmentsList() {
   });
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any)
-        .from("departments")
-        .update({ deleted_at: new Date().toISOString() })
-        .eq("id", id);
-      if (error) throw error;
+      await archiveDepartmentRecord(id);
     },
     onSuccess: () => {
       toast.success("Removed");
@@ -255,12 +253,14 @@ function DepartmentsList() {
   });
   return (
     <div>
-      <div className="flex justify-end mb-3">
-        <NewDialog
-          onCreate={(name, description) => create.mutate({ name, description })}
-          busy={create.isPending}
-        />
-      </div>
+      {canManage.data && (
+        <div className="flex justify-end mb-3">
+          <NewDialog
+            onCreate={(name, description) => create.mutate({ name, description })}
+            busy={create.isPending}
+          />
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {(depts.data ?? []).map((d: any) => (
           <div key={d.id} className="surface-aurora shimmer-border rounded-2xl p-4 group">
@@ -273,12 +273,14 @@ function DepartmentsList() {
                   </div>
                 )}
               </div>
-              <button
-                onClick={() => remove.mutate(d.id)}
-                className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition"
-              >
-                <Trash2 className="size-3.5" />
-              </button>
+              {canManage.data && (
+                <button
+                  onClick={() => remove.mutate(d.id)}
+                  className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              )}
             </div>
           </div>
         ))}
