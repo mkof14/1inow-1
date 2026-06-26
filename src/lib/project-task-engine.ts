@@ -102,6 +102,9 @@ export async function createProjectRecord(input: CreateProjectInput) {
 }
 
 export async function updateTaskStatus(taskId: string, status: TaskStatus) {
+  const user = await requireWorkspaceActor();
+  await requirePermission(user.id, "edit_tasks");
+
   const { error } = await supabase
     .from("tasks")
     .update({
@@ -109,6 +112,29 @@ export async function updateTaskStatus(taskId: string, status: TaskStatus) {
       completed_at: status === "done" ? new Date().toISOString() : null,
     })
     .eq("id", taskId);
+
+  if (error) throw error;
+}
+
+export async function deleteTaskRecord(taskId: string) {
+  const user = await requireWorkspaceActor();
+  await requirePermission(user.id, "delete_tasks");
+
+  const { error } = await supabase.from("tasks").delete().eq("id", taskId);
+  if (error) throw error;
+}
+
+export async function archiveProjectRecord(projectId: string) {
+  const user = await requireWorkspaceActor();
+  await requirePermission(user.id, "archive_projects");
+
+  const { error } = await supabase
+    .from("projects")
+    .update({
+      status: "archived",
+      archived_at: new Date().toISOString(),
+    })
+    .eq("id", projectId);
 
   if (error) throw error;
 }

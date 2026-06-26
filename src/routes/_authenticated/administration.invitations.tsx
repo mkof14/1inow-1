@@ -9,8 +9,11 @@ import {
   ROLES,
   ROLE_LABELS,
   type AppRole,
-  logEmail,
+  type Invitation,
 } from "@/lib/admin-queries";
+import { buildInvitationEmailVariables, dispatchInvitationEmail } from "@/lib/invitation-email";
+import { fetchCurrentOrganizationContext } from "@/lib/organization-model";
+import { useAuth } from "@/hooks/use-auth";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,6 +55,7 @@ const statusVariants: Record<string, "default" | "secondary" | "outline" | "dest
 function InvitationsPage() {
   const t = useT();
   const qc = useQueryClient();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
@@ -70,26 +74,29 @@ function InvitationsPage() {
         language,
         custom_message: message || undefined,
       });
-      await logEmail({
+      const orgContext = user?.id ? await fetchCurrentOrganizationContext(user.id) : null;
+      const delivery = await dispatchInvitationEmail({
         template_slug: "invitation",
         language,
         recipient_email: email,
-        module: "invitations",
-        variables: {
-          recipient_name: fullName || email,
-          inviter_name: "Administrator",
-          organization_name: "1inow",
-          role: ROLE_LABELS[role] ?? role,
-          accept_url: `${window.location.origin}/auth?invite=${(inv as any)?.token ?? ""}`,
-          expires_at: new Date(Date.now() + 14 * 86400_000).toLocaleDateString(),
-        },
+        variables: buildInvitationEmailVariables({
+          email,
+          fullName: fullName || undefined,
+          role,
+          token: (inv as { token?: string })?.token ?? "",
+          organizationName: orgContext?.organization?.name,
+        }),
       });
-      return inv;
+      return delivery;
     },
-    onSuccess: () => {
+    onSuccess: (delivery) => {
       qc.invalidateQueries({ queryKey: ["admin-invitations"] });
       qc.invalidateQueries({ queryKey: ["admin-email-logs"] });
-      toast.success("Invitation created (email sending is disabled in dev)");
+      toast.success(
+        delivery.sent
+          ? "Invitation sent by email"
+          : "Invitation created (email delivery disabled in this environment)",
+      );
       setOpen(false);
       setEmail("");
       setFullName("");
@@ -107,10 +114,29 @@ function InvitationsPage() {
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
   const resend = useMutation({
-    mutationFn: resendInvitation,
-    onSuccess: () => {
+    mutationFn: async (invitation: Invitation) => {
+      await resendInvitation(invitation.id);
+      const orgContext = user?.id ? await fetchCurrentOrganizationContext(user.id) : null;
+      return dispatchInvitationEmail({
+        template_slug: "invitation",
+        language: invitation.language ?? "en",
+        recipient_email: invitation.email,
+        variables: buildInvitationEmailVariables({
+          email: invitation.email,
+          fullName: invitation.full_name ?? undefined,
+          role: invitation.role as AppRole,
+          token: invitation.token,
+          organizationName: orgContext?.organization?.name,
+          expiresAt: new Date(Date.now() + 14 * 86400_000).toLocaleDateString(),
+        }),
+      });
+    },
+    onSuccess: (delivery) => {
       qc.invalidateQueries({ queryKey: ["admin-invitations"] });
-      toast.success("Resent");
+      qc.invalidateQueries({ queryKey: ["admin-email-logs"] });
+      toast.success(
+        delivery.sent ? "Invitation resent by email" : "Invitation renewed (email queued)",
+      );
     },
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
@@ -261,7 +287,7 @@ function InvitationsPage() {
                     </Button>
                     {inv.status !== "accepted" && inv.status !== "canceled" && (
                       <>
-                        <Button size="sm" variant="ghost" onClick={() => resend.mutate(inv.id)}>
+                        <Button size="sm" variant="ghost" onClick={() => resend.mutate(inv)}>
                           {t("btn.resend")}
                         </Button>
                         <Button

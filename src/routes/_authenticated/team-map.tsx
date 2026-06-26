@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchWorkspaceProfiles } from "@/lib/organization-model";
 import { useEffect, useState } from "react";
 import { useT } from "@/lib/i18n";
 import { PageSkeleton } from "@/components/empty-state";
@@ -59,14 +59,10 @@ function TeamMapPage() {
   const { data: members, isLoading } = useQuery({
     queryKey: ["team-map-members"],
     queryFn: async (): Promise<Member[]> => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select(
-          "id, full_name, email, avatar_url, country, city, timezone, preferred_language, online_status, office_status",
-        )
-        .order("full_name");
-      if (error) throw error;
-      return (data ?? []) as Member[];
+      const data = await fetchWorkspaceProfiles(
+        "id, full_name, email, avatar_url, country, city, timezone, preferred_language, online_status, office_status",
+      );
+      return data as Member[];
     },
   });
 

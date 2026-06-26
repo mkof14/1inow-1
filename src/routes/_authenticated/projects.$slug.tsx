@@ -10,14 +10,13 @@ import {
 } from "@/lib/queries";
 import { trackRecent } from "@/lib/wave1";
 import { StarButton } from "@/components/star-button";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { RelatedItems } from "@/components/related-items";
 import { ProjectSuggestions } from "@/components/ai-suggestions";
 import { ProjectAdvisor } from "@/components/project-advisor";
 import { TaskTimer } from "@/components/task-timer";
 import { createRelation } from "@/lib/relations";
-import { createTaskRecord, updateTaskStatus } from "@/lib/project-task-engine";
+import { createTaskRecord, deleteTaskRecord, updateTaskStatus } from "@/lib/project-task-engine";
 import type { Database } from "@/integrations/supabase/types";
 import { useSetPageContext } from "@/lib/ai-context";
 import { Button } from "@/components/ui/button";
@@ -111,10 +110,7 @@ function ProjectDetail() {
   });
 
   const deleteTask = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("tasks").delete().eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: deleteTaskRecord,
     onSuccess: () => {
       toast.success("Deleted");
       qc.invalidateQueries({ queryKey: ["tasks"] });

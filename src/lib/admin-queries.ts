@@ -27,6 +27,7 @@ export type Invitation = {
   created_at: string;
   custom_message: string | null;
   token: string;
+  language: string | null;
 };
 export type AuditLog = {
   id: string;
@@ -173,7 +174,7 @@ export async function updateProfileStatus(id: string, status: "active" | "inacti
 export async function fetchInvitations(): Promise<Invitation[]> {
   const { data, error } = await supabase
     .from("invitations")
-    .select("id,email,full_name,role,status,expires_at,created_at,custom_message,token")
+    .select("id,email,full_name,role,status,expires_at,created_at,custom_message,token,language")
     .order("created_at", { ascending: false });
   if (error) throw error;
   return (data ?? []) as Invitation[];

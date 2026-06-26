@@ -2,8 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { fetchProjects, PROJECT_STATUSES, PROJECT_STATUS_LABEL } from "@/lib/queries";
-import { createProjectRecord } from "@/lib/project-task-engine";
-import { supabase } from "@/integrations/supabase/client";
+import { createProjectRecord, archiveProjectRecord } from "@/lib/project-task-engine";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -101,13 +100,7 @@ function ProjectsPage() {
   });
 
   const archive = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("projects")
-        .update({ status: "archived", archived_at: new Date().toISOString() })
-        .eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: archiveProjectRecord,
     onSuccess: () => {
       toast.success("Archived");
       qc.invalidateQueries({ queryKey: ["projects"] });

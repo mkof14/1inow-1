@@ -1,4 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
+
+type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
 
 export type ProfileWorkspaceScope = {
   organizationId: string | null;
@@ -59,6 +62,24 @@ export async function resolveActiveOrganizationId(userId: string) {
   if (scope.organizationId) return scope.organizationId;
 
   return ensureProfileOrganization(userId);
+}
+
+/** Profiles visible in the current user's workspace organization. */
+export async function fetchWorkspaceProfiles(columns = "*"): Promise<ProfileRow[]> {
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  if (authError) throw authError;
+  if (!authData.user) throw new Error("Sign in required");
+
+  const organizationId = await resolveActiveOrganizationId(authData.user.id);
+  let query = supabase.from("profiles").select(columns).order("full_name", { ascending: true });
+
+  if (organizationId) {
+    query = query.eq("organization_id", organizationId);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data ?? []) as unknown as ProfileRow[];
 }
 
 /** Resolve the current user's organization context from profile scope. */

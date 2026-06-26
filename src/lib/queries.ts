@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { fetchWorkspaceProfiles } from "@/lib/organization-model";
 import {
   getDigitalInvestProjectBySlug,
   mergeDigitalInvestProjects,
@@ -34,9 +35,7 @@ export async function fetchTasks(projectId?: string) {
 }
 
 export async function fetchProfiles() {
-  const { data, error } = await supabase.from("profiles").select("*").order("created_at");
-  if (error) throw error;
-  return data ?? [];
+  return fetchWorkspaceProfiles("*");
 }
 
 export const PROJECT_STATUSES = [
