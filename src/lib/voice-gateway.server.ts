@@ -1,5 +1,6 @@
 import process from "node:process";
 import { createClient } from "@supabase/supabase-js";
+import { logAiAction } from "@/lib/ai-audit.server";
 import { getSttProviderState, getTtsProviderState } from "@/lib/connection-providers.server";
 import { captureServerException } from "@/lib/monitoring.server";
 import type { Database } from "@/integrations/supabase/types";
@@ -46,21 +47,15 @@ async function logVoiceAction(input: {
   provider: string;
   payload: Record<string, unknown>;
 }) {
-  if (process.env.AI_AUDIT_LOGGING_ENABLED === "false") return;
-  try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("ai_actions").insert({
-      user_id: input.userId,
-      kind: input.kind,
-      prompt: input.kind === "tts" ? String(input.payload.text ?? "").slice(0, 4000) : null,
-      result: input.payload,
-      status: "completed",
-      payload: { provider: input.provider },
-      sources: [],
-    } as never);
-  } catch (error) {
-    console.error("[voice-gateway] audit log failed", error);
-  }
+  await logAiAction({
+    userId: input.userId,
+    kind: input.kind,
+    prompt: input.kind === "tts" ? String(input.payload.text ?? "") : null,
+    result: input.payload,
+    status: "completed",
+    payload: { provider: input.provider },
+    sources: [],
+  });
 }
 
 export async function runSttGateway(input: {

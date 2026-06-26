@@ -21,6 +21,7 @@ Run each file in **Supabase Dashboard → SQL Editor** (or `supabase db push`), 
 | 5 | `supabase/migrations/20260626170000_communication_decisions_org_scoping.sql` |
 | 6 | `supabase/migrations/20260626180000_user_roles_org_scoping.sql` |
 | 7 | `supabase/migrations/20260626183000_task_comments.sql` |
+| 8 | `supabase/migrations/20260626190000_ai_translation_org_scoping.sql` |
 
 List locally:
 

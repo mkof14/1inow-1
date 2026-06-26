@@ -1,5 +1,6 @@
 import process from "node:process";
 import { createClient } from "@supabase/supabase-js";
+import { logAiAction } from "@/lib/ai-audit.server";
 import { getChatProviderState } from "@/lib/connection-providers.server";
 import { buildSenseResponse, formatSenseResponse } from "@/lib/sense-engine";
 import { captureServerException } from "@/lib/monitoring.server";
@@ -104,22 +105,15 @@ async function logAiChatAction(input: {
   lang: string;
   pageContext?: unknown;
 }) {
-  if (process.env.AI_AUDIT_LOGGING_ENABLED === "false") return;
-
-  try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("ai_actions").insert({
-      user_id: input.userId,
-      kind: "chat",
-      prompt: input.prompt.slice(0, 4000),
-      result: { text: input.result.slice(0, 8000), provider: input.provider, lang: input.lang },
-      status: "completed",
-      payload: { pageContext: input.pageContext ?? null },
-      sources: [],
-    } as never);
-  } catch (error) {
-    console.error("[ai-gateway] audit log failed", error);
-  }
+  await logAiAction({
+    userId: input.userId,
+    kind: "chat",
+    prompt: input.prompt,
+    result: { text: input.result.slice(0, 8000), provider: input.provider, lang: input.lang },
+    status: "completed",
+    payload: { pageContext: input.pageContext ?? null },
+    sources: [],
+  });
 }
 
 function runLocalSense(input: ChatGatewayInput): ChatGatewayResult {

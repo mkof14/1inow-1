@@ -52,10 +52,19 @@ Legend:
 | `channels` | Org + member | Member in org | Creator + org match | Admin in org | Admin in org | Company channels org-scoped |
 | `messages` | Channel | Channel member in org | Channel member | Author/admin | Author/admin | Via `is_channel_member` |
 
+## AI / translation (post migration 8)
+
+| Table | Scope | SELECT | INSERT | Notes |
+| --- | --- | --- | --- | --- |
+| `ai_actions` | Org + personal | Self, `view_audit_logs` in org, super admin | Own row + org match | Server audit via `ai-audit.server.ts` |
+| `translation_memory` | Org | Same org, own rows, super admin | Own + org match | UI catalog `translations` stays global read |
+| `document_translations` | Org | Same org, own rows, super admin | Own + org match | |
+| `ai_memories`, `ai_agents`, … | Personal | Own rows only | Own rows | Unchanged |
+
 ## Remaining gaps (next RLS pass)
 
 1. **`user_roles` SELECT** — org-scoped via `20260626180000_user_roles_org_scoping.sql` (self, super admin, or `view_users` in same org).
-2. **AI / translation tables** — mostly catalog or authenticated-wide; no org boundary yet.
+2. **AI / translation tables** — `ai_actions`, `translation_memory`, and `document_translations` org-scoped via `20260626190000_ai_translation_org_scoping.sql`. Personal AI tables (`ai_memories`, etc.) remain user-owned.
 3. **Cross-org project membership** — project_members can still grant access without org check on membership table itself.
 
 ## Validation

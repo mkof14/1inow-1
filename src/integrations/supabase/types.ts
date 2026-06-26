@@ -94,6 +94,7 @@ export type Database = {
           id: string;
           kind: string;
           needs_approval: boolean;
+          organization_id: string | null;
           payload: Json;
           prompt: string | null;
           result: Json | null;
@@ -108,6 +109,7 @@ export type Database = {
           id?: string;
           kind: string;
           needs_approval?: boolean;
+          organization_id?: string | null;
           payload?: Json;
           prompt?: string | null;
           result?: Json | null;
@@ -122,6 +124,7 @@ export type Database = {
           id?: string;
           kind?: string;
           needs_approval?: boolean;
+          organization_id?: string | null;
           payload?: Json;
           prompt?: string | null;
           result?: Json | null;
@@ -136,6 +139,13 @@ export type Database = {
             columns: ["agent_id"];
             isOneToOne: false;
             referencedRelation: "ai_agents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ai_actions_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
             referencedColumns: ["id"];
           },
         ];
@@ -1016,6 +1026,7 @@ export type Database = {
           entity_type: string;
           id: string;
           language: string;
+          organization_id: string | null;
           title: string | null;
           translated_by: string;
           updated_at: string;
@@ -1028,6 +1039,7 @@ export type Database = {
           entity_type: string;
           id?: string;
           language: string;
+          organization_id?: string | null;
           title?: string | null;
           translated_by?: string;
           updated_at?: string;
@@ -1040,6 +1052,7 @@ export type Database = {
           entity_type?: string;
           id?: string;
           language?: string;
+          organization_id?: string | null;
           title?: string | null;
           translated_by?: string;
           updated_at?: string;
@@ -2144,6 +2157,7 @@ export type Database = {
           created_at: string;
           created_by: string | null;
           id: string;
+          organization_id: string | null;
           source_hash: string;
           source_language: string;
           source_text: string;
@@ -2156,6 +2170,7 @@ export type Database = {
           created_at?: string;
           created_by?: string | null;
           id?: string;
+          organization_id?: string | null;
           source_hash: string;
           source_language: string;
           source_text: string;
@@ -2168,6 +2183,7 @@ export type Database = {
           created_at?: string;
           created_by?: string | null;
           id?: string;
+          organization_id?: string | null;
           source_hash?: string;
           source_language?: string;
           source_text?: string;
