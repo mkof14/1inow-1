@@ -58,13 +58,14 @@ No Vite/Rollup build warnings remain in the current production build.
 
 ## Recommendations Before Production
 
-1. Run a dedicated Prettier formatting pass and commit it separately.
-2. Decide whether dev-owner and demo-data tools should be disabled, hidden, or environment-gated in production.
-3. Add production-grade monitoring and error reporting after choosing the provider.
-4. Add analytics only after privacy requirements are confirmed.
-5. Connect OpenAI, Resend, Stripe, email, and monitoring in separate implementation phases.
-6. Keep Supabase schema changes isolated from application cleanup work.
-7. Add route-level smoke tests for the disabled AI, STT, TTS, translation, and rewrite states before reconnecting providers.
+See **`docs/production-launch-checklist.md`** for the full go-live checklist and **`docs/voice-first-production-plan.md`** for Nova/Vera voice-first architecture.
+
+1. Apply Supabase migrations 1–9 when approved (not yet on production).
+2. Run a dedicated Prettier formatting pass and commit it separately.
+3. Keep dev-owner and demo-data tools environment-gated in production.
+4. Enable OpenAI, Resend, Stripe, Sentry, and analytics in separate phases per env gates.
+5. Complete PWA Lighthouse audit after deploy.
+6. Persist voice inbox and memory teach-back for full self-learning loop.
 
 ## Validation
 

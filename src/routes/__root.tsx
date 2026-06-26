@@ -18,6 +18,7 @@ import { AiPageContextProvider } from "@/lib/ai-context";
 import { AnalyticsConsentBanner } from "@/components/analytics-consent-banner";
 import { AnalyticsRuntime } from "@/components/analytics-runtime";
 import { MonitoringRuntime } from "@/components/monitoring-runtime";
+import { PwaRuntime } from "@/components/pwa-runtime";
 
 function NotFoundComponent() {
   return (
@@ -83,7 +84,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "1inow - Personal Command Center" },
       {
         name: "description",
@@ -98,7 +99,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:site_name", content: "1inow" },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { property: "og:image", content: "https://1inow.com/icons/icon-512.png" },
+      { property: "og:url", content: "https://1inow.com/" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "https://1inow.com/icons/icon-512.png" },
       { name: "twitter:title", content: "1inow - Personal Command Center" },
       {
         name: "twitter:description",
@@ -182,6 +186,7 @@ function RootComponent() {
             <Outlet />
             <AnalyticsRuntime />
             <MonitoringRuntime />
+            <PwaRuntime />
             <AnalyticsConsentBanner />
             <Toaster richColors position="top-right" />
           </AiPageContextProvider>

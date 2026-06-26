@@ -34,11 +34,11 @@ const MODULES: SenseModule[] = [
 export function buildSenseResponse(input: string, context?: unknown, lang = "en"): SenseResponse {
   const text = input.trim();
   const lower = text.toLowerCase();
-  const ru = lang.startsWith("ru") || /[а-яё]/i.test(text);
+  const locale = resolveSenseLocale(lang, text);
   const contextLabel = inferContextLabel(context);
   const intent = inferIntent(lower);
 
-  if (ru) {
+  if (locale === "ru" || locale === "uk") {
     return {
       summary: `Sense видит два рабочих модуля: Sense Chat для понимания контекста и Voice Center для команд голосом. Сейчас запрос распознан как: ${intent.ru}. Контекст: ${contextLabel.ru}.`,
       nova: buildNovaRu(intent.ru),
@@ -65,8 +65,15 @@ export function buildSenseResponse(input: string, context?: unknown, lang = "en"
   };
 }
 
+function resolveSenseLocale(lang: string, text: string) {
+  const code = lang.slice(0, 2).toLowerCase();
+  if (code === "uk") return "uk";
+  if (code === "ru" || /[а-яё]/i.test(text)) return "ru";
+  return "en";
+}
+
 export function formatSenseResponse(response: SenseResponse, lang = "en") {
-  const ru = lang.startsWith("ru") || /[а-яё]/i.test(response.summary);
+  const ru = lang.startsWith("ru") || lang.startsWith("uk") || /[а-яё]/i.test(response.summary);
   if (ru) {
     return [
       response.summary,

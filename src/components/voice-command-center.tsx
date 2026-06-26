@@ -25,6 +25,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { buildSenseResponse } from "@/lib/sense-engine";
 import { createProjectRecord, createTaskRecord } from "@/lib/project-task-engine";
+import {
+  mediaRecorderSupported,
+  speechRecognitionSupported,
+  transcribeWithServerStt,
+} from "@/lib/voice-stt-client";
 import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
 import { saveVoiceInboxItem, type VoiceInboxKind } from "@/lib/voice-intake";
 
@@ -138,6 +143,9 @@ export function VoiceCommandCenter({
     }
   });
   const recognitionRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const mediaChunksRef = useRef<Blob[]>([]);
   const open = controlledOpen ?? internalOpen;
   const setOpen = onOpenChange ?? setInternalOpen;
 
@@ -152,12 +160,66 @@ export function VoiceCommandCenter({
       recognitionRef.current?.stop?.();
     } catch {}
     recognitionRef.current = null;
+    try {
+      if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
+    } catch {}
+    mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+    mediaStreamRef.current = null;
     setListening(false);
   }, []);
 
+  const startServerListening = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStreamRef.current = stream;
+      const mimeType =
+        ["audio/webm", "audio/mp4"].find((type) => MediaRecorder.isTypeSupported(type)) || "";
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      mediaChunksRef.current = [];
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) mediaChunksRef.current.push(event.data);
+      };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
+        setListening(false);
+        const blob = new Blob(mediaChunksRef.current, {
+          type: recorder.mimeType || "audio/webm",
+        });
+        if (blob.size < 1024) {
+          toast.error("Recording too short — try again");
+          return;
+        }
+        const transcript = await transcribeWithServerStt({
+          blob,
+          mimeType: recorder.mimeType,
+          language: (navigator.language || "en").slice(0, 2),
+        });
+        if (!transcript) {
+          toast.message("Server speech-to-text is not available. Type the command instead.");
+          return;
+        }
+        setText(transcript);
+        setPlan(parseVoiceCommand(transcript));
+      };
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      setListening(true);
+    } catch {
+      toast.error("Microphone unavailable");
+      setListening(false);
+    }
+  }, []);
+
   const startListening = useCallback(() => {
-    const SR: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SR: any = speechRecognitionSupported()
+      ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+      : null;
     if (!SR) {
+      if (mediaRecorderSupported()) {
+        void startServerListening();
+        return;
+      }
       toast.message("Browser speech recognition is not available. Use text command input.");
       return;
     }
@@ -187,7 +249,7 @@ export function VoiceCommandCenter({
     recognitionRef.current = rec;
     setListening(true);
     rec.start();
-  }, []);
+  }, [startServerListening]);
 
   useEffect(() => () => stopListening(), [stopListening]);
 

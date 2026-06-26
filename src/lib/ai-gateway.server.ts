@@ -1,9 +1,12 @@
 import process from "node:process";
 import { createClient } from "@supabase/supabase-js";
+import { fetchChatThinkingData, summarizeWorkspaceContext } from "@/lib/chat-context.server";
 import { logAiAction } from "@/lib/ai-audit.server";
 import { getChatProviderState } from "@/lib/connection-providers.server";
+import { buildSenseSystemPrompt } from "@/lib/sense-prompt.server";
 import { buildSenseResponse, formatSenseResponse } from "@/lib/sense-engine";
 import { captureServerException } from "@/lib/monitoring.server";
+import { think, type ThinkingInput } from "@/lib/thinking";
 import type { Database } from "@/integrations/supabase/types";
 
 export type ChatGatewayInput = {
@@ -55,11 +58,51 @@ async function hasAssistantPermission(userId: string) {
   return Boolean(data);
 }
 
-async function callOpenAIChat(prompt: string, lang: string) {
+async function buildThinkingBundle(input: ChatGatewayInput, userId: string | null) {
+  if (!userId) return null;
+
+  const data = await fetchChatThinkingData({
+    userId,
+    authorizationHeader: input.authorizationHeader ?? null,
+    pageContext: input.pageContext,
+  });
+
+  const thinkingInput: ThinkingInput = {
+    prompt: input.prompt,
+    pageContext: (input.pageContext ?? {}) as ThinkingInput["pageContext"],
+    data,
+  };
+
+  return {
+    data,
+    thinking: think(thinkingInput),
+    workspaceSummary: summarizeWorkspaceContext(data),
+  };
+}
+
+async function callOpenAIChat(
+  prompt: string,
+  lang: string,
+  options: {
+    pageContext?: unknown;
+    thinking?: ReturnType<typeof think>;
+    workspaceSummary?: string;
+  },
+) {
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) throw new Error("OPENAI_API_KEY is missing");
 
   const model = process.env.OPENAI_MODEL?.trim() || "gpt-4o-mini";
+  const system = buildSenseSystemPrompt(lang, options.thinking);
+  const contextBlock = [
+    options.workspaceSummary,
+    options.pageContext
+      ? `Page context: ${JSON.stringify(options.pageContext).slice(0, 1200)}`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -71,15 +114,9 @@ async function callOpenAIChat(prompt: string, lang: string) {
       temperature: 0.4,
       max_tokens: 1200,
       messages: [
-        {
-          role: "system",
-          content:
-            "You are Sense, the 1inow workspace assistant. Be concise, practical, and safety-first. Never claim to execute external actions.",
-        },
-        {
-          role: "user",
-          content: `Language: ${lang}\n\n${prompt}`,
-        },
+        { role: "system", content: system },
+        ...(contextBlock ? [{ role: "system" as const, content: contextBlock }] : []),
+        { role: "user", content: prompt },
       ],
     }),
   });
@@ -104,22 +141,42 @@ async function logAiChatAction(input: {
   provider: string;
   lang: string;
   pageContext?: unknown;
+  thinking?: ReturnType<typeof think>;
 }) {
   await logAiAction({
     userId: input.userId,
     kind: "chat",
     prompt: input.prompt,
-    result: { text: input.result.slice(0, 8000), provider: input.provider, lang: input.lang },
+    result: {
+      text: input.result.slice(0, 8000),
+      provider: input.provider,
+      lang: input.lang,
+      intent: input.thinking?.understanding.intent,
+      confidence: input.thinking?.confidence.level,
+    },
     status: "completed",
     payload: { pageContext: input.pageContext ?? null },
-    sources: [],
+    sources: input.thinking?.log.sources ?? [],
   });
 }
 
-function runLocalSense(input: ChatGatewayInput): ChatGatewayResult {
+function runLocalSense(
+  input: ChatGatewayInput,
+  bundle: Awaited<ReturnType<typeof buildThinkingBundle>>,
+): ChatGatewayResult {
   const sense = buildSenseResponse(input.prompt, input.pageContext, input.lang);
+  let text = formatSenseResponse(sense, input.lang);
+
+  if (bundle?.thinking?.memory.length) {
+    const memoryNote = bundle.thinking.memory
+      .slice(0, 3)
+      .map((m) => `${m.key}: ${m.value}`)
+      .join("; ");
+    text += `\n\n${input.lang.startsWith("ru") ? "Память" : "Memory"}: ${memoryNote}`;
+  }
+
   return {
-    text: formatSenseResponse(sense, input.lang),
+    text,
     provider: "local_sense",
     mode: "local_sense",
   };
@@ -129,14 +186,19 @@ export async function runChatGateway(input: ChatGatewayInput): Promise<ChatGatew
   const chatState = getChatProviderState();
   const provider = chatState.provider;
   const userId = await resolveChatUserId(input.authorizationHeader);
+  const bundle = userId ? await buildThinkingBundle(input, userId).catch(() => null) : null;
 
   if (provider === "openai" && chatState.connected) {
-    if (!userId) return runLocalSense(input);
+    if (!userId) return runLocalSense(input, bundle);
     const allowed = await hasAssistantPermission(userId);
-    if (!allowed) return runLocalSense(input);
+    if (!allowed) return runLocalSense(input, bundle);
 
     try {
-      const text = await callOpenAIChat(input.prompt, input.lang);
+      const text = await callOpenAIChat(input.prompt, input.lang, {
+        pageContext: input.pageContext,
+        thinking: bundle?.thinking,
+        workspaceSummary: bundle?.workspaceSummary,
+      });
       await logAiChatAction({
         userId,
         prompt: input.prompt,
@@ -144,13 +206,14 @@ export async function runChatGateway(input: ChatGatewayInput): Promise<ChatGatew
         provider: "openai",
         lang: input.lang,
         pageContext: input.pageContext,
+        thinking: bundle?.thinking,
       });
       return { text, provider: "openai", mode: "openai" };
     } catch (error) {
       await captureServerException(error, { module: "ai-gateway", provider: "openai" });
-      return runLocalSense(input);
+      return runLocalSense(input, bundle);
     }
   }
 
-  return runLocalSense(input);
+  return runLocalSense(input, bundle);
 }

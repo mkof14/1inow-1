@@ -22,6 +22,7 @@ import { useAiPageContext } from "@/lib/ai-context";
 import { useI18n } from "@/lib/i18n";
 import { BrandMark } from "@/components/icons/compass-mark";
 import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
+import { NOVA_TTS_VOICE, VERA_TTS_VOICE, splitNovaVeraSpeech } from "@/lib/sense-personas";
 
 type Mode = "docked" | "floating" | "collapsed";
 
@@ -218,25 +219,49 @@ export function AiSidebar({
         const headers: Record<string, string> = { "Content-Type": "application/json" };
         if (token) headers.Authorization = `Bearer ${token}`;
 
-        const res = await fetch("/api/tts", {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ text, voice: "marin", lang: langRef.current }),
-        });
-        if (!res.ok || !res.body || cancelled) {
-          speakSenseLocally(text);
-          return;
+        const parts = splitNovaVeraSpeech(text);
+        const segments =
+          parts.hasStructure && (parts.nova || parts.vera)
+            ? [
+                { text: parts.nova, voice: NOVA_TTS_VOICE },
+                { text: parts.vera, voice: VERA_TTS_VOICE },
+              ].filter((s) => s.text)
+            : [{ text, voice: NOVA_TTS_VOICE }];
+
+        for (const segment of segments) {
+          if (cancelled) return;
+          const res = await fetch("/api/tts", {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+              text: segment.text,
+              voice: segment.voice,
+              lang: langRef.current,
+            }),
+          });
+          if (!res.ok || !res.body || cancelled) {
+            speakSenseLocally(text);
+            return;
+          }
+          const blob = await res.blob();
+          if (cancelled) return;
+          blobUrl = URL.createObjectURL(blob);
+          try {
+            audioRef.current?.pause();
+          } catch {}
+          await new Promise<void>((resolve) => {
+            const a = new Audio(blobUrl!);
+            audioRef.current = a;
+            a.onended = () => resolve();
+            a.onerror = () => resolve();
+            a.play().catch(() => resolve());
+          });
+          if (blobUrl) URL.revokeObjectURL(blobUrl);
+          blobUrl = null;
         }
-        const blob = await res.blob();
-        if (cancelled) return;
-        blobUrl = URL.createObjectURL(blob);
-        try {
-          audioRef.current?.pause();
-        } catch {}
-        const a = new Audio(blobUrl);
-        audioRef.current = a;
-        a.play().catch(() => {});
-      } catch {}
+      } catch {
+        speakSenseLocally(text);
+      }
     })();
     return () => {
       cancelled = true;

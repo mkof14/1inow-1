@@ -1,13 +1,15 @@
 {
-  "name": "1inow",
+  "id": "/",
+  "name": "1inow — Sense Voice Assistant",
   "short_name": "1inow",
-  "description": "Command. Portfolio. Signals. Decisions. Execution.",
+  "description": "Nova and Vera: voice-first command center for business and daily life.",
   "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#0B1220",
   "theme_color": "#0B1220",
+  "categories": ["productivity", "business"],
   "icons": [
     { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },

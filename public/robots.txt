@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /administration
+Disallow: /settings
+Disallow: /api/
 
 Sitemap: https://1inow.com/sitemap.xml
