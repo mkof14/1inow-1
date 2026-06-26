@@ -1,4 +1,5 @@
 import type { User } from "@supabase/supabase-js";
+import { resolveUserPermission } from "@/lib/auth-roles";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -30,6 +31,13 @@ export async function requireWorkspaceActor(): Promise<User> {
   return data.user;
 }
 
+async function requirePermission(userId: string, permissionKey: string) {
+  const allowed = await resolveUserPermission(userId, permissionKey);
+  if (!allowed) {
+    throw new Error(`Missing permission: ${permissionKey}`);
+  }
+}
+
 export function makeProjectSlug(name: string) {
   const base =
     name
@@ -42,6 +50,7 @@ export function makeProjectSlug(name: string) {
 
 export async function createTaskRecord(input: CreateTaskInput) {
   const user = await requireWorkspaceActor();
+  await requirePermission(user.id, "create_tasks");
   const title = input.title.trim();
   if (!title) throw new Error("Task title is required");
 
@@ -65,6 +74,7 @@ export async function createTaskRecord(input: CreateTaskInput) {
 
 export async function createProjectRecord(input: CreateProjectInput) {
   const user = await requireWorkspaceActor();
+  await requirePermission(user.id, "create_projects");
   const name = input.name.trim();
   if (!name) throw new Error("Project name is required");
 
