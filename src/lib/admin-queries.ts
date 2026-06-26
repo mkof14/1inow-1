@@ -1,6 +1,36 @@
 import { supabase } from "@/integrations/supabase/client";
-import { resolveUserPermission } from "@/lib/auth-roles";
+import { resolveUserPermission, resolveUserRoleFlags } from "@/lib/auth-roles";
 import { resolveActiveOrganizationId } from "@/lib/organization-model";
+import type { User } from "@supabase/supabase-js";
+
+async function requireAdminActor(): Promise<User> {
+  const { data, error } = await supabase.auth.getUser();
+  if (error) throw error;
+  if (!data.user) throw new Error("Sign in required");
+  return data.user;
+}
+
+async function requireAdminPermission(userId: string, permissionKey: string) {
+  const allowed = await resolveUserPermission(userId, permissionKey);
+  if (!allowed) throw new Error(`Missing permission: ${permissionKey}`);
+}
+
+async function resolveAdminOrganizationId(userId: string) {
+  const organizationId = await resolveActiveOrganizationId(userId);
+  if (!organizationId) throw new Error("Workspace organization is not configured");
+  return organizationId;
+}
+
+async function assertWorkspaceMember(userId: string, organizationId: string) {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("id", userId)
+    .eq("organization_id", organizationId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) throw new Error("User is not in the active workspace");
+}
 
 export type Permission = { id: string; key: string; category: string; description: string | null };
 export type RolePermission = { role: string; permission_key: string };
@@ -142,36 +172,77 @@ export async function toggleRolePermission(
 }
 
 export async function fetchProfiles(): Promise<AppProfile[]> {
+  const actor = await requireAdminActor();
+  await requireAdminPermission(actor.id, "view_users");
+  const organizationId = await resolveAdminOrganizationId(actor.id);
+
   const { data, error } = await supabase
     .from("profiles")
     .select("id,email,full_name,avatar_url,status,language,timezone,phone,country,created_at")
+    .eq("organization_id", organizationId)
     .order("created_at", { ascending: false });
   if (error) throw error;
   return (data ?? []) as AppProfile[];
 }
 
 export async function fetchUserRoles(): Promise<UserRoleRow[]> {
-  const { data, error } = await supabase.from("user_roles").select("id,user_id,role");
+  const actor = await requireAdminActor();
+  await requireAdminPermission(actor.id, "view_users");
+  const organizationId = await resolveAdminOrganizationId(actor.id);
+
+  const { data: members, error: memberError } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("organization_id", organizationId);
+  if (memberError) throw memberError;
+
+  const userIds = (members ?? []).map((member) => member.id);
+  if (userIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from("user_roles")
+    .select("id,user_id,role")
+    .in("user_id", userIds);
   if (error) throw error;
   return (data ?? []) as UserRoleRow[];
 }
 
 export async function setUserRole(user_id: string, role: AppRole) {
-  // remove existing then insert (single primary role per user for admin UI)
+  const actor = await requireAdminActor();
+  await requireAdminPermission(actor.id, "assign_roles");
+  const organizationId = await resolveAdminOrganizationId(actor.id);
+  await assertWorkspaceMember(user_id, organizationId);
+
+  if (role === "super_admin") {
+    const actorRoles = await resolveUserRoleFlags(actor.id);
+    if (!actorRoles.isSuperAdmin) {
+      throw new Error("Only super admins can assign the super_admin role");
+    }
+  }
+
   await supabase.from("user_roles").delete().eq("user_id", user_id);
   const { error } = await supabase.from("user_roles").insert({ user_id, role } as any);
   if (error) throw error;
 }
 
 export async function updateProfileStatus(id: string, status: "active" | "inactive") {
+  const actor = await requireAdminActor();
+  await requireAdminPermission(actor.id, status === "inactive" ? "deactivate_users" : "edit_users");
+  const organizationId = await resolveAdminOrganizationId(actor.id);
+  await assertWorkspaceMember(id, organizationId);
+
   const { error } = await supabase
     .from("profiles")
     .update({ status } as any)
-    .eq("id", id);
+    .eq("id", id)
+    .eq("organization_id", organizationId);
   if (error) throw error;
 }
 
 export async function fetchInvitations(): Promise<Invitation[]> {
+  const actor = await requireAdminActor();
+  await requireAdminPermission(actor.id, "invite_users");
+
   const { data, error } = await supabase
     .from("invitations")
     .select("id,email,full_name,role,status,expires_at,created_at,custom_message,token,language")
@@ -232,11 +303,18 @@ export async function resendInvitation(id: string) {
 }
 
 export async function fetchAuditLogs(limit = 200): Promise<AuditLog[]> {
-  const { data, error } = await supabase
+  const actor = await requireAdminActor();
+  await requireAdminPermission(actor.id, "view_audit_logs");
+  const organizationId = await resolveAdminOrganizationId(actor.id);
+
+  const query = supabase
     .from("audit_logs")
     .select("id,action,entity_type,entity_id,severity,module,actor_id,metadata,created_at")
+    .or(`organization_id.eq.${organizationId},organization_id.is.null`)
     .order("created_at", { ascending: false })
     .limit(limit);
+
+  const { data, error } = await query;
   if (error) throw error;
   return (data ?? []) as AuditLog[];
 }
@@ -345,10 +423,18 @@ export async function logEmail(input: {
 }
 
 export async function fetchAdminStats() {
+  const actor = await requireAdminActor();
+  await requireAdminPermission(actor.id, "view_users");
+  const organizationId = await resolveAdminOrganizationId(actor.id);
+
   const [profiles, invites, audit] = await Promise.all([
-    supabase.from("profiles").select("id,status", { count: "exact", head: false }),
+    supabase.from("profiles").select("id,status").eq("organization_id", organizationId),
     supabase.from("invitations").select("id,status"),
-    supabase.from("audit_logs").select("id,severity").limit(500),
+    supabase
+      .from("audit_logs")
+      .select("id,severity")
+      .or(`organization_id.eq.${organizationId},organization_id.is.null`)
+      .limit(500),
   ]);
   const totalUsers = profiles.data?.length ?? 0;
   const activeUsers = (profiles.data ?? []).filter((p: any) => p.status === "active").length;

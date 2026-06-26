@@ -24,6 +24,7 @@ import {
 import { Search } from "lucide-react";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/_authenticated/administration/users")({
   component: UsersPage,
@@ -32,7 +33,12 @@ export const Route = createFileRoute("/_authenticated/administration/users")({
 function UsersPage() {
   const t = useT();
   const qc = useQueryClient();
+  const { isSuperAdmin } = useAuth();
   const [q, setQ] = useState("");
+  const assignableRoles = useMemo(
+    () => (isSuperAdmin ? ROLES : ROLES.filter((role) => role !== "super_admin")),
+    [isSuperAdmin],
+  );
   const profiles = useQuery({ queryKey: ["admin-profiles"], queryFn: fetchProfiles });
   const roles = useQuery({ queryKey: ["admin-user-roles"], queryFn: fetchUserRoles });
 
@@ -139,7 +145,7 @@ function UsersPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {ROLES.map((r) => (
+                          {assignableRoles.map((r) => (
                             <SelectItem key={r} value={r}>
                               {ROLE_LABELS[r]}
                             </SelectItem>
