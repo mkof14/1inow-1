@@ -38,3 +38,32 @@ export async function requireAdminSession() {
 
   return { allowed: true as const, session, roles };
 }
+
+export async function resolveUserPermission(userId: string, permissionKey: string) {
+  const { data, error } = await supabase.rpc("has_permission", {
+    _user_id: userId,
+    _permission_key: permissionKey,
+  });
+
+  if (error) {
+    console.warn("[auth] has_permission rpc failed", permissionKey, error);
+    return false;
+  }
+
+  return Boolean(data);
+}
+
+export async function requirePermissionSession(permissionKey: string) {
+  const { data } = await supabase.auth.getSession();
+  const session = data.session;
+  if (!session?.user) {
+    return { allowed: false as const, reason: "no_session" as const };
+  }
+
+  const granted = await resolveUserPermission(session.user.id, permissionKey);
+  if (!granted) {
+    return { allowed: false as const, reason: "forbidden" as const, session };
+  }
+
+  return { allowed: true as const, session };
+}
