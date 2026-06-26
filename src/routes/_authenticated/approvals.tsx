@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { resolveActiveOrganizationId } from "@/lib/organization-model";
 import {
   fetchDecisions,
   fetchProjects,
@@ -69,12 +70,14 @@ function DecisionsPage() {
 
   const create = useMutation({
     mutationFn: async () => {
+      const organizationId = await resolveActiveOrganizationId(user!.id);
       const { error } = await (supabase as any).from("decisions").insert({
         title: form.title,
         context: form.context,
         recommendation: form.recommendation,
         impact: form.impact,
         requested_by: user!.id,
+        organization_id: organizationId,
         project_id: form.project_id === "none" ? null : form.project_id,
       });
       if (error) throw error;

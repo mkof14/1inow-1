@@ -1,6 +1,6 @@
 # RLS Policy Matrix
 
-Post–org-scoping baseline after migrations through `20260626163000_audit_log_organization.sql`.
+Post–org-scoping baseline after migrations through `20260626170000_communication_decisions_org_scoping.sql`.
 
 Legend:
 
@@ -28,10 +28,10 @@ Legend:
 | `projects` | Org + membership | Org, owner, creator, member | Creator + org match | Owner/admin policies | Owner/admin | `organization_id` required in app writes |
 | `tasks` | Org + assignment | Org project path, assignee, creator | Authenticated create | Assignee/owner/admin | Assignee/owner/admin | Orphan tasks scoped via creator org |
 | `project_members` | Project | Project access | Project admin | Project admin | Project admin | Inherited via project |
-| `decisions` | Mixed | Authenticated | Authenticated | Creator/admin | Admin | Review for org scope |
+| `decisions` | Org | Same org or project path | Requester + org match | Same org | Requester/admin in org | `organization_id` on writes |
 | `notifications` | Personal | Own rows | Self or admin | Own rows | Own rows | User-scoped |
-| `activity_logs` | Mixed | Authenticated | Authenticated | — | — | Review for org scope |
-| `relations` | Mixed | Authenticated | Creator | Creator | Creator | Review for org scope |
+| `activity_logs` | Org | Same org | Self + org match | — | — | `organization_id` on writes |
+| `relations` | Org | Same org | Creator + org match | Creator/admin in org | Creator/admin in org | Mirror copies org |
 
 ## Admin / RBAC
 
@@ -48,16 +48,14 @@ Legend:
 
 | Table | Scope | SELECT | INSERT | UPDATE | DELETE | Review |
 | --- | --- | --- | --- | --- | --- | --- |
-| `channels` | Channel member | Member | Admin/member rules | Admin | Admin | Org scope TBD |
-| `messages` | Channel | Channel member | Channel member | Author/admin | Author/admin | Org scope TBD |
+| `channels` | Org + member | Member in org | Creator + org match | Admin in org | Admin in org | Company channels org-scoped |
+| `messages` | Channel | Channel member in org | Channel member | Author/admin | Author/admin | Via `is_channel_member` |
 
 ## Remaining gaps (next RLS pass)
 
-1. **Communication tables** — still member-scoped, not org-scoped.
-2. **`decisions`, `activity_logs`, `relations`** — global authenticated read/write.
-3. **`departments` / `teams` UPDATE/DELETE** — still `is_admin()` only; should require org match.
-4. **`user_roles` SELECT** — visible to all authenticated; acceptable for admin UI but noisy for multi-tenant.
-5. **AI / translation tables** — mostly catalog or authenticated-wide; no org boundary yet.
+1. **`user_roles` SELECT** — visible to all authenticated; acceptable for admin UI but noisy for multi-tenant.
+2. **AI / translation tables** — mostly catalog or authenticated-wide; no org boundary yet.
+3. **Cross-org project membership** — project_members can still grant access without org check on membership table itself.
 
 ## Validation
 

@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { resolveActiveOrganizationId } from "@/lib/organization-model";
 
 export type EntityType =
   | "project"
@@ -126,6 +127,7 @@ export async function createRelation(args: {
   relationType?: string;
   createdBy: string;
 }) {
+  const organizationId = await resolveActiveOrganizationId(args.createdBy);
   const { error } = await supabase.from("relations").insert({
     source_type: args.sourceType,
     source_id: args.sourceId,
@@ -133,6 +135,7 @@ export async function createRelation(args: {
     target_id: args.targetId,
     relation_type: args.relationType ?? "related",
     created_by: args.createdBy,
+    organization_id: organizationId,
   });
   if (error) throw error;
 }

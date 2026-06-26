@@ -11,7 +11,8 @@ for file in \
   "$ROOT/supabase/migrations/20260626150000_default_organization_bootstrap.sql" \
   "$ROOT/supabase/migrations/20260626153000_organization_rls_scoping.sql" \
   "$ROOT/supabase/migrations/20260626160000_invitation_acceptance.sql" \
-  "$ROOT/supabase/migrations/20260626163000_audit_log_organization.sql"
+  "$ROOT/supabase/migrations/20260626163000_audit_log_organization.sql" \
+  "$ROOT/supabase/migrations/20260626170000_communication_decisions_org_scoping.sql"
 do
   if [[ -f "$file" ]]; then
     echo "  - $(basename "$file")"

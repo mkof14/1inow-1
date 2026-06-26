@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { resolveActiveOrganizationId } from "@/lib/organization-model";
 
 export const MESSAGE_TYPES = [
   "normal",
@@ -37,6 +38,7 @@ export type Channel = {
   type: string;
   description: string | null;
   project_id: string | null;
+  organization_id: string | null;
   created_by: string | null;
   archived_at: string | null;
   created_at: string;
@@ -79,6 +81,7 @@ export async function createChannel(input: {
 }) {
   const user = (await supabase.auth.getUser()).data.user;
   if (!user) throw new Error("Not signed in");
+  const organizationId = await resolveActiveOrganizationId(user.id);
   const slug =
     input.name
       .toLowerCase()
@@ -94,6 +97,7 @@ export async function createChannel(input: {
       type: input.type,
       description: input.description ?? null,
       project_id: input.project_id ?? null,
+      organization_id: organizationId,
       created_by: user.id,
     })
     .select()

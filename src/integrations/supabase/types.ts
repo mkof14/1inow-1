@@ -16,6 +16,7 @@ export type Database = {
           entity_type: string;
           id: string;
           metadata: Json | null;
+          organization_id: string | null;
           project_id: string | null;
           user_id: string | null;
         };
@@ -26,6 +27,7 @@ export type Database = {
           entity_type: string;
           id?: string;
           metadata?: Json | null;
+          organization_id?: string | null;
           project_id?: string | null;
           user_id?: string | null;
         };
@@ -36,6 +38,7 @@ export type Database = {
           entity_type?: string;
           id?: string;
           metadata?: Json | null;
+          organization_id?: string | null;
           project_id?: string | null;
           user_id?: string | null;
         };
@@ -684,6 +687,7 @@ export type Database = {
           description: string | null;
           id: string;
           name: string;
+          organization_id: string | null;
           project_id: string | null;
           slug: string | null;
           type: string;
@@ -696,6 +700,7 @@ export type Database = {
           description?: string | null;
           id?: string;
           name: string;
+          organization_id?: string | null;
           project_id?: string | null;
           slug?: string | null;
           type: string;
@@ -708,6 +713,7 @@ export type Database = {
           description?: string | null;
           id?: string;
           name?: string;
+          organization_id?: string | null;
           project_id?: string | null;
           slug?: string | null;
           type?: string;
@@ -882,6 +888,7 @@ export type Database = {
           id: string;
           impact: Database["public"]["Enums"]["decision_impact"];
           message_id: string | null;
+          organization_id: string | null;
           project_id: string | null;
           rationale: string | null;
           recommendation: string | null;
@@ -902,6 +909,7 @@ export type Database = {
           id?: string;
           impact?: Database["public"]["Enums"]["decision_impact"];
           message_id?: string | null;
+          organization_id?: string | null;
           project_id?: string | null;
           rationale?: string | null;
           recommendation?: string | null;
@@ -922,6 +930,7 @@ export type Database = {
           id?: string;
           impact?: Database["public"]["Enums"]["decision_impact"];
           message_id?: string | null;
+          organization_id?: string | null;
           project_id?: string | null;
           rationale?: string | null;
           recommendation?: string | null;
@@ -1789,6 +1798,7 @@ export type Database = {
           created_by: string | null;
           id: string;
           note: string | null;
+          organization_id: string | null;
           relation_type: string;
           source_id: string;
           source_type: string;
@@ -1800,6 +1810,7 @@ export type Database = {
           created_by?: string | null;
           id?: string;
           note?: string | null;
+          organization_id?: string | null;
           relation_type?: string;
           source_id: string;
           source_type: string;
@@ -1811,6 +1822,7 @@ export type Database = {
           created_by?: string | null;
           id?: string;
           note?: string | null;
+          organization_id?: string | null;
           relation_type?: string;
           source_id?: string;
           source_type?: string;
