@@ -345,4 +345,4 @@ Approved migration candidates later (not now):
 
 Phase 2 Step 2: Auth and profile stabilization — completed. See `docs/auth-stabilization.md`.
 
-Next: Phase 2 Step 3 — Organization and team model review.
+Next: Phase 2 Step 3 — Organization and team model review. See `docs/organization-team-model.md`.
