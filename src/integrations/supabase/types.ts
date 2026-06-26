@@ -2311,6 +2311,14 @@ export type Database = {
         Args: { _user_id?: string };
         Returns: string;
       };
+      get_invitation_preview: {
+        Args: { _token: string };
+        Returns: Json;
+      };
+      accept_invitation: {
+        Args: { _token: string };
+        Returns: string;
+      };
       log_audit: {
         Args: {
           _action: string;

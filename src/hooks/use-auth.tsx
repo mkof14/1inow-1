@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveUserRoleFlags } from "@/lib/auth-roles";
-import { ensureCurrentProfile } from "@/lib/profile-bootstrap";
+import { completeAuthenticatedInvite, readInviteToken } from "@/lib/invitations";
 import {
   disableFounderMode,
   enforceFounderModePolicy,
@@ -46,8 +46,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       syncFounderModeWithSession(Boolean(nextSession));
       setSession(nextSession);
       if (nextSession?.user) {
-        void ensureCurrentProfile(nextSession.user).catch((error) => {
-          console.warn("[auth] profile bootstrap failed", error);
+        void completeAuthenticatedInvite(nextSession.user, readInviteToken()).catch((error) => {
+          console.warn("[auth] profile or invitation bootstrap failed", error);
         });
       }
     });
@@ -58,9 +58,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         syncFounderModeWithSession(Boolean(data.session));
         if (data.session?.user) {
           try {
-            await ensureCurrentProfile(data.session.user);
+            await completeAuthenticatedInvite(data.session.user, readInviteToken());
           } catch (error) {
-            console.warn("[auth] profile bootstrap failed", error);
+            console.warn("[auth] profile or invitation bootstrap failed", error);
           }
         }
         setSession(data.session);

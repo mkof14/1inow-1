@@ -1,4 +1,5 @@
-import { createFileRoute, Link, Navigate, useNavigate } from "@tanstack/react-router";
+import type { User } from "@supabase/supabase-js";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { BrandWordmark } from "@/components/icons/compass-icons";
@@ -7,7 +8,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { ensureCurrentProfile } from "@/lib/profile-bootstrap";
+import {
+  completeAuthenticatedInvite,
+  fetchInvitationPreview,
+  invitationRoleLabel,
+  persistInviteToken,
+  readInviteToken,
+  type InvitationPreview,
+} from "@/lib/invitations";
 import {
   disableFounderMode,
   enableFounderMode,
@@ -31,6 +39,12 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+function readInviteFromUrl() {
+  if (typeof window === "undefined") return undefined;
+  const token = new URLSearchParams(window.location.search).get("invite")?.trim();
+  return token || undefined;
+}
+
 function AuthPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -39,9 +53,48 @@ function AuthPage() {
   const [hasSession, setHasSession] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [inviteToken, setInviteToken] = useState<string | null>(null);
+  const [invitePreview, setInvitePreview] = useState<InvitationPreview | null>(null);
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [authMode, setAuthMode] = useState<"sign-in" | "sign-up">("sign-in");
   const googleEnabled = import.meta.env.VITE_ENABLE_GOOGLE_AUTH === "true";
   const founderAccessAvailable = isFounderAccessAvailable();
   const founderMode = isFounderModeEnabled();
+
+  useEffect(() => {
+    const token = readInviteFromUrl() ?? readInviteToken();
+    if (!token) return;
+    setInviteToken(token);
+    persistInviteToken(token);
+  }, []);
+
+  useEffect(() => {
+    if (!inviteToken) {
+      setInvitePreview(null);
+      return;
+    }
+
+    let cancelled = false;
+    setInviteLoading(true);
+    void fetchInvitationPreview(inviteToken)
+      .then((preview) => {
+        if (cancelled) return;
+        setInvitePreview(preview);
+        if (preview?.email) setEmail(preview.email);
+        if (preview) setAuthMode("sign-up");
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : "Invitation could not be loaded");
+      })
+      .finally(() => {
+        if (!cancelled) setInviteLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [inviteToken]);
 
   useEffect(() => {
     enforceFounderModePolicy();
@@ -57,9 +110,56 @@ function AuthPage() {
     });
   }, [founderMode]);
 
+  useEffect(() => {
+    if (founderMode || !sessionReady || !hasSession) return;
+
+    let cancelled = false;
+    setBusy(true);
+
+    void (async () => {
+      try {
+        const { data, error: userError } = await supabase.auth.getUser();
+        if (userError) throw userError;
+        if (!data.user) return;
+
+        await completeAuthenticatedInvite(data.user, inviteToken);
+        if (cancelled) return;
+        toast.success(inviteToken ? "Invitation accepted" : "Signed in");
+        await navigate({ to: "/dashboard", replace: true });
+      } catch (err) {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : "Could not complete invitation");
+      } finally {
+        if (!cancelled) setBusy(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [founderMode, hasSession, inviteToken, navigate, sessionReady]);
+
   if ((founderMode || hasSession) && sessionReady) {
-    return <Navigate to="/dashboard" replace />;
+    return (
+      <main className="grid min-h-screen place-items-center bg-background px-4">
+        <p className="text-sm text-muted-foreground">
+          {busy ? "Completing sign in..." : "Redirecting..."}
+        </p>
+      </main>
+    );
   }
+
+  const finishAuth = async (user: User) => {
+    await completeAuthenticatedInvite(user, inviteToken);
+    toast.success(
+      inviteToken
+        ? "Invitation accepted"
+        : authMode === "sign-up"
+          ? "Account created"
+          : "Signed in",
+    );
+    await navigate({ to: "/dashboard", replace: true });
+  };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -68,14 +168,32 @@ function AuthPage() {
 
     try {
       disableFounderMode();
+
+      if (authMode === "sign-up") {
+        const result = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { full_name: invitePreview?.full_name ?? undefined },
+            emailRedirectTo: inviteToken
+              ? `${window.location.origin}/auth?invite=${inviteToken}`
+              : `${window.location.origin}/dashboard`,
+          },
+        });
+        if (result.error) throw result.error;
+        if (result.data.user && result.data.session) {
+          await finishAuth(result.data.user);
+          return;
+        }
+        toast.success("Check your email to confirm the account, then open the invite link again.");
+        return;
+      }
+
       const result = await supabase.auth.signInWithPassword({ email, password });
       if (result.error) throw result.error;
       if (result.data.user) {
-        await ensureCurrentProfile(result.data.user);
+        await finishAuth(result.data.user);
       }
-
-      toast.success("Signed in");
-      await navigate({ to: "/dashboard", replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed");
     } finally {
@@ -93,7 +211,11 @@ function AuthPage() {
     setError(null);
     const { error: googleError } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/dashboard` },
+      options: {
+        redirectTo: inviteToken
+          ? `${window.location.origin}/auth?invite=${inviteToken}`
+          : `${window.location.origin}/dashboard`,
+      },
     });
     if (googleError) {
       setError(googleError.message);
@@ -222,15 +344,43 @@ function AuthPage() {
                 ))}
               </div>
               <div>
-                <CardTitle className="text-2xl">Sign in to 1inow</CardTitle>
+                <CardTitle className="text-2xl">
+                  {invitePreview ? "Accept your invitation" : "Sign in to 1inow"}
+                </CardTitle>
                 <CardDescription className="mt-2">
-                  Access your personal command center for projects, tasks, portfolio signals, and
-                  daily work.
+                  {invitePreview
+                    ? `Join ${invitePreview.organization_name ?? "the workspace"} as ${invitationRoleLabel(invitePreview.role)}.`
+                    : "Access your personal command center for projects, tasks, portfolio signals, and daily work."}
                 </CardDescription>
               </div>
             </CardHeader>
             <CardContent className="space-y-5">
-              {founderAccessAvailable && (
+              {invitePreview && (
+                <div className="rounded-xl border border-accent/20 bg-accent/5 px-4 py-3 text-sm">
+                  <div className="font-medium text-foreground">
+                    {invitePreview.full_name || invitePreview.email}
+                  </div>
+                  <div className="mt-1 text-muted-foreground">
+                    {invitePreview.organization_name ?? "1inow workspace"} ·{" "}
+                    {invitationRoleLabel(invitePreview.role)}
+                  </div>
+                  {invitePreview.custom_message && (
+                    <p className="mt-2 text-muted-foreground">{invitePreview.custom_message}</p>
+                  )}
+                </div>
+              )}
+
+              {inviteLoading && (
+                <p className="text-sm text-muted-foreground">Loading invitation...</p>
+              )}
+
+              {!invitePreview && inviteToken && !inviteLoading && (
+                <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                  This invitation is invalid or expired.
+                </div>
+              )}
+
+              {founderAccessAvailable && !invitePreview && (
                 <Button
                   type="button"
                   className="w-full justify-between"
@@ -267,6 +417,24 @@ function AuthPage() {
               </div>
 
               <form className="space-y-4" onSubmit={submit}>
+                {invitePreview && (
+                  <div className="flex rounded-xl border border-border p-1">
+                    {(["sign-up", "sign-in"] as const).map((mode) => (
+                      <button
+                        key={mode}
+                        type="button"
+                        className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                          authMode === mode
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground"
+                        }`}
+                        onClick={() => setAuthMode(mode)}
+                      >
+                        {mode === "sign-up" ? "Create account" : "Sign in"}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -276,6 +444,7 @@ function AuthPage() {
                     onChange={(event) => setEmail(event.target.value)}
                     autoComplete="email"
                     placeholder="you@company.com"
+                    readOnly={Boolean(invitePreview?.email)}
                     required
                   />
                 </div>
@@ -286,8 +455,8 @@ function AuthPage() {
                     type="password"
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
-                    autoComplete="current-password"
-                    placeholder="Enter password"
+                    autoComplete={authMode === "sign-up" ? "new-password" : "current-password"}
+                    placeholder={authMode === "sign-up" ? "Choose a password" : "Enter password"}
                     required
                   />
                 </div>
@@ -296,8 +465,20 @@ function AuthPage() {
                     {error}
                   </div>
                 )}
-                <Button type="submit" className="w-full justify-between" disabled={busy}>
-                  <span>{busy ? "Working..." : "Sign in with email"}</span>
+                <Button
+                  type="submit"
+                  className="w-full justify-between"
+                  disabled={busy || inviteLoading}
+                >
+                  <span>
+                    {busy
+                      ? "Working..."
+                      : authMode === "sign-up"
+                        ? "Create account and join"
+                        : invitePreview
+                          ? "Sign in and join"
+                          : "Sign in with email"}
+                  </span>
                   <ArrowRight className="size-4" />
                 </Button>
               </form>
