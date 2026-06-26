@@ -6,7 +6,7 @@ Final verification for the Lovable cleanup was completed on branch `remove-lovab
 
 No Lovable runtime dependency, package dependency, API endpoint, environment variable, or old Lovable app URL remains in the checked project files.
 
-The AI routes are currently safe local stubs. They keep the same local route paths and do not connect to OpenAI, Gemini, Anthropic, or any other external AI provider.
+The AI routes are currently safe local stubs. `/api/chat` uses the internal `sense-engine` rule-based responder (Nova/Vera). They keep the same local route paths and do not connect to OpenAI, Gemini, Anthropic, or any other external AI provider.
 
 ## Search Scope
 
@@ -92,13 +92,13 @@ The current Vite setup uses standard project dependencies:
 
 ## AI Route Stub Status
 
-| Route       | Current behavior                                               | External service status |
-| ----------- | -------------------------------------------------------------- | ----------------------- |
-| `/api/chat` | Returns placeholder JSON: `AI service is not connected yet.`   | Disabled                |
-| `/api/stt`  | Returns `501 Not Implemented` with a clear placeholder message | Disabled                |
-| `/api/tts`  | Returns `501 Not Implemented` with a clear placeholder message | Disabled                |
+| Route       | Current behavior                                                                 | External service status |
+| ----------- | -------------------------------------------------------------------------------- | ----------------------- |
+| `/api/chat` | Streams a local Sense response via AI SDK (`sense-engine.ts`, Nova/Vera personas) | Disabled                |
+| `/api/stt`  | Returns `501 Not Implemented` with a clear placeholder message                   | Disabled                |
+| `/api/tts`  | Returns `501 Not Implemented`; browser speech synthesis is used as UI fallback   | Disabled                |
 
-These stubs are safe for local and Vercel builds because they do not require paid provider credentials.
+These routes remain safe for local and Vercel builds because they do not require paid provider credentials.
 
 ## Build Result
 

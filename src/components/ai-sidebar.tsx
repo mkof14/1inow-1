@@ -20,6 +20,7 @@ import { StudioMeter } from "@/components/voice/studio-meter";
 import { cn } from "@/lib/utils";
 import { useAiPageContext } from "@/lib/ai-context";
 import { useI18n } from "@/lib/i18n";
+import { BrandMark } from "@/components/icons/compass-mark";
 import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
 
 type Mode = "docked" | "floating" | "collapsed";
@@ -43,7 +44,9 @@ function makeTransport(getCtx: () => unknown, getLang: () => string) {
           body = JSON.stringify(parsed);
           headers.set("content-type", "application/json");
         }
-      } catch {}
+      } catch {
+        // Keep the original body when page context injection fails.
+      }
       return fetch(url as string, { ...init, headers, body });
     },
   });
@@ -215,7 +218,10 @@ export function AiSidebar({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text, voice: "marin", lang: langRef.current }),
         });
-        if (!res.ok || !res.body || cancelled) return;
+        if (!res.ok || !res.body || cancelled) {
+          speakSenseLocally(text);
+          return;
+        }
         const blob = await res.blob();
         if (cancelled) return;
         blobUrl = URL.createObjectURL(blob);
@@ -459,6 +465,45 @@ export function AiSidebar({
       </form>
     </aside>
   );
+}
+
+function speakSenseLocally(text: string) {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+  const synth = window.speechSynthesis;
+  synth.cancel();
+  const voices = synth.getVoices();
+  const primary =
+    voices.find((voice) => /female|samantha|victoria|zira|google us english/i.test(voice.name)) ??
+    voices[0];
+  const secondary =
+    voices.find(
+      (voice) =>
+        voice.name !== primary?.name && /male|alex|daniel|google uk english/i.test(voice.name),
+    ) ??
+    voices.find((voice) => voice.name !== primary?.name) ??
+    primary;
+
+  const chunks = splitSenseSpeech(text);
+  chunks.forEach((chunk) => {
+    const utterance = new SpeechSynthesisUtterance(chunk.text);
+    utterance.voice = chunk.persona === "nova" ? (primary ?? null) : (secondary ?? primary ?? null);
+    utterance.rate = chunk.persona === "nova" ? 1.04 : 0.92;
+    utterance.pitch = chunk.persona === "nova" ? 1.08 : 0.86;
+    utterance.volume = 1;
+    synth.speak(utterance);
+  });
+}
+
+function splitSenseSpeech(text: string): Array<{ persona: "nova" | "vera"; text: string }> {
+  const nova = text.match(/Nova:\s*([\s\S]*?)(?:\nVera:|$)/i)?.[1]?.trim();
+  const vera = text.match(/Vera:\s*([\s\S]*?)(?:\n\n|$)/i)?.[1]?.trim();
+  if (nova || vera) {
+    return [
+      nova ? { persona: "nova" as const, text: `Nova. ${nova}` } : null,
+      vera ? { persona: "vera" as const, text: `Vera. ${vera}` } : null,
+    ].filter(Boolean) as Array<{ persona: "nova" | "vera"; text: string }>;
+  }
+  return [{ persona: "nova", text }];
 }
 
 function SensePersonaMini({

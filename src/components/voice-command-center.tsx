@@ -23,6 +23,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { buildSenseResponse } from "@/lib/sense-engine";
 import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
 import { saveVoiceInboxItem, type VoiceInboxKind } from "@/lib/voice-intake";
 
@@ -38,6 +39,7 @@ type VoiceIntent =
   | "unknown";
 
 type VoicePlan = {
+  rawText?: string;
   intent: VoiceIntent;
   label: string;
   summary: string;
@@ -244,8 +246,9 @@ export function VoiceCommandCenter({
       if (!data.user) throw new Error("Sign in required");
 
       if (plan.intent === "create_task") {
+        const title = plan.title?.trim() || "Untitled task";
         const { error } = await supabase.from("tasks").insert({
-          title: plan.title,
+          title,
           description: plan.description || null,
           status: "todo",
           priority: "medium",
@@ -255,13 +258,11 @@ export function VoiceCommandCenter({
         await queryClient.invalidateQueries({ queryKey: ["tasks"] });
         toast.success("Task created from voice command");
       } else if (plan.intent === "create_project") {
-        const base = plan.title ?? "new-project";
-        const slug = `${base
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/(^-|-$)/g, "")}-${Math.random().toString(36).slice(2, 6)}`;
+        const name = plan.title?.trim() || "Untitled project";
+        const base = name.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "new-project";
+        const slug = `${base.replace(/(^-|-$)/g, "")}-${Math.random().toString(36).slice(2, 6)}`;
         const { error } = await supabase.from("projects").insert({
-          name: plan.title,
+          name,
           slug,
           description: plan.description || null,
           status: "planning",
@@ -655,24 +656,35 @@ function ConfidenceBadge({ value }: { value: VoicePlan["confidence"] }) {
 }
 
 function buildVoicePerspectives(plan: VoicePlan): VoicePerspective[] {
+  const sense = buildSenseResponse(
+    plan.rawText || plan.title || plan.summary,
+    {
+      module: "voice-center",
+      intent: plan.intent,
+      confidence: plan.confidence,
+      executable: plan.executable,
+      question: plan.question,
+    },
+    typeof navigator === "undefined" ? "en" : navigator.language,
+  );
   const operatorText = plan.question
-    ? `I can help, but I need one clarification before action: ${plan.question}`
+    ? `${sense.nova} Clarification needed before action: ${plan.question}`
     : plan.executable
-      ? `This is ready to execute after confirmation: ${plan.summary}`
-      : `This should stay as a safe draft for now: ${plan.summary}`;
+      ? `${sense.nova} Ready after confirmation: ${plan.summary}`
+      : `${sense.nova} Keep this as a draft until it becomes executable: ${plan.summary}`;
 
   const auditorText =
     plan.confidence === "low"
-      ? "Confidence is low. I would not execute this yet. Save it, clarify it, or convert it into a cleaner task."
+      ? `${sense.vera} Confidence is low. Save it, clarify it, or convert it into a cleaner task before execution.`
       : plan.intent === "create_task"
-        ? "Check deadline, project, and owner. A task without context can become noise."
+        ? `${sense.vera} Check deadline, project, and owner. A task without context can become noise.`
         : plan.intent === "create_project"
-          ? "Check outcome and first action. A project without a next task will not move."
+          ? `${sense.vera} Check outcome and first action. A project without a next task will not move.`
           : plan.intent === "show_risks"
-            ? "Risk review is useful now. Do not create new work before checking blockers and owners."
+            ? `${sense.vera} Risk review is useful now. Do not create new work before checking blockers and owners.`
             : plan.intent === "show_today"
-              ? "Good moment for focus. Choose one important move, not a long list."
-              : "This looks safe. It does not change data unless you explicitly confirm the action.";
+              ? `${sense.vera} Good moment for focus. Choose one important move, not a long list.`
+              : `${sense.vera} This looks safe. It does not change data unless you explicitly confirm the action.`;
 
   return [
     {
@@ -734,6 +746,7 @@ function parseVoiceCommand(raw: string): VoicePlan {
   if (createTaskMatch) {
     const title = cleanupTitle(text.slice(createTaskMatch.length));
     return {
+      rawText: text,
       intent: "create_task",
       label: "Create task",
       summary: title
@@ -770,6 +783,7 @@ function parseVoiceCommand(raw: string): VoicePlan {
   if (createProjectMatch) {
     const title = cleanupTitle(text.slice(createProjectMatch.length));
     return {
+      rawText: text,
       intent: "create_project",
       label: "Create project",
       summary: title
@@ -826,6 +840,7 @@ function parseVoiceCommand(raw: string): VoicePlan {
         "If the day is unclear, save raw thoughts to Voice Inbox first.",
         "Use System Brain when you want a deeper project and waiting review.",
       ],
+      text,
     );
   }
 
@@ -841,6 +856,7 @@ function parseVoiceCommand(raw: string): VoicePlan {
         "Review risks before creating more work.",
         "A risk should be attached to a project and have an owner or next action.",
       ],
+      text,
     );
   }
 
@@ -865,6 +881,7 @@ function parseVoiceCommand(raw: string): VoicePlan {
         "Use today view to choose one concrete next move.",
         "If something feels unclear, ask Sense to save it as a voice inbox item.",
       ],
+      text,
     );
   }
 
@@ -877,6 +894,7 @@ function parseVoiceCommand(raw: string): VoicePlan {
       "medium",
       ["Matched search phrase", "Global command/search is available in app shell"],
       ["Search is currently routed to the app shell/global search surface."],
+      text,
     );
   }
 
@@ -885,6 +903,7 @@ function parseVoiceCommand(raw: string): VoicePlan {
       text.replace(/^(note|idea|remember|заметка|идея|запиши|мысль)/i, ""),
     );
     return {
+      rawText: text,
       intent: "draft_note",
       label: "Draft note",
       summary: "Notes are drafted here. Dedicated note creation is not connected yet.",
@@ -924,6 +943,7 @@ function parseVoiceCommand(raw: string): VoicePlan {
       "воскресенье",
     ]);
     return {
+      rawText: text,
       intent: "draft_reminder",
       label: "Draft reminder",
       summary:
@@ -957,6 +977,7 @@ function parseVoiceCommand(raw: string): VoicePlan {
       "high",
       [`Matched route keywords: ${route.words.slice(0, 3).join(", ")}`, "Source: local route map"],
       [`Opening ${route.label} is a safe command and does not change data.`],
+      text,
     );
   }
 
@@ -971,12 +992,14 @@ function routePlan(
   confidence: VoicePlan["confidence"],
   evidence: string[],
   advice?: string[],
+  rawText?: string,
 ): VoicePlan {
-  return { intent, label, summary, route, confidence, evidence, advice, executable: true };
+  return { rawText, intent, label, summary, route, confidence, evidence, advice, executable: true };
 }
 
 function unknownPlan(text: string, summary: string): VoicePlan {
   return {
+    rawText: text,
     intent: "unknown",
     label: "Unknown command",
     summary,

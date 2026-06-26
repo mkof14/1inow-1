@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value: AuthContextValue = {
     session,
-    user: founderMode ? (FOUNDER_USER as User) : (session?.user ?? null),
+    user: founderMode ? (FOUNDER_USER as unknown as User) : (session?.user ?? null),
     loading,
     isAdmin,
     signOut: async () => {

@@ -57,17 +57,20 @@ export const Route = createFileRoute("/learn/$slug")({
     if (!topic) throw notFound();
     return topic;
   },
-  head: ({ loaderData }) => ({
-    meta: [
-      { title: `${loaderData.title} - 1inow Learning` },
-      { name: "description", content: loaderData.summary },
-      { property: "og:title", content: `${loaderData.title} - 1inow` },
-      { property: "og:description", content: loaderData.summary },
-      { property: "og:type", content: "article" },
-      { property: "og:image", content: `https://1inow.com${loaderData.image}` },
-    ],
-    links: [{ rel: "canonical", href: `https://1inow.com/learn/${loaderData.slug}` }],
-  }),
+  head: ({ loaderData }) => {
+    const topic = loaderData!;
+    return {
+      meta: [
+        { title: `${topic.title} - 1inow Learning` },
+        { name: "description", content: topic.summary },
+        { property: "og:title", content: `${topic.title} - 1inow` },
+        { property: "og:description", content: topic.summary },
+        { property: "og:type", content: "article" },
+        { property: "og:image", content: `https://1inow.com${topic.image}` },
+      ],
+      links: [{ rel: "canonical", href: `https://1inow.com/learn/${topic.slug}` }],
+    };
+  },
   component: LearningPage,
 });
 
