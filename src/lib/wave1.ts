@@ -62,32 +62,26 @@ export async function trackRecent(entity_type: EntityType, entity_id: string, la
 }
 
 // ============ NOTIFICATIONS ============
-export async function fetchNotifications() {
-  const { data, error } = await supabase
-    .from("notifications")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(100);
-  if (error) throw error;
-  return data ?? [];
-}
+import {
+  createNotification,
+  fetchMyNotifications,
+  markAllNotificationsRead,
+  markNotification,
+} from "@/lib/notifications";
 
-export async function markNotification(
-  id: string,
-  fields: { read_at?: string | null; resolved_at?: string | null },
-) {
-  const { error } = await supabase.from("notifications").update(fields).eq("id", id);
-  if (error) throw error;
+export { createNotification, markNotification };
+export type {
+  CreateNotificationInput,
+  NotificationRow,
+  NotificationType,
+} from "@/lib/notifications";
+
+export async function fetchNotifications() {
+  return fetchMyNotifications();
 }
 
 export async function markAllRead() {
-  const user = (await supabase.auth.getUser()).data.user;
-  if (!user) return;
-  await supabase
-    .from("notifications")
-    .update({ read_at: new Date().toISOString() })
-    .eq("user_id", user.id)
-    .is("read_at", null);
+  return markAllNotificationsRead();
 }
 
 // ============ USER SETTINGS ============
