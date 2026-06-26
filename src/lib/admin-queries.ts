@@ -32,6 +32,25 @@ async function assertWorkspaceMember(userId: string, organizationId: string) {
   if (!data) throw new Error("User is not in the active workspace");
 }
 
+async function logAdminAction(input: {
+  action: string;
+  entityType?: string;
+  entityId?: string;
+  module?: string;
+  severity?: string;
+  metadata?: Record<string, unknown>;
+}) {
+  const { error } = await supabase.rpc("log_audit", {
+    _action: input.action,
+    _entity_type: input.entityType ?? undefined,
+    _entity_id: input.entityId ?? undefined,
+    _severity: input.severity ?? "info",
+    _module: input.module ?? "admin",
+    _metadata: (input.metadata ?? {}) as never,
+  });
+  if (error) console.warn("[admin] audit log failed", error);
+}
+
 export type Permission = { id: string; key: string; category: string; description: string | null };
 export type RolePermission = { role: string; permission_key: string };
 export type AppProfile = {
@@ -156,6 +175,9 @@ export async function toggleRolePermission(
   permission_key: string,
   granted: boolean,
 ) {
+  const actor = await requireAdminActor();
+  await requireAdminPermission(actor.id, "manage_permissions");
+
   if (granted) {
     const { error } = await supabase
       .from("role_permissions")
@@ -169,6 +191,14 @@ export async function toggleRolePermission(
       .eq("permission_key", permission_key);
     if (error) throw error;
   }
+
+  await logAdminAction({
+    action: granted ? "role_permission.grant" : "role_permission.revoke",
+    entityType: "role_permission",
+    entityId: `${role}:${permission_key}`,
+    module: "roles",
+    metadata: { role, permission_key, granted },
+  });
 }
 
 export async function fetchProfiles(): Promise<AppProfile[]> {
@@ -223,6 +253,14 @@ export async function setUserRole(user_id: string, role: AppRole) {
   await supabase.from("user_roles").delete().eq("user_id", user_id);
   const { error } = await supabase.from("user_roles").insert({ user_id, role } as any);
   if (error) throw error;
+
+  await logAdminAction({
+    action: "user.role.assign",
+    entityType: "user",
+    entityId: user_id,
+    module: "users",
+    metadata: { role },
+  });
 }
 
 export async function updateProfileStatus(id: string, status: "active" | "inactive") {
@@ -237,6 +275,14 @@ export async function updateProfileStatus(id: string, status: "active" | "inacti
     .eq("id", id)
     .eq("organization_id", organizationId);
   if (error) throw error;
+
+  await logAdminAction({
+    action: status === "inactive" ? "user.deactivate" : "user.activate",
+    entityType: "profile",
+    entityId: id,
+    module: "users",
+    metadata: { status },
+  });
 }
 
 export async function fetchInvitations(): Promise<Invitation[]> {
@@ -280,18 +326,40 @@ export async function createInvitation(input: {
     .select()
     .single();
   if (error) throw error;
+
+  await logAdminAction({
+    action: "invitation.create",
+    entityType: "invitation",
+    entityId: (data as { id?: string }).id,
+    module: "invitations",
+    metadata: { email: input.email, role: input.role },
+  });
+
   return data;
 }
 
 export async function cancelInvitation(id: string) {
+  const actor = await requireAdminActor();
+  await requireAdminPermission(actor.id, "invite_users");
+
   const { error } = await supabase
     .from("invitations")
     .update({ status: "canceled" } as any)
     .eq("id", id);
   if (error) throw error;
+
+  await logAdminAction({
+    action: "invitation.cancel",
+    entityType: "invitation",
+    entityId: id,
+    module: "invitations",
+  });
 }
 
 export async function resendInvitation(id: string) {
+  const actor = await requireAdminActor();
+  await requireAdminPermission(actor.id, "invite_users");
+
   const { error } = await supabase
     .from("invitations")
     .update({
@@ -300,6 +368,13 @@ export async function resendInvitation(id: string) {
     } as any)
     .eq("id", id);
   if (error) throw error;
+
+  await logAdminAction({
+    action: "invitation.resend",
+    entityType: "invitation",
+    entityId: id,
+    module: "invitations",
+  });
 }
 
 export async function fetchAuditLogs(limit = 200): Promise<AuditLog[]> {
@@ -330,11 +405,22 @@ export async function fetchSystemSettings(): Promise<SystemSetting[]> {
 }
 
 export async function updateSystemSetting(key: string, value: unknown) {
+  const actor = await requireAdminActor();
+  await requireAdminPermission(actor.id, "manage_settings");
+
   const { error } = await supabase
     .from("system_settings")
     .update({ value } as any)
     .eq("key", key);
   if (error) throw error;
+
+  await logAdminAction({
+    action: "system_setting.update",
+    entityType: "system_setting",
+    entityId: key,
+    module: "settings",
+    metadata: { value },
+  });
 }
 
 // ---------- Email templates ----------

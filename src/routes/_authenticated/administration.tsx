@@ -1,7 +1,21 @@
-import { createFileRoute, Outlet, Link, useRouterState, redirect } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Outlet,
+  Link,
+  useRouterState,
+  redirect,
+  useNavigate,
+} from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { requireAdminSession } from "@/lib/auth-roles";
+import {
+  ADMIN_ROUTE_PERMISSIONS,
+  requireAdminAreaSession,
+  resolveAdminAreaAccess,
+} from "@/lib/auth-roles";
 import { isDevOwnerToolsAvailable } from "@/lib/dev-owner-tools";
+import { useAuth } from "@/hooks/use-auth";
 import {
   LayoutDashboard,
   Users,
@@ -18,7 +32,7 @@ import {
 
 export const Route = createFileRoute("/_authenticated/administration")({
   beforeLoad: async () => {
-    const gate = await requireAdminSession();
+    const gate = await requireAdminAreaSession();
     if (!gate.allowed) {
       throw redirect({ to: gate.reason === "no_session" ? "/auth" : "/dashboard" });
     }
@@ -42,9 +56,32 @@ const tabs = [
 
 function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const visibleTabs = isDevOwnerToolsAvailable()
-    ? tabs
-    : tabs.filter((tab) => tab.to !== "/administration/role-switcher");
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const access = useQuery({
+    queryKey: ["admin-area-access", user?.id],
+    queryFn: () => resolveAdminAreaAccess(user!.id),
+    enabled: Boolean(user?.id),
+  });
+
+  useEffect(() => {
+    if (!access.data) return;
+
+    const requiredPermission = ADMIN_ROUTE_PERMISSIONS[pathname];
+    if (requiredPermission && !access.data.permissions[requiredPermission]) {
+      void navigate({ to: "/administration", replace: true });
+    }
+  }, [access.data, navigate, pathname]);
+
+  const visibleTabs = tabs.filter((tab) => {
+    if (tab.to === "/administration/role-switcher" && !isDevOwnerToolsAvailable()) {
+      return false;
+    }
+
+    const requiredPermission = ADMIN_ROUTE_PERMISSIONS[tab.to];
+    if (!requiredPermission) return true;
+    return access.data?.permissions[requiredPermission] ?? false;
+  });
 
   return (
     <div className="flex h-full min-h-[calc(100vh-3.5rem)]">
