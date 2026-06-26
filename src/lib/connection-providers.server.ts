@@ -136,13 +136,17 @@ export function getSttProviderState(): ProviderState {
     message: browserOnly
       ? "Server speech-to-text is not connected yet. Browser speech recognition can be used on supported devices."
       : ready
-        ? `Speech-to-text provider ${provider} is configured but not wired to runtime calls yet.`
+        ? provider === "openai"
+          ? "OpenAI speech-to-text is wired to /api/stt (requires use_voice permission)."
+          : `Speech-to-text provider ${provider} is configured but not wired to runtime calls yet.`
         : "Speech-to-text service is not connected yet.",
     capabilities: ["stt", "voice-commands", "audit"],
     missingSecrets,
     nextStep: browserOnly
       ? "Keep browser recognition for lightweight commands or approve a server STT provider."
-      : "Implement the selected STT adapter after provider approval.",
+      : ready && provider === "openai"
+        ? "Set STT_PROVIDER=openai and OPENAI_API_KEY; grant use_voice to allowed users."
+        : "Implement the selected STT adapter after provider approval.",
   };
 }
 
@@ -168,13 +172,17 @@ export function getTtsProviderState(): ProviderState {
     message: browserOnly
       ? "Server text-to-speech is not connected yet. Browser speech synthesis can be used on supported devices."
       : ready
-        ? `Text-to-speech provider ${provider} is configured but not wired to runtime calls yet.`
+        ? provider === "openai"
+          ? "OpenAI text-to-speech is wired to /api/tts (requires use_voice permission)."
+          : `Text-to-speech provider ${provider} is configured but not wired to runtime calls yet.`
         : "Text-to-speech service is not connected yet.",
     capabilities: ["tts", "voice-commands", "audit"],
     missingSecrets,
     nextStep: browserOnly
       ? "Use browser synthesis for local playback or approve a server TTS provider."
-      : "Implement the selected TTS adapter after provider approval.",
+      : ready && provider === "openai"
+        ? "Set TTS_PROVIDER=openai and OPENAI_API_KEY; grant use_voice to allowed users."
+        : "Implement the selected TTS adapter after provider approval.",
   };
 }
 

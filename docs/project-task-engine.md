@@ -64,6 +64,12 @@ Added `src/lib/project-task-engine.ts` with shared helpers:
 - `createTaskRecord()`
 - `createProjectRecord()`
 - `updateTaskStatus()`
+- `archiveProjectRecord()`
+
+Activity logging via `src/lib/activity-log.ts`:
+
+- `task.created`, `task.status_updated`
+- `project.created`, `project.archived`
 
 Wired into:
 
@@ -100,8 +106,7 @@ Do not address in this step:
 - Organization-scoped project lists
 - Milestones/subtasks
 - Task comments table
-- Activity log writes on create/update
-- Permission-key checks before create (`create_projects`, `create_tasks`)
+- Permission-key checks before create (`create_projects`, `create_tasks`) — **done in engine**
 - Refactoring `inbox.tsx` and `projects.index.tsx` inserts (next pass)
 
 ## Recommended Next Task

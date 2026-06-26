@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { resolveUserPermission } from "@/lib/auth-roles";
 import { resolveActiveOrganizationId } from "@/lib/organization-model";
 import { notifyChannelMessage } from "@/lib/notifications";
+import { notifyMessageMentions } from "@/lib/mentions";
 import { createTaskRecord } from "@/lib/project-task-engine";
 
 export const MESSAGE_TYPES = [
@@ -205,6 +206,14 @@ export async function sendMessage(input: {
     title: meta?.label ? `New ${meta.label.toLowerCase()}` : "New channel message",
     body: input.body.slice(0, 160),
     messageType,
+    url: "/communication",
+  }).catch(() => undefined);
+
+  await notifyMessageMentions({
+    body: input.body,
+    authorId: user.id,
+    messageId: data.id,
+    channelId: input.channel_id,
     url: "/communication",
   }).catch(() => undefined);
 

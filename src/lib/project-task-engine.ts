@@ -2,6 +2,7 @@ import type { User } from "@supabase/supabase-js";
 import { resolveUserPermission } from "@/lib/auth-roles";
 import { resolveActiveOrganizationId } from "@/lib/organization-model";
 import { deliverInAppNotification } from "@/lib/notifications";
+import { logWorkspaceActivity } from "@/lib/activity-log";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -98,6 +99,15 @@ export async function createTaskRecord(input: CreateTaskInput) {
     }).catch(() => undefined);
   }
 
+  await logWorkspaceActivity({
+    userId: user.id,
+    action: "task.created",
+    entityType: "task",
+    entityId: data.id,
+    projectId: input.projectId ?? null,
+    metadata: { title, assigneeId },
+  });
+
   return data;
 }
 
@@ -125,6 +135,16 @@ export async function createProjectRecord(input: CreateProjectInput) {
     .single();
 
   if (error) throw error;
+
+  await logWorkspaceActivity({
+    userId: user.id,
+    action: "project.created",
+    entityType: "project",
+    entityId: data.id,
+    projectId: data.id,
+    metadata: { name, slug: data.slug },
+  });
+
   return data;
 }
 
@@ -167,6 +187,15 @@ export async function updateTaskStatus(taskId: string, status: TaskStatus) {
       url,
     }).catch(() => undefined);
   }
+
+  await logWorkspaceActivity({
+    userId: user.id,
+    action: "task.status_updated",
+    entityType: "task",
+    entityId: taskId,
+    projectId: task.project_id,
+    metadata: { from: task.status, to: status },
+  });
 }
 
 export async function deleteTaskRecord(taskId: string) {
@@ -211,4 +240,13 @@ export async function archiveProjectRecord(projectId: string) {
       url: project.slug ? `/projects/${project.slug}` : "/projects",
     }).catch(() => undefined);
   }
+
+  await logWorkspaceActivity({
+    userId: user.id,
+    action: "project.archived",
+    entityType: "project",
+    entityId: projectId,
+    projectId,
+    metadata: { name: project.name },
+  });
 }

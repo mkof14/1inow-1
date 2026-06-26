@@ -2,13 +2,13 @@
 
 ## Current Status
 
-1inow has a prepared voice command interface and safe server endpoints:
+1inow has a prepared voice command interface and server endpoints:
 
-- `/api/chat`
-- `/api/stt`
-- `/api/tts`
+- `/api/chat` — OpenAI adapter when `AI_PROVIDER=openai` (Phase A)
+- `/api/stt` — OpenAI Whisper when `STT_PROVIDER=openai`
+- `/api/tts` — OpenAI speech when `TTS_PROVIDER=openai`
 
-No paid external AI, speech-to-text, or text-to-speech provider is connected yet.
+Paid external services remain disabled by default until env selectors and secrets are configured.
 
 ## Connection Modes
 
@@ -28,7 +28,7 @@ Supported future modes:
 
 - `browser`: browser-native speech recognition when supported.
 - `disabled`: no server transcription.
-- `openai`: future server transcription.
+- `openai`: server transcription via Whisper (`/api/stt`).
 - `google`: future Google Speech integration.
 - `azure`: future Azure Speech integration.
 
@@ -38,7 +38,7 @@ Supported future modes:
 
 - `disabled`: production-safe default.
 - `browser`: future browser speech synthesis fallback.
-- `openai`: future server speech synthesis.
+- `openai`: server speech synthesis (`/api/tts`).
 - `elevenlabs`: future high-quality voice generation.
 - `azure`: future enterprise speech synthesis.
 
@@ -64,6 +64,8 @@ Safe non-secret selectors:
 Future private secrets:
 
 - `OPENAI_API_KEY`
+- `OPENAI_STT_MODEL` (default `whisper-1`)
+- `OPENAI_TTS_MODEL` (default `tts-1`)
 - `ANTHROPIC_API_KEY`
 - `GEMINI_API_KEY`
 - `ELEVENLABS_API_KEY`
@@ -76,25 +78,24 @@ Future private secrets:
 ## Implemented Preparation
 
 - Central server registry: `src/lib/connection-providers.server.ts`
-- `/api/chat` now reports provider state and next connection step.
-- `/api/stt` now reports provider state and remains `501` until server STT is implemented.
-- `/api/tts` now reports provider state and remains `501` until server TTS is implemented.
-- Voice admin settings now expose future provider choices.
-- Browser voice commands remain available without paid external services.
+- AI gateway: `src/lib/ai-gateway.server.ts` → `/api/chat`
+- Voice gateway: `src/lib/voice-gateway.server.ts` → `/api/stt`, `/api/tts`
+- Auth + `use_voice` permission on server STT/TTS routes
+- Audit logging to `ai_actions` for STT/TTS when `AI_AUDIT_LOGGING_ENABLED` is not `false`
+- Voice admin settings expose provider choices and test STT/TTS with bearer auth
+- Browser voice commands remain available without paid external services
 
 ## Next Implementation Order
 
-1. Decide the first approved AI provider.
-2. Add private provider secret in Vercel and local private env.
-3. Implement adapter for `/api/chat`.
-4. Add audit logging for prompt, result, action type, user id, provider, and timestamp.
-5. Implement server STT only if browser recognition is not enough.
-6. Implement server TTS only after deciding whether generated speech is required.
-7. Add user-level permissions for AI and voice execution.
+1. Decide whether to enable OpenAI in production (`AI_PROVIDER`, `STT_PROVIDER`, `TTS_PROVIDER`).
+2. Add private provider secrets in Vercel and local private env.
+3. Grant `use_voice` (and `use_assistant` for chat) to allowed users.
+4. Implement server STT for non-OpenAI providers (Google, Azure) if needed.
+5. Implement server TTS for ElevenLabs/Azure if higher-quality voice is required.
+6. Add user-level rate limits and cost caps per organization.
 
 ## Disabled Until Approved
 
-- OpenAI runtime calls
 - Anthropic runtime calls
 - Gemini runtime calls
 - ElevenLabs runtime calls

@@ -213,9 +213,14 @@ export function AiSidebar({
     let blobUrl: string | null = null;
     (async () => {
       try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (token) headers.Authorization = `Bearer ${token}`;
+
         const res = await fetch("/api/tts", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({ text, voice: "marin", lang: langRef.current }),
         });
         if (!res.ok || !res.body || cancelled) {

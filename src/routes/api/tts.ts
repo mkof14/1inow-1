@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getTtsProviderState } from "@/lib/connection-providers.server";
+import { runTtsGateway } from "@/lib/voice-gateway.server";
 
 type Body = { text?: string; voice?: string; lang?: string };
 
@@ -8,23 +8,29 @@ export const Route = createFileRoute("/api/tts")({
     handlers: {
       POST: async ({ request }) => {
         const { text, voice, lang } = (await request.json()) as Body;
-        void voice;
-        void lang;
         if (!text || !text.trim()) return new Response("text required", { status: 400 });
 
-        const service = getTtsProviderState();
+        const result = await runTtsGateway({
+          text: text.trim(),
+          voice,
+          lang,
+          authorizationHeader: request.headers.get("authorization"),
+        });
 
-        return Response.json(
-          {
-            message: service.message,
-            disabled: service.disabled,
-            provider: service.provider,
-            status: service.status,
-            capabilities: service.capabilities,
-            nextStep: service.nextStep,
+        if (!result.ok) {
+          return Response.json(result.body, {
+            status: result.status,
+            headers: { "Cache-Control": "no-store" },
+          });
+        }
+
+        return new Response(result.audio, {
+          status: 200,
+          headers: {
+            "Content-Type": result.contentType,
+            "Cache-Control": "no-store",
           },
-          { status: 501, headers: { "Cache-Control": "no-store" } },
-        );
+        });
       },
     },
   },

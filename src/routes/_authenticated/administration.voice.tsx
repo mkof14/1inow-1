@@ -29,6 +29,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchSystemSettings, updateSystemSetting, type SystemSetting } from "@/lib/admin-queries";
 import { dictionaries } from "@/lib/i18n/dictionaries";
@@ -254,9 +255,14 @@ function VoicePage() {
   const playTts = async () => {
     setTtsBusy(true);
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers.Authorization = `Bearer ${token}`;
+
       const res = await fetch("/api/tts", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           text: ttsText,
           voice: prefs.ttsVoice && prefs.ttsVoice !== "default" ? prefs.ttsVoice : "alloy",
@@ -311,7 +317,12 @@ function VoicePage() {
             `rec.${(mr.mimeType || "webm").includes("mp4") ? "mp4" : "webm"}`,
           );
           if (/^[a-z]{2}$/i.test(prefs.sttLang)) fd.append("language", prefs.sttLang);
-          const res = await fetch("/api/stt", { method: "POST", body: fd });
+          const { data: sessionData } = await supabase.auth.getSession();
+          const token = sessionData.session?.access_token;
+          const headers: Record<string, string> = {};
+          if (token) headers.Authorization = `Bearer ${token}`;
+
+          const res = await fetch("/api/stt", { method: "POST", headers, body: fd });
           if (!res.ok) throw new Error((await res.text()) || `STT ${res.status}`);
           const data = (await res.json()) as { text: string };
           setTranscript(data.text || "(empty)");
