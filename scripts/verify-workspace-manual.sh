@@ -43,7 +43,7 @@ Optional integrations (env-gated)
 
 Supabase migrations (production)
   bash scripts/verify-org-migrations.sh
-  Apply migrations 1–8 in order via docs/supabase-migration-runbook.md
+  Apply migrations 1–9 in order via docs/supabase-migration-runbook.md
 
 Automated smoke (local/CI):
   npm run smoke

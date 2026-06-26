@@ -28,7 +28,7 @@ Legend:
 | `projects` | Org + membership | Org, owner, creator, member | Creator + org match | Owner/admin policies | Owner/admin | `organization_id` required in app writes |
 | `tasks` | Org + assignment | Org project path, assignee, creator | Authenticated create | Assignee/owner/admin | Assignee/owner/admin | Orphan tasks scoped via creator org |
 | `task_comments` | Org + task access | Task viewers in org | Author + `send_messages`/`edit_tasks` | Author/admin soft delete | — | Soft delete via `deleted_at` |
-| `project_members` | Project | Project access | Project admin | Project admin | Project admin | Inherited via project |
+| `project_members` | Org + project | Project access in org | `assign_project_members` + same org | Manager in org | Manager in org | Member user must share project org |
 | `decisions` | Org | Same org or project path | Requester + org match | Same org | Requester/admin in org | `organization_id` on writes |
 | `notifications` | Personal | Own rows | Self or admin | Own rows | Own rows | User-scoped |
 | `activity_logs` | Org | Same org | Self + org match | — | — | `organization_id` on writes |
@@ -63,9 +63,7 @@ Legend:
 
 ## Remaining gaps (next RLS pass)
 
-1. **`user_roles` SELECT** — org-scoped via `20260626180000_user_roles_org_scoping.sql` (self, super admin, or `view_users` in same org).
-2. **AI / translation tables** — `ai_actions`, `translation_memory`, and `document_translations` org-scoped via `20260626190000_ai_translation_org_scoping.sql`. Personal AI tables (`ai_memories`, etc.) remain user-owned.
-3. **Cross-org project membership** — project_members can still grant access without org check on membership table itself.
+1. **Cross-org project membership** — scoped via `20260626193000_project_members_org_scoping.sql` and `project-member-engine.ts`.
 
 ## Validation
 
