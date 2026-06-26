@@ -1,7 +1,11 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { resolveUserRoleFlags } from "@/lib/auth-roles";
+import {
+  resolveUserRoleFlags,
+  resolveAdminAreaAccess,
+  type AdminAreaPermission,
+} from "@/lib/auth-roles";
 import { completeAuthenticatedInvite, readInviteToken } from "@/lib/invitations";
 import {
   disableFounderMode,
@@ -17,6 +21,8 @@ interface AuthContextValue {
   loading: boolean;
   isAdmin: boolean;
   isSuperAdmin: boolean;
+  canAccessAdmin: boolean;
+  adminPermissions: Record<AdminAreaPermission, boolean> | null;
   signOut: () => Promise<void>;
 }
 
@@ -27,6 +33,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [canAccessAdmin, setCanAccessAdmin] = useState(false);
+  const [adminPermissions, setAdminPermissions] = useState<Record<
+    AdminAreaPermission,
+    boolean
+  > | null>(null);
   const founderMode = isFounderModeEnabled();
 
   useEffect(() => {
@@ -38,6 +49,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(null);
       setIsAdmin(false);
       setIsSuperAdmin(false);
+      setCanAccessAdmin(false);
+      setAdminPermissions(null);
       setLoading(false);
       return;
     }
@@ -77,6 +90,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (founderMode) {
       setIsAdmin(false);
       setIsSuperAdmin(false);
+      setCanAccessAdmin(false);
+      setAdminPermissions(null);
       return;
     }
 
@@ -84,15 +99,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!uid) {
       setIsAdmin(false);
       setIsSuperAdmin(false);
+      setCanAccessAdmin(false);
+      setAdminPermissions(null);
       return;
     }
 
     let cancelled = false;
-    void resolveUserRoleFlags(uid).then((roles) => {
-      if (cancelled) return;
-      setIsAdmin(roles.isAdmin);
-      setIsSuperAdmin(roles.isSuperAdmin);
-    });
+    void Promise.all([resolveUserRoleFlags(uid), resolveAdminAreaAccess(uid)]).then(
+      ([roles, access]) => {
+        if (cancelled) return;
+        setIsAdmin(roles.isAdmin);
+        setIsSuperAdmin(roles.isSuperAdmin);
+        setCanAccessAdmin(access.canAccessAdmin);
+        setAdminPermissions(access.permissions);
+      },
+    );
 
     return () => {
       cancelled = true;
@@ -105,6 +126,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     isAdmin,
     isSuperAdmin,
+    canAccessAdmin,
+    adminPermissions,
     signOut: async () => {
       if (founderMode) {
         disableFounderMode();

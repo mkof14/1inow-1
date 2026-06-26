@@ -11,6 +11,7 @@ import {
   SignalWave,
 } from "@/components/icons/compass-icons";
 import { useAuth } from "@/hooks/use-auth";
+import { filterNavItems, filterNavSections, isNavItemAccessible } from "@/lib/nav-access";
 import {
   Activity,
   ArrowRight,
@@ -57,7 +58,11 @@ import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { user, isAdmin, signOut } = useAuth() as any;
+  const { user, canAccessAdmin, adminPermissions, signOut } = useAuth();
+  const adminNavAccess = useMemo(
+    () => ({ canAccessAdmin, permissions: adminPermissions }),
+    [adminPermissions, canAccessAdmin],
+  );
   const navigate = useNavigate();
   const t = useT();
   const [dark, setDark] = useState(false);
@@ -163,7 +168,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     { to: "/communication", label: "Messages", icon: SignalWave },
     { to: "/intelligence", label: "Intelligence", icon: IntelligenceBars },
     { to: "/settings", label: "Settings", icon: GearMark },
-    ...(isAdmin
+    ...(canAccessAdmin
       ? [{ to: "/administration", label: "Admin Console", icon: ShieldLine } as NavItem]
       : []),
   ];
@@ -172,13 +177,16 @@ export function AppShell({ children }: { children: ReactNode }) {
     ...quickLinks.filter((l) => l.to === `/${contextSection}`),
     ...quickLinks.filter((l) => l.to !== `/${contextSection}`),
   ];
-  const visibleFooterSections = [...navSections, ...footerSections];
+  const visibleFooterSections = useMemo(
+    () => filterNavSections(footerSections, adminNavAccess),
+    [adminNavAccess],
+  );
   const allNavItems = useMemo(
-    () => [...navSections, ...footerSections].flatMap((section) => section.items),
-    [],
+    () => [...navSections, ...visibleFooterSections].flatMap((section) => section.items),
+    [visibleFooterSections],
   );
   const activeItem = allNavItems
-    .filter((item) => !item.adminOnly || isAdmin)
+    .filter((item) => isNavItemAccessible(item, adminNavAccess))
     .find((item) => pathname === item.to || pathname.startsWith(item.to + "/"));
 
   return (
@@ -429,18 +437,16 @@ export function AppShell({ children }: { children: ReactNode }) {
                       {t(`nav.section.${section.id}`, section.label)}
                     </div>
                     <ul className="space-y-2">
-                      {section.items
-                        .filter((i) => !i.adminOnly || isAdmin)
-                        .map((item) => (
-                          <li key={item.to}>
-                            <Link
-                              to={item.to}
-                              className="text-[13px] text-muted-foreground hover:text-foreground block py-0.5 transition-colors"
-                            >
-                              {t(`nav.${item.label}`, item.label)}
-                            </Link>
-                          </li>
-                        ))}
+                      {filterNavItems(section.items, adminNavAccess).map((item) => (
+                        <li key={item.to}>
+                          <Link
+                            to={item.to}
+                            className="text-[13px] text-muted-foreground hover:text-foreground block py-0.5 transition-colors"
+                          >
+                            {t(`nav.${item.label}`, item.label)}
+                          </Link>
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 ))}

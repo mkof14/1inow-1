@@ -6,14 +6,9 @@ import {
   redirect,
   useNavigate,
 } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import {
-  ADMIN_ROUTE_PERMISSIONS,
-  requireAdminAreaSession,
-  resolveAdminAreaAccess,
-} from "@/lib/auth-roles";
+import { ADMIN_ROUTE_PERMISSIONS, requireAdminAreaSession } from "@/lib/auth-roles";
 import { isDevOwnerToolsAvailable } from "@/lib/dev-owner-tools";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -57,21 +52,20 @@ const tabs = [
 function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const access = useQuery({
-    queryKey: ["admin-area-access", user?.id],
-    queryFn: () => resolveAdminAreaAccess(user!.id),
-    enabled: Boolean(user?.id),
-  });
+  const { canAccessAdmin, adminPermissions } = useAuth();
+  const permissions = useMemo(
+    () => adminPermissions ?? ({} as Record<string, boolean>),
+    [adminPermissions],
+  );
 
   useEffect(() => {
-    if (!access.data) return;
+    if (!adminPermissions) return;
 
     const requiredPermission = ADMIN_ROUTE_PERMISSIONS[pathname];
-    if (requiredPermission && !access.data.permissions[requiredPermission]) {
+    if (requiredPermission && !permissions[requiredPermission]) {
       void navigate({ to: "/administration", replace: true });
     }
-  }, [access.data, navigate, pathname]);
+  }, [adminPermissions, navigate, pathname, permissions]);
 
   const visibleTabs = tabs.filter((tab) => {
     if (tab.to === "/administration/role-switcher" && !isDevOwnerToolsAvailable()) {
@@ -79,8 +73,8 @@ function AdminLayout() {
     }
 
     const requiredPermission = ADMIN_ROUTE_PERMISSIONS[tab.to];
-    if (!requiredPermission) return true;
-    return access.data?.permissions[requiredPermission] ?? false;
+    if (!requiredPermission) return canAccessAdmin;
+    return permissions[requiredPermission] ?? false;
   });
 
   return (

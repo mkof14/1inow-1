@@ -36,7 +36,7 @@ export const moreNav: NavItem[] = [
   { to: "/documents", label: "Knowledge", icon: KnowledgeLens },
   { to: "/principles", label: "Principles", icon: ShieldLine },
   { to: "/settings", label: "Settings", icon: GearMark },
-  { to: "/administration", label: "Admin", icon: ShieldLine },
+  { to: "/administration", label: "Admin", icon: ShieldLine, adminOnly: true },
 ];
 
 /** Sidebar — grouped sections, no "More" popover. */
