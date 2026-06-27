@@ -37,6 +37,7 @@ import {
 import { firstScreenGreeting } from "@/lib/simplicity";
 import { PageHeader } from "@/components/page-header";
 import { useT } from "@/lib/i18n";
+import { useSetPageContext } from "@/lib/ai-context";
 import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
 import { fetchVoiceInboxItems, type VoiceInboxItem } from "@/lib/voice-intake";
 
@@ -45,6 +46,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({ component: H
 function HomePage() {
   const t = useT();
   const { user } = useAuth();
+  useSetPageContext({ route: "/dashboard", scope: "dashboard", title: "Dashboard" }, []);
   const qc = useQueryClient();
   const navigate = useNavigate();
   const projects = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });

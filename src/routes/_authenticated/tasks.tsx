@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { fetchTasks, TASK_STATUS_LABEL, TASK_STATUSES, type TaskStatus } from "@/lib/queries";
 import { createTaskRecord, updateTaskStatus } from "@/lib/project-task-engine";
 import {
@@ -28,7 +28,23 @@ import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/_authenticated/tasks")({ component: ExecutionPage });
+export const Route = createFileRoute("/_authenticated/tasks")({
+  validateSearch: (search: Record<string, unknown>) => {
+    const filter = typeof search.filter === "string" ? search.filter : undefined;
+    const q = typeof search.q === "string" ? search.q : undefined;
+    return {
+      filter:
+        filter === "blocked" || filter === "overdue" || filter === "review" ? filter : undefined,
+      q: q || undefined,
+    };
+  },
+  component: ExecutionPage,
+});
+
+type TasksSearch = {
+  filter?: "blocked" | "overdue" | "review";
+  q?: string;
+};
 
 const BOARD_COLS: TaskStatus[] = ["backlog", "todo", "in_progress", "review", "done"];
 const PRIORITY_BAR: Record<string, string> = {
@@ -40,13 +56,32 @@ const PRIORITY_BAR: Record<string, string> = {
 
 function ExecutionPage() {
   const t = useT();
+  const { filter: searchFilter, q: searchQ } = Route.useSearch() as TasksSearch;
   const tasks = useQuery({ queryKey: ["tasks"], queryFn: () => fetchTasks() });
   useSetPageContext({ route: "/tasks", scope: "tasks", title: "Tasks" }, []);
   const qc = useQueryClient();
   const [view, setView] = useState<"board" | "list">("board");
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(searchQ ?? "");
+  const [taskFilter, setTaskFilter] = useState<"all" | "blocked" | "overdue" | "review">(
+    searchFilter ?? "all",
+  );
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [draggingId, setDraggingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const onFocus = (event: Event) => {
+      const detail = (event as CustomEvent<{ filter?: "blocked" | "overdue" | "review"; query?: string }>).detail;
+      if (detail?.filter) setTaskFilter(detail.filter);
+      if (detail?.query) setQ(detail.query);
+    };
+    window.addEventListener("1inow:tasks-focus", onFocus);
+    return () => window.removeEventListener("1inow:tasks-focus", onFocus);
+  }, []);
+
+  useEffect(() => {
+    if (searchFilter) setTaskFilter(searchFilter);
+    if (searchQ !== undefined) setQ(searchQ);
+  }, [searchFilter, searchQ]);
 
   const update = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
@@ -71,10 +106,18 @@ function ExecutionPage() {
   });
 
   const filtered = useMemo(() => {
-    return (tasks.data ?? []).filter(
-      (t: any) => !q || t.title?.toLowerCase().includes(q.toLowerCase()),
-    );
-  }, [tasks.data, q]);
+    const now = Date.now();
+    return (tasks.data ?? []).filter((t: any) => {
+      if (taskFilter === "blocked" && t.status !== "blocked") return false;
+      if (taskFilter === "review" && t.status !== "review") return false;
+      if (taskFilter === "overdue") {
+        if (t.status === "done" || t.status === "canceled") return false;
+        if (!t.due_date || new Date(t.due_date).getTime() >= now) return false;
+      }
+      if (q && !t.title?.toLowerCase().includes(q.toLowerCase())) return false;
+      return true;
+    });
+  }, [tasks.data, q, taskFilter]);
 
   const grouped: Record<string, any[]> = BOARD_COLS.reduce(
     (acc, s) => ({ ...acc, [s]: [] }),
@@ -174,7 +217,7 @@ function ExecutionPage() {
       </div>
 
       <div className="mb-5 grid gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(280px,420px)]">
-        <div className="relative max-w-md">
+        <div className="relative max-w-md flex items-center gap-2">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             value={q}
@@ -182,6 +225,15 @@ function ExecutionPage() {
             placeholder={t("page.tasks.searchPh")}
             className="h-9 pl-9"
           />
+          {taskFilter !== "all" && (
+            <button
+              type="button"
+              onClick={() => setTaskFilter("all")}
+              className="shrink-0 rounded-full border border-accent/40 bg-accent/10 px-2.5 py-1 text-[11px] font-medium text-accent"
+            >
+              {taskFilter === "overdue" ? "Overdue" : taskFilter === "review" ? "Review" : "Blocked"} ×
+            </button>
+          )}
         </div>
         <form
           className="flex gap-2"

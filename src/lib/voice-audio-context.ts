@@ -1,8 +1,11 @@
 /** Shared Web Audio graph — one context, separate mic/output analysers. */
 
+import { loadVoicePrefs } from "@/lib/voice-prefs";
+
 let sharedCtx: AudioContext | null = null;
 
 let micSource: MediaStreamAudioSourceNode | null = null;
+let micGain: GainNode | null = null;
 let micAnalyser: AnalyserNode | null = null;
 let micStreamRef: MediaStream | null = null;
 
@@ -49,13 +52,21 @@ export function getMicAnalyser(stream: MediaStream | null): AnalyserNode | null 
     if (micStreamRef !== stream) {
       try {
         micSource?.disconnect();
+        micGain?.disconnect();
       } catch {}
       micSource = ctx.createMediaStreamSource(stream);
+      micGain = ctx.createGain();
+      const gainPct = loadVoicePrefs().inputGain ?? 100;
+      micGain.gain.value = Math.min(2, Math.max(0, gainPct / 100));
       micAnalyser = ctx.createAnalyser();
-      micAnalyser.fftSize = 256;
-      micAnalyser.smoothingTimeConstant = 0.72;
-      micSource.connect(micAnalyser);
+      micAnalyser.fftSize = 512;
+      micAnalyser.smoothingTimeConstant = 0.65;
+      micSource.connect(micGain);
+      micGain.connect(micAnalyser);
       micStreamRef = stream;
+    } else if (micGain) {
+      const gainPct = loadVoicePrefs().inputGain ?? 100;
+      micGain.gain.value = Math.min(2, Math.max(0, gainPct / 100));
     }
 
     return micAnalyser;
@@ -91,8 +102,8 @@ export function getOutputAnalyser(audio: HTMLAudioElement | null): AnalyserNode 
 
     outputSource = ctx.createMediaStreamSource(capture);
     outputAnalyser = ctx.createAnalyser();
-    outputAnalyser.fftSize = 256;
-    outputAnalyser.smoothingTimeConstant = 0.72;
+    outputAnalyser.fftSize = 512;
+    outputAnalyser.smoothingTimeConstant = 0.65;
     outputSource.connect(outputAnalyser);
     outputElement = audio;
     outputStreamRef = capture;
@@ -117,8 +128,10 @@ export function releaseOutputAnalyser() {
 export function releaseMicAnalyser() {
   try {
     micSource?.disconnect();
+    micGain?.disconnect();
   } catch {}
   micSource = null;
+  micGain = null;
   micAnalyser = null;
   micStreamRef = null;
 }

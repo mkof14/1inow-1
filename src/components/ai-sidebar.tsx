@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAiPageContext } from "@/lib/ai-context";
+import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { BrandMark } from "@/components/icons/compass-mark";
 import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
@@ -24,8 +25,23 @@ import {
   VoiceCommandCenter,
   type VoiceCommandsBridge,
 } from "@/components/voice-command-center";
+import { useQuery } from "@tanstack/react-query";
 import { useVoiceSession } from "@/hooks/use-voice-session";
 import { resolveResponseLang } from "@/lib/voice-locale";
+import {
+  fetchAmbientVoiceInsight,
+  markAmbientSpoke,
+  shouldSpeakAmbient,
+  type AmbientInsight,
+} from "@/lib/voice-proactive";
+import { loadVoicePrefs } from "@/lib/voice-prefs";
+import { resolveSpeechText } from "@/lib/voice-speakable";
+import {
+  parseSenseActionBlock,
+  stripSenseActionBlock,
+  voicePlanFromSenseAction,
+  type VoicePlan,
+} from "@/lib/voice-actions";
 
 type Mode = "docked" | "floating" | "collapsed";
 
@@ -76,7 +92,10 @@ export function AiSidebar({
   const [input, setInput] = useState("");
   const [voiceMode, setVoiceMode] = useState<VoiceConsoleMode>(initialVoiceTab);
   const commandsBridgeRef = useRef<VoiceCommandsBridge | null>(null);
+  const voiceModeRef = useRef(voiceMode);
+  voiceModeRef.current = voiceMode;
   const { context } = useAiPageContext();
+  const { user } = useAuth();
   const ctxRef = useRef(context);
   ctxRef.current = context;
   const [transport] = useState(() =>
@@ -105,7 +124,7 @@ export function AiSidebar({
     }
   })();
 
-  const { messages, sendMessage, status, setMessages } = useChat({
+  const { messages, sendMessage, status, setMessages, stop: stopChatStream } = useChat({
     transport,
     messages: initialMessages,
   });
@@ -121,11 +140,42 @@ export function AiSidebar({
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const spokenIdsRef = useRef<Set<string>>(new Set());
+  const streamSpeakRef = useRef<Map<string, number>>(new Map());
   const submitRef = useRef<(text: string) => void>(() => {});
+  const pendingChatPlanRef = useRef<VoicePlan | null>(null);
+
+  const pendingChatPlan = useMemo(() => {
+    if (voiceMode !== "chat") return null;
+    if (status === "streaming" || status === "submitted") return null;
+    const last = [...messages].reverse().find((m) => m.role === "assistant");
+    if (!last) return null;
+    const full = last.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
+    const action = parseSenseActionBlock(full);
+    if (!action || action.intent === "none") return null;
+    const plan = voicePlanFromSenseAction(action, full, lang);
+    if (!plan.executable && !action.confirmRequired) return null;
+    return { ...plan, executable: true };
+  }, [voiceMode, messages, status, lang]);
+  pendingChatPlanRef.current = pendingChatPlan;
 
   useEffect(() => {
     if (open) setVoiceMode(initialVoiceTab);
   }, [open, initialVoiceTab]);
+
+  const startMicPendingRef = useRef(false);
+  const pttPendingRef = useRef(false);
+  const [pttActive, setPttActive] = useState(false);
+  useEffect(() => {
+    const onStartMic = () => {
+      startMicPendingRef.current = true;
+    };
+    window.addEventListener("1inow:voice-start-mic", onStartMic);
+    return () => window.removeEventListener("1inow:voice-start-mic", onStartMic);
+  }, []);
+
+  const abortChat = useCallback(() => {
+    if (status === "streaming" || status === "submitted") stopChatStream();
+  }, [status, stopChatStream]);
 
   const voice = useVoiceSession({
     lang,
@@ -158,9 +208,82 @@ export function AiSidebar({
       submitRef.current(utterance);
     },
     onVoiceControl: (action) => {
-      if (action === "stop") setInput("");
+      if (action === "stop") {
+        setInput("");
+        abortChat();
+        return;
+      }
+      if (action === "cancel") {
+        setInput("");
+        abortChat();
+        commandsBridgeRef.current?.onCancel();
+        return;
+      }
+      if (action === "confirm") {
+        if (voiceModeRef.current === "commands") {
+          commandsBridgeRef.current?.onConfirm();
+          return;
+        }
+        const pending = pendingChatPlanRef.current;
+        if (pending && commandsBridgeRef.current?.executePlan) {
+          void commandsBridgeRef.current.executePlan(pending);
+        }
+        return;
+      }
+      if (action === "repeat_command") {
+        commandsBridgeRef.current?.repeatLast?.();
+        return;
+      }
+      if (action === "undo") {
+        void commandsBridgeRef.current?.executePlan?.({
+          rawText: "",
+          intent: "undo_last_action",
+          label: "Undo",
+          summary: "Undo last action",
+          confidence: "high",
+          evidence: ["undo_last_action"],
+          executable: true,
+        });
+        return;
+      }
     },
   });
+
+  useEffect(() => {
+    if (!open || !startMicPendingRef.current) return;
+    startMicPendingRef.current = false;
+    void voice.startConversation();
+  }, [open, voice.startConversation]);
+
+  useEffect(() => {
+    const onPtt = (event: Event) => {
+      const phase = (event as CustomEvent<{ phase?: "down" | "up" }>).detail?.phase;
+      if (phase === "down") {
+        if (!open) {
+          pttPendingRef.current = true;
+          window.dispatchEvent(
+            new CustomEvent("1inow:open-voice", { detail: { tab: "commands" as const } }),
+          );
+          return;
+        }
+        setPttActive(true);
+        void voice.startPtt();
+        return;
+      }
+      pttPendingRef.current = false;
+      setPttActive(false);
+      void voice.stopPtt();
+    };
+    window.addEventListener("1inow:voice-ptt", onPtt);
+    return () => window.removeEventListener("1inow:voice-ptt", onPtt);
+  }, [open, voice.startPtt, voice.stopPtt]);
+
+  useEffect(() => {
+    if (!open || !pttPendingRef.current) return;
+    pttPendingRef.current = false;
+    setPttActive(true);
+    void voice.startPtt();
+  }, [open, voice.startPtt]);
 
   const stopSpeaking = voice.stopSpeaking;
   const clearHistory = useCallback(() => {
@@ -192,6 +315,14 @@ export function AiSidebar({
     veraRole: t("voice.vera.role"),
     micIn: t("voice.meter.mic"),
     speakerOut: t("voice.meter.out"),
+    meterIn: t("voice.meter.mic"),
+    meterOut: t("voice.meter.out"),
+    meterLive: t("voice.meter.live"),
+    meterQuiet: t("voice.meter.quiet"),
+    meterHot: t("voice.meter.hot"),
+    fnHandsFree: t("voice.fn.handsFree"),
+    fnAutoSend: t("voice.fn.autoSend"),
+    fnBargeIn: t("voice.fn.bargeIn"),
     novaSpeaking: t("voice.status.novaSpeaking"),
     veraSpeaking: t("voice.status.veraSpeaking"),
     novaListening: t("voice.status.novaListening"),
@@ -199,26 +330,80 @@ export function AiSidebar({
   };
 
   const handleVoiceStop = useCallback(() => {
+    abortChat();
     voice.stopSpeaking();
-    if (status === "streaming" || status === "submitted") {
-      // useChat may not expose stop — at minimum halt TTS
-    }
-  }, [voice.stopSpeaking, status]);
+  }, [abortChat, voice.stopSpeaking]);
 
-  // Speak new assistant replies — single natural voice.
+  // Streaming chat TTS — speak sentence chunks while Vera is still typing.
+  useEffect(() => {
+    if (!voice.speakerOn || voiceMode !== "chat") return;
+    if (!loadVoicePrefs().streamingTts) return;
+    if (status !== "streaming") return;
+
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant") return;
+
+    const full = stripSenseActionBlock(
+      last.parts.map((p) => (p.type === "text" ? p.text : "")).join(""),
+    ).trim();
+    if (!full) return;
+
+    const spokenChars = streamSpeakRef.current.get(last.id) ?? 0;
+    const delta = full.slice(spokenChars);
+    const sentence = delta.match(/^[^.!?…]+[.!?…]+/);
+    if (!sentence?.[0]) return;
+
+    const chunk = sentence[0].trim();
+    if (chunk.length < 12) return;
+
+    const spoken = resolveSpeechText(chunk);
+    if (!spoken) return;
+
+    streamSpeakRef.current.set(last.id, spokenChars + sentence[0].length);
+    const lastUser = [...messages].reverse().find((m) => m.role === "user");
+    const userText = lastUser?.parts
+      .map((p) => (p.type === "text" ? p.text : ""))
+      .join("")
+      .trim();
+    const speakLang = userText ? resolveResponseLang(lang, userText) : lang;
+    void voice.speakText(spoken, speakLang);
+  }, [messages, status, voice.speakerOn, voice.speakText, voiceMode, lang]);
+
+  // Speak new assistant replies — dual Nova/Vera when structured.
   useEffect(() => {
     if (!voice.speakerOn) return;
     const last = messages[messages.length - 1];
     if (!last || last.role !== "assistant") return;
     if (status === "streaming" || status === "submitted") return;
     if (spokenIdsRef.current.has(last.id)) return;
-    const text = last.parts
-      .map((p) => (p.type === "text" ? p.text : ""))
-      .join("")
-      .trim();
-    const spoken = text;
+    const text = stripSenseActionBlock(
+      last.parts.map((p) => (p.type === "text" ? p.text : "")).join(""),
+    ).trim();
+    const spokenChars = streamSpeakRef.current.get(last.id) ?? 0;
+    if (spokenChars > 0 && spokenChars < text.length) {
+      const remainder = resolveSpeechText(text.slice(spokenChars));
+      if (remainder) {
+        spokenIdsRef.current.add(last.id);
+        streamSpeakRef.current.delete(last.id);
+        const lastUser = [...messages].reverse().find((m) => m.role === "user");
+        const userText = lastUser?.parts
+          .map((p) => (p.type === "text" ? p.text : ""))
+          .join("")
+          .trim();
+        const speakLang = userText ? resolveResponseLang(lang, userText) : lang;
+        void voice.speakText(remainder, speakLang);
+      }
+      return;
+    }
+    if (spokenChars >= text.length && text.length > 0) {
+      spokenIdsRef.current.add(last.id);
+      streamSpeakRef.current.delete(last.id);
+      return;
+    }
+    const spoken = resolveSpeechText(text);
     if (!spoken) return;
     spokenIdsRef.current.add(last.id);
+    streamSpeakRef.current.delete(last.id);
     const lastUser = [...messages].reverse().find((m) => m.role === "user");
     const userText = lastUser?.parts
       .map((p) => (p.type === "text" ? p.text : ""))
@@ -252,6 +437,29 @@ export function AiSidebar({
     [sendMessage, status, lang, setLang],
   );
   submitRef.current = submit;
+
+  const ambientEnabled = loadVoicePrefs().ambientSense !== false;
+  const { data: ambientInsight } = useQuery({
+    queryKey: ["voice-ambient", lang, context.scope, user?.id],
+    queryFn: () => fetchAmbientVoiceInsight(lang, { scope: context.scope, userId: user?.id }),
+    enabled: open && ambientEnabled,
+    staleTime: 60_000,
+  });
+
+  useEffect(() => {
+    if (!open || !ambientInsight || !voice.speakerOn || !ambientEnabled) return;
+    if (!shouldSpeakAmbient(ambientInsight.id)) return;
+    markAmbientSpoke(ambientInsight.id);
+    void voice.speakText(ambientInsight.message, lang);
+  }, [ambientEnabled, ambientInsight, lang, open, voice.speakerOn, voice.speakText]);
+
+  const handleAmbientAction = useCallback(
+    (insight: AmbientInsight) => {
+      setVoiceMode("commands");
+      queueMicrotask(() => commandsBridgeRef.current?.onAutoSend(insight.utterance));
+    },
+    [],
+  );
 
   if (!open) return null;
   const loading = status === "streaming" || status === "submitted";
@@ -301,9 +509,10 @@ export function AiSidebar({
       </header>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
-        {voiceMode === "commands" ? (
+        <div className={voiceMode !== "commands" ? "hidden" : undefined}>
           <VoiceCommandCenter embedded sharedVoice={voice} bridgeRef={commandsBridgeRef} />
-        ) : (
+        </div>
+        {voiceMode === "chat" && (
           <>
         {messages.length === 0 && (
           <div className="space-y-4">
@@ -386,9 +595,29 @@ export function AiSidebar({
           onToggleMic={voice.toggleMic}
           onToggleSpeaker={voice.toggleSpeaker}
           onStop={handleVoiceStop}
+          pttActive={pttActive}
+          usingServerStt={voice.usingServerStt}
+          sttMode={voice.sttMode}
           labels={voiceLabels}
+          ambientInsight={ambientEnabled ? ambientInsight ?? null : null}
+          onAmbientAction={handleAmbientAction}
         />
         {voiceMode === "chat" && (
+        <>
+        {pendingChatPlan && (
+          <div className="flex items-center gap-2 rounded-xl border border-accent/30 bg-accent/5 px-3 py-2 text-xs">
+            <span className="min-w-0 flex-1 truncate text-foreground">{pendingChatPlan.summary}</span>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="h-7 shrink-0 text-xs"
+              onClick={() => void commandsBridgeRef.current?.executePlan?.(pendingChatPlan)}
+            >
+              {t("voice.chat.runAction", "Run")}
+            </Button>
+          </div>
+        )}
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2">
           <textarea
             value={input}
@@ -419,6 +648,7 @@ export function AiSidebar({
             </Button>
           </div>
         </div>
+        </>
         )}
         <div className="flex items-center justify-between text-[10px] text-muted-foreground">
           <span>{t("ai.hint")}</span>
@@ -457,23 +687,24 @@ function SensePersonaMini({
 function Bubble({ message, streaming }: { message: UIMessage; streaming?: boolean }) {
   const isUser = message.role === "user";
   const full = message.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
+  const visible = isUser ? full : stripSenseActionBlock(full);
 
   // Typewriter effect for assistant messages.
-  const [shown, setShown] = useState(isUser ? full.length : 0);
+  const [shown, setShown] = useState(isUser ? visible.length : 0);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (isUser) {
-      setShown(full.length);
+      setShown(visible.length);
       return;
     }
     let cancelled = false;
     const tick = () => {
       if (cancelled) return;
       setShown((s) => {
-        if (s >= full.length) return s;
+        if (s >= visible.length) return s;
         const speed = streaming ? 4 : 8;
-        return Math.min(full.length, s + speed);
+        return Math.min(visible.length, s + speed);
       });
       rafRef.current = requestAnimationFrame(tick);
     };
@@ -482,10 +713,10 @@ function Bubble({ message, streaming }: { message: UIMessage; streaming?: boolea
       cancelled = true;
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [full, streaming, isUser]);
+  }, [visible, streaming, isUser]);
 
-  const display = isUser ? full : full.slice(0, shown);
-  const showCaret = !isUser && (streaming || shown < full.length);
+  const display = isUser ? full : visible.slice(0, shown);
+  const showCaret = !isUser && (streaming || shown < visible.length);
 
   return (
     <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>

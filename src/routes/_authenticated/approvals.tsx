@@ -32,6 +32,7 @@ import { DecisionDiamond } from "@/components/icons/compass-icons";
 import { Check, X, Clock, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useT } from "@/lib/i18n";
+import { useSetPageContext } from "@/lib/ai-context";
 
 export const Route = createFileRoute("/_authenticated/approvals")({ component: DecisionsPage });
 
@@ -52,6 +53,7 @@ const IMPACT_DOT: Record<DecisionImpact, string> = {
 
 function DecisionsPage() {
   const t = useT();
+  useSetPageContext({ route: "/approvals", scope: "approvals", title: "Approvals" }, []);
   const qc = useQueryClient();
   const decisions = useQuery({ queryKey: ["decisions"], queryFn: fetchDecisions });
   const projects = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });

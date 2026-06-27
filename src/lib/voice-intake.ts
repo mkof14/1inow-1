@@ -61,6 +61,13 @@ async function ensureLocalMigration() {
   }
 }
 
+export async function syncVoiceInboxIfNeeded() {
+  if (!(await isSignedIn())) return false;
+  await ensureLocalMigration();
+  emitVoiceInboxUpdated();
+  return true;
+}
+
 export async function fetchVoiceInboxItems(): Promise<VoiceInboxItem[]> {
   if (!(await isSignedIn())) return readLocalVoiceInbox();
 

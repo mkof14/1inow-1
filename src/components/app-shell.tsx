@@ -46,7 +46,7 @@ import { CommandBar } from "@/components/command-bar";
 import { useShortcuts } from "@/hooks/use-shortcuts";
 import { Badge } from "@/components/ui/badge";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { useT } from "@/lib/i18n";
+import { useT, useI18n } from "@/lib/i18n";
 import { BrandWordmark } from "@/components/icons/compass-icons";
 import { BrandMark } from "@/components/icons/compass-mark";
 import { AiSidebar, type AiSidebarMode } from "@/components/ai-sidebar";
@@ -54,7 +54,14 @@ import type { VoiceConsoleMode } from "@/components/voice/voice-unified-console"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { InstallPrompt } from "@/components/install-prompt";
+import { VoiceFab } from "@/components/voice/voice-fab";
 import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
+import { useVoicePtt } from "@/hooks/use-voice-ptt";
+import { useVoiceWake } from "@/hooks/use-voice-wake";
+import { loadVoicePrefs } from "@/lib/voice-prefs";
+import { startReminderWatcher } from "@/lib/voice-reminder-engine";
+import { hydrateVoicePrefsFromCloud } from "@/lib/voice-prefs-hydrate";
+import { toast } from "sonner";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -65,13 +72,18 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
   const navigate = useNavigate();
   const t = useT();
+  const { lang } = useI18n();
   const [dark, setDark] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
+  const [cmdQuery, setCmdQuery] = useState("");
   const [quickOpen, setQuickOpen] = useState(0);
   const [aiOpen, setAiOpen] = useState(false);
   const [aiMode, setAiMode] = useState<AiSidebarMode>("floating");
   const [aiVoiceTab, setAiVoiceTab] = useState<VoiceConsoleMode>("chat");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  useVoicePtt();
+  useVoiceWake(!aiOpen && !!user, lang);
 
   // Close drawer on route change
   useEffect(() => {
@@ -87,7 +99,14 @@ export function AppShell({ children }: { children: ReactNode }) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
         e.preventDefault();
         setAiOpen((v) => !v);
-      } else if (e.code === "Space" && !inField && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      } else if (
+        e.code === "Space" &&
+        !inField &&
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !e.altKey &&
+        (loadVoicePrefs().pttKey ?? "KeyV") !== "Space"
+      ) {
         e.preventDefault();
         setAiOpen((v) => !v);
       }
@@ -97,12 +116,40 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const openVoice = () => {
-      setAiVoiceTab("commands");
+    if (!user) return;
+    void hydrateVoicePrefsFromCloud(user.id);
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user) return;
+    return startReminderWatcher((title) => {
+      toast.info(title, {
+        description: "Reminder",
+        duration: 8000,
+      });
+    });
+  }, [user]);
+
+  useEffect(() => {
+    const openVoice = (event: Event) => {
+      const detail = (event as CustomEvent<{ tab?: VoiceConsoleMode; startMic?: boolean }>).detail;
+      setAiVoiceTab(detail?.tab ?? "commands");
       setAiOpen(true);
+      if (detail?.startMic) {
+        queueMicrotask(() => window.dispatchEvent(new CustomEvent("1inow:voice-start-mic")));
+      }
+    };
+    const openSearch = (event: Event) => {
+      const detail = (event as CustomEvent<{ query?: string }>).detail;
+      setCmdQuery(detail?.query?.trim() ?? "");
+      setCmdOpen(true);
     };
     window.addEventListener("1inow:open-voice", openVoice);
-    return () => window.removeEventListener("1inow:open-voice", openVoice);
+    window.addEventListener("1inow:open-search", openSearch);
+    return () => {
+      window.removeEventListener("1inow:open-voice", openVoice);
+      window.removeEventListener("1inow:open-search", openSearch);
+    };
   }, []);
 
   useShortcuts(
@@ -519,7 +566,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </footer>
         </main>
         <QuickCreate openSignal={quickOpen} />
-        <CommandBar open={cmdOpen} onOpenChange={setCmdOpen} />
+        <CommandBar open={cmdOpen} onOpenChange={setCmdOpen} initialQuery={cmdQuery} />
         <MobileBottomNav />
         <InstallPrompt />
       </div>
@@ -542,6 +589,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           initialVoiceTab={aiVoiceTab}
         />
       )}
+      {user && !aiOpen && <VoiceFab />}
     </div>
   );
 }

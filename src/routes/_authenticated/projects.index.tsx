@@ -36,14 +36,33 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { PortfolioCard } from "@/components/icons/compass-icons";
+import { useSetPageContext } from "@/lib/ai-context";
 import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/projects/")({
+  validateSearch: (search: Record<string, unknown>) => {
+    const view = typeof search.view === "string" ? search.view : undefined;
+    const q = typeof search.q === "string" ? search.q : undefined;
+    const status = typeof search.status === "string" ? search.status : undefined;
+    return {
+      view: view === "grid" || view === "table" || view === "risk" ? view : undefined,
+      q: q || undefined,
+      status: status || undefined,
+    };
+  },
   component: ProjectsPage,
 });
 
+type ProjectsSearch = {
+  view?: "grid" | "table" | "risk";
+  q?: string;
+  status?: string;
+};
+
 function ProjectsPage() {
   const t = useT();
+  const { view: searchView, q: searchQ, status: searchStatus } = Route.useSearch() as ProjectsSearch;
+  useSetPageContext({ route: "/projects", scope: "projects", title: "Projects" }, []);
   const projects = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
   const qc = useQueryClient();
   const navigate = useNavigate();
@@ -55,9 +74,9 @@ function ProjectsPage() {
     priority: "medium",
     color: "#06b6d4",
   });
-  const [view, setView] = useState<"grid" | "table" | "risk">("grid");
-  const [q, setQ] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [view, setView] = useState<"grid" | "table" | "risk">(searchView ?? "grid");
+  const [q, setQ] = useState(searchQ ?? "");
+  const [statusFilter, setStatusFilter] = useState<string>(searchStatus ?? "all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -73,6 +92,37 @@ function ProjectsPage() {
       else localStorage.removeItem("projects:selectedId");
     } catch {}
   }, [selectedId]);
+
+  useEffect(() => {
+    const onFocus = (event: Event) => {
+      const detail = (event as CustomEvent<{ query?: string; status?: string; view?: "grid" | "table" | "risk" }>)
+        .detail;
+      if (detail?.query) setQ(detail.query);
+      if (detail?.status) setStatusFilter(detail.status);
+      if (detail?.view) setView(detail.view);
+    };
+    window.addEventListener("1inow:projects-focus", onFocus);
+    return () => window.removeEventListener("1inow:projects-focus", onFocus);
+  }, []);
+
+  useEffect(() => {
+    if (searchView) setView(searchView);
+    if (searchQ !== undefined) setQ(searchQ);
+    if (searchStatus !== undefined) setStatusFilter(searchStatus);
+  }, [searchView, searchQ, searchStatus]);
+
+  useEffect(() => {
+    const desired: ProjectsSearch = {};
+    if (view !== "grid") desired.view = view;
+    if (q) desired.q = q;
+    if (statusFilter !== "all") desired.status = statusFilter;
+    const same =
+      (searchView ?? undefined) === desired.view &&
+      (searchQ ?? undefined) === desired.q &&
+      (searchStatus ?? "all") === (desired.status ?? "all");
+    if (same) return;
+    void navigate({ to: "/projects", search: desired, replace: true });
+  }, [view, q, statusFilter, searchView, searchQ, searchStatus, navigate]);
 
   const create = useMutation({
     mutationFn: async () =>

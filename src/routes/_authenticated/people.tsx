@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { fetchProfiles } from "@/lib/queries";
 import { PeopleOrbit } from "@/components/icons/compass-icons";
 import { Input } from "@/components/ui/input";
@@ -13,9 +13,38 @@ export const Route = createFileRoute("/_authenticated/people")({ component: Peop
 function PeoplePage() {
   const t = useT();
   const profiles = useQuery({ queryKey: ["profiles"], queryFn: fetchProfiles });
-  useSetPageContext({ route: "/people", scope: "people", title: "People" }, []);
   const [view, setView] = useState<"grid" | "table">("grid");
   const [q, setQ] = useState("");
+  const [focusedPerson, setFocusedPerson] = useState<{ id: string; name: string } | null>(null);
+
+  useSetPageContext(
+    {
+      route: "/people",
+      scope: "people",
+      title: focusedPerson?.name ?? "People",
+      ids: { personId: focusedPerson?.id },
+    },
+    [focusedPerson?.id, focusedPerson?.name],
+  );
+
+  useEffect(() => {
+    const onFocus = (event: Event) => {
+      const detail = (event as CustomEvent<{ query?: string; personId?: string; personName?: string }>)
+        .detail;
+      if (detail?.query) setQ(detail.query);
+      if (detail?.personId && detail?.personName) {
+        setFocusedPerson({ id: detail.personId, name: detail.personName });
+      }
+    };
+    window.addEventListener("1inow:people-focus", onFocus);
+    return () => window.removeEventListener("1inow:people-focus", onFocus);
+  }, []);
+
+  useEffect(() => {
+    if (focusedPerson && q && !`${focusedPerson.name}`.toLowerCase().includes(q.toLowerCase())) {
+      setFocusedPerson(null);
+    }
+  }, [q, focusedPerson]);
 
   const rows = (profiles.data ?? []).filter((p: any) => {
     if (!q) return true;
@@ -83,9 +112,18 @@ function PeoplePage() {
       {view === "grid" && (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {rows.map((p: any) => (
-            <div
+            <button
+              type="button"
               key={p.id}
-              className="rounded-xl border border-border bg-card p-5 flex items-center gap-4 hover:border-accent/40 transition"
+              onClick={() =>
+                setFocusedPerson({
+                  id: p.id,
+                  name: p.full_name ?? p.email ?? "Member",
+                })
+              }
+              className={`rounded-xl border bg-card p-5 flex items-center gap-4 hover:border-accent/40 transition text-left w-full ${
+                focusedPerson?.id === p.id ? "border-accent/50 ring-1 ring-accent/30" : "border-border"
+              }`}
             >
               <div className="relative">
                 <div className="size-12 rounded-full bg-gradient-to-br from-accent to-primary text-primary-foreground grid place-items-center font-semibold">
@@ -114,7 +152,7 @@ function PeoplePage() {
                   </div>
                 )}
               </div>
-            </div>
+            </button>
           ))}
           {rows.length === 0 && (
             <div className="col-span-full text-center text-sm text-muted-foreground p-8 border border-dashed border-border rounded-xl">
@@ -147,7 +185,18 @@ function PeoplePage() {
             </thead>
             <tbody>
               {rows.map((p: any) => (
-                <tr key={p.id} className="border-b border-border last:border-0 hover:bg-muted/30">
+                <tr
+                  key={p.id}
+                  onClick={() =>
+                    setFocusedPerson({
+                      id: p.id,
+                      name: p.full_name ?? p.email ?? "Member",
+                    })
+                  }
+                  className={`border-b border-border last:border-0 hover:bg-muted/30 cursor-pointer ${
+                    focusedPerson?.id === p.id ? "bg-accent/5" : ""
+                  }`}
+                >
                   <td className="px-4 py-3 font-medium">{p.full_name ?? p.email}</td>
                   <td className="px-4 py-3 text-muted-foreground">{p.position ?? "—"}</td>
                   <td className="px-4 py-3 text-muted-foreground">{p.department ?? "—"}</td>

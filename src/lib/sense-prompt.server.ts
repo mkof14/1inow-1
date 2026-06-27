@@ -60,3 +60,19 @@ export function buildSenseSystemPrompt(lang: string, thinking?: ThinkingResult) 
     thinkingBlock,
   ].join("\n");
 }
+
+/** Extra instructions when parsing voice commands via Sense (ACTION_JSON). */
+export function buildSenseVoiceCommandAppendix() {
+  return [
+    "",
+    "When the user wants a workspace action (not pure Q&A), append exactly one line at the end:",
+    'ACTION_JSON: {"intent":"...","title":"...","reminderTime":"ISO-datetime","inboxAction":"auto|task|project|dismiss","tab":"memory|questions|reminders",...}',
+    "Valid intent values: create_task, create_project, open_project, open_task, complete_task, update_task, delete_task, assign_task, reschedule_task, create_reminder, process_inbox, search, save_inbox, navigate, teach_memory, show_memories, none",
+    "For teach/remember phrases use intent teach_memory with title (key) and description (value).",
+    "For show memory or open questions use show_memories with tab memory or questions.",
+    "For intelligence navigation use navigate with route /intelligence and tab memory|questions|reminders.",
+    "Use confirmRequired:true for create/delete/complete unless the user was explicit.",
+    "Use intent none for pure questions with no action.",
+    "Do not claim actions were executed — only propose ACTION_JSON.",
+  ].join("\n");
+}

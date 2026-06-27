@@ -1,13 +1,14 @@
 /**
- * Extract one natural sentence for TTS — no dual Nova/Vera readout.
- * Industry pattern: single assistant voice (ChatGPT Voice, Alexa, Siri).
+ * Extract one natural sentence for TTS — collapsed single-voice mode.
  */
+
+import { splitNovaVeraSpeech } from "@/lib/sense-personas";
+import { loadVoicePrefs } from "@/lib/voice-prefs";
 
 export function toSpeakableText(raw: string, maxChars = 480): string {
   let text = raw.trim();
   if (!text) return "";
 
-  // Strip structured Sense format
   text = text
     .replace(/^Nova:\s*/gim, "")
     .replace(/^Vera:\s*/gim, "")
@@ -18,7 +19,6 @@ export function toSpeakableText(raw: string, maxChars = 480): string {
     .replace(/^-\s+/gm, "")
     .replace(/\n{3,}/g, "\n\n");
 
-  // Prefer first paragraph (summary) before Nova/Vera blocks
   const blocks = text.split(/\n\n+/).map((b) => b.trim()).filter(Boolean);
   const conversational = blocks.find(
     (b) =>
@@ -32,7 +32,6 @@ export function toSpeakableText(raw: string, maxChars = 480): string {
   let spoken = conversational ?? blocks[0] ?? text;
   spoken = spoken.replace(/\*\*/g, "").replace(/^#+\s*/gm, "").trim();
 
-  // One or two sentences max for voice
   const sentences = spoken.match(/[^.!?…]+[.!?…]+|[^.!?…]+$/g) ?? [spoken];
   spoken = sentences.slice(0, 2).join(" ").trim();
 
@@ -41,4 +40,19 @@ export function toSpeakableText(raw: string, maxChars = 480): string {
   }
 
   return spoken;
+}
+
+/** Text for TTS — preserve Nova/Vera blocks when dual mode is on. */
+export function resolveSpeechText(raw: string, opts?: { forceDual?: boolean }): string {
+  const text = raw.trim();
+  if (!text) return "";
+
+  const dualOn = opts?.forceDual ?? loadVoicePrefs().dualPersonaTts !== false;
+  if (dualOn && splitNovaVeraSpeech(text).hasStructure) return text;
+
+  return toSpeakableText(text);
+}
+
+export function hasDualPersonaStructure(text: string) {
+  return splitNovaVeraSpeech(text).hasStructure;
 }

@@ -29,11 +29,25 @@ export const SENSE_PERSONA_LABELS = {
 
 /** Split assistant text into Nova/Vera sections for dual-voice playback. */
 export function splitNovaVeraSpeech(text: string) {
-  const novaMatch = text.match(/Nova:\s*([\s\S]*?)(?=Vera:|Next steps:|$)/i);
-  const veraMatch = text.match(/Vera:\s*([\s\S]*?)(?=Next steps:|$)/i);
+  const normalized = text.replace(/\*\*(Nova|Vera|Нова|Вера)\*\*:?\s*/gi, (_, name) => {
+    const n = name.toLowerCase();
+    if (n === "nova" || n === "нова") return "Nova: ";
+    return "Vera: ";
+  });
+
+  const novaMatch = normalized.match(
+    /(?:^|\n)(?:Nova|Нова|NOVA):\s*([\s\S]*?)(?=(?:^|\n)(?:Vera|Вера|VERA):|(?:^|\n)Next steps:|(?:^|\n)Дальше:|$)/im,
+  );
+  const veraMatch = normalized.match(
+    /(?:^|\n)(?:Vera|Вера|VERA):\s*([\s\S]*?)(?=(?:^|\n)Next steps:|(?:^|\n)Дальше:|(?:^|\n)Siguientes|$)/im,
+  );
+
+  const nova = novaMatch?.[1]?.trim() ?? "";
+  const vera = veraMatch?.[1]?.trim() ?? "";
+
   return {
-    nova: novaMatch?.[1]?.trim() ?? "",
-    vera: veraMatch?.[1]?.trim() ?? "",
-    hasStructure: Boolean(novaMatch || veraMatch),
+    nova,
+    vera,
+    hasStructure: Boolean(nova || vera),
   };
 }

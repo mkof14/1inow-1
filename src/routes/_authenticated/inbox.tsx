@@ -31,6 +31,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { createProjectRecord, createTaskRecord } from "@/lib/project-task-engine";
 import { useAuth } from "@/hooks/use-auth";
 import { useT } from "@/lib/i18n";
+import { useSetPageContext } from "@/lib/ai-context";
 import {
   clearProcessedVoiceInboxItems,
   deleteVoiceInboxItem,
@@ -112,6 +113,8 @@ function InboxPage() {
   const t = useT();
   const qc = useQueryClient();
   const { user } = useAuth();
+  useSetPageContext({ route: "/inbox", scope: "inbox", title: "Inbox" }, []);
+  const [activeTab, setActiveTab] = useState("all");
   const { data = [], isLoading } = useQuery({
     queryKey: ["notifications"],
     queryFn: fetchNotifications,
@@ -122,6 +125,15 @@ function InboxPage() {
     enabled: !!user,
   });
   const voiceItems = voiceInbox.data ?? [];
+
+  useEffect(() => {
+    const onFocus = (event: Event) => {
+      const detail = (event as CustomEvent<{ tab?: string }>).detail;
+      if (detail?.tab === "voice") setActiveTab("voice");
+    };
+    window.addEventListener("1inow:inbox-focus", onFocus);
+    return () => window.removeEventListener("1inow:inbox-focus", onFocus);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -177,7 +189,7 @@ function InboxPage() {
         }
       />
 
-      <Tabs defaultValue="all">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="all">
             {t("common.all")}{" "}

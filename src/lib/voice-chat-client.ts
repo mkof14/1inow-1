@@ -1,10 +1,18 @@
 import { supabase } from "@/integrations/supabase/client";
 import { isFounderModeEnabled } from "@/lib/founder-mode";
+import {
+  parseSenseActionBlock,
+  stripSenseActionBlock,
+  voicePlanFromSenseAction,
+  type SenseActionJson,
+} from "@/lib/voice-actions";
 
 export type SenseAnswer = {
   text: string;
   provider: string;
   mode: string;
+  action?: SenseActionJson | null;
+  speakText?: string;
 };
 
 async function buildSenseHeaders(lang: string) {
@@ -24,6 +32,7 @@ export async function fetchSenseAnswer(input: {
   prompt: string;
   lang: string;
   pageContext?: unknown;
+  voiceCommand?: boolean;
 }): Promise<SenseAnswer | null> {
   const prompt = input.prompt.trim();
   if (!prompt) return null;
@@ -36,6 +45,7 @@ export async function fetchSenseAnswer(input: {
         stream: false,
         lang: input.lang,
         pageContext: input.pageContext ?? null,
+        voiceCommand: input.voiceCommand ?? false,
         message: {
           role: "user",
           parts: [{ type: "text", text: prompt }],
@@ -43,8 +53,13 @@ export async function fetchSenseAnswer(input: {
       }),
     });
     if (!res.ok) return null;
-    return (await res.json()) as SenseAnswer;
+    const payload = (await res.json()) as SenseAnswer;
+    const action = parseSenseActionBlock(payload.text);
+    const speakText = stripSenseActionBlock(payload.text);
+    return { ...payload, action, speakText: speakText || payload.text };
   } catch {
     return null;
   }
 }
+
+export { voicePlanFromSenseAction, parseSenseActionBlock, stripSenseActionBlock };

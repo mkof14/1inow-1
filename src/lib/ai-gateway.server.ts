@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { fetchChatThinkingData, summarizeWorkspaceContext } from "@/lib/chat-context.server";
 import { logAiAction } from "@/lib/ai-audit.server";
 import { getChatProviderState } from "@/lib/connection-providers.server";
-import { buildSenseSystemPrompt } from "@/lib/sense-prompt.server";
+import { buildSenseSystemPrompt, buildSenseVoiceCommandAppendix } from "@/lib/sense-prompt.server";
 import { extractMemoryTeach, saveConversationMemory, saveMemoryTeach } from "@/lib/memory-engine";
 import { resolveResponseLang, isLikelyQuestion } from "@/lib/voice-locale";
 import { buildSenseResponse, formatSenseResponse } from "@/lib/sense-engine";
@@ -21,6 +21,8 @@ export type ChatGatewayInput = {
   pageContext?: unknown;
   authorizationHeader?: string | null;
   requestHeaders?: Headers | Record<string, string | null | undefined>;
+  /** Voice command center — request ACTION_JSON appendix */
+  voiceCommand?: boolean;
 };
 
 export type ChatGatewayResult = {
@@ -94,13 +96,15 @@ async function callOpenAIChat(
     pageContext?: unknown;
     thinking?: ReturnType<typeof think>;
     workspaceSummary?: string;
+    voiceCommand?: boolean;
   },
 ) {
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) throw new Error("OPENAI_API_KEY is missing");
 
   const model = process.env.OPENAI_MODEL?.trim() || "gpt-4o-mini";
-  const system = buildSenseSystemPrompt(lang, options.thinking);
+  let system = buildSenseSystemPrompt(lang, options.thinking);
+  if (options.voiceCommand) system += buildSenseVoiceCommandAppendix();
   const contextBlock = [
     options.workspaceSummary,
     options.pageContext
@@ -241,6 +245,7 @@ export async function runChatGateway(input: ChatGatewayInput): Promise<ChatGatew
         pageContext: gatewayInput.pageContext,
         thinking: bundle?.thinking,
         workspaceSummary: bundle?.workspaceSummary,
+        voiceCommand: gatewayInput.voiceCommand,
       });
       await logAiChatAction({
         userId,

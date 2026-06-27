@@ -1,6 +1,6 @@
 /** Voice control utterances — barge-in, cancel, confirm (multilingual). */
 
-export type VoiceControlAction = "stop" | "cancel" | "confirm" | "repeat";
+export type VoiceControlAction = "stop" | "cancel" | "confirm" | "repeat" | "repeat_command" | "undo";
 
 const STOP = [
   "stop",
@@ -30,6 +30,52 @@ const STOP = [
   "halt",
   "schweig",
   "ruhig",
+];
+
+const UNDO = [
+  "undo",
+  "undo that",
+  "undo it",
+  "take it back",
+];
+
+const REPEAT_COMMAND = [
+  "repeat last command",
+  "run again",
+  "run last command",
+  "do that again",
+  "повтори команду",
+  "повтори последнюю команду",
+  "ещё раз команда",
+  "еще раз команда",
+  "повтори останню команду",
+  "repite el comando",
+  "repetir comando",
+  "letzten befehl wiederholen",
+  "befehl wiederholen",
+];
+
+const REPEAT = [
+  "repeat",
+  "say again",
+  "say that again",
+  "once more",
+  "what did you say",
+  "again",
+  "повтори",
+  "повтор",
+  "ещё раз",
+  "еще раз",
+  "что ты сказал",
+  "повтори еще раз",
+  "повтори ещё раз",
+  "повтори снова",
+  "повтори ще раз",
+  "ще раз",
+  "repite",
+  "otra vez",
+  "wiederhol",
+  "nochmal",
 ];
 
 const CONFIRM = [
@@ -85,9 +131,16 @@ export function detectVoiceControl(text: string): VoiceControlAction | null {
   const n = normalize(text);
   if (!n) return null;
   if (matchesPhrase(n, STOP)) return "stop";
-  if (matchesPhrase(n, CONFIRM)) return "confirm";
+  if (matchesPhrase(n, REPEAT_COMMAND)) return "repeat_command";
+  if (matchesPhrase(n, UNDO)) return "undo";
+  if (matchesPhrase(n, REPEAT)) return "repeat";
   if (matchesPhrase(n, CANCEL)) return "cancel";
+  if (matchesPhrase(n, CONFIRM)) return "confirm";
   return null;
+}
+
+export function isVoiceControlPhrase(text: string) {
+  return detectVoiceControl(text) !== null;
 }
 
 export function isStopPhrase(text: string) {

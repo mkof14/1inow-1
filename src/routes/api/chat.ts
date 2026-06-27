@@ -21,6 +21,7 @@ export const Route = createFileRoute("/api/chat")({
           pageContext: body.pageContext,
           authorizationHeader: request.headers.get("authorization"),
           requestHeaders: request.headers,
+          voiceCommand: body.voiceCommand,
         });
 
         if (body.stream === false) {
@@ -62,6 +63,7 @@ type ChatBody = {
   lang?: string;
   pageContext?: unknown;
   stream?: boolean;
+  voiceCommand?: boolean;
 };
 
 function getLatestUserText(body: ChatBody) {

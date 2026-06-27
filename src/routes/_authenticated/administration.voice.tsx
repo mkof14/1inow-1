@@ -32,6 +32,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchSystemSettings, updateSystemSetting, type SystemSetting } from "@/lib/admin-queries";
+import { loadVoicePrefs, saveVoicePrefs } from "@/lib/voice-prefs";
+import { syncVoiceGlobalFromAdmin } from "@/lib/voice-global-settings";
 import { dictionaries } from "@/lib/i18n/dictionaries";
 import { useRef } from "react";
 import { ELEVENLABS_VOICE_OPTIONS } from "@/lib/elevenlabs-voices";
@@ -49,15 +51,27 @@ type UserVoicePrefs = {
   sttLang: string;
   ttsVoice: string;
   autoSend: boolean;
+  dualPersonaTts: boolean;
+  ambientSense: boolean;
+  wakePhraseEnabled: boolean;
+  wakePhrase: string;
+  sttMode: "auto" | "browser" | "server";
+  streamingTts: boolean;
 };
 const defaults: UserVoicePrefs = {
   inputGain: 100,
   outputVolume: 80,
   threshold: 0.08,
-  pttKey: "Space",
+  pttKey: "KeyV",
   sttLang: "en",
   ttsVoice: "default",
   autoSend: false,
+  dualPersonaTts: true,
+  ambientSense: true,
+  wakePhraseEnabled: false,
+  wakePhrase: "hey sense",
+  sttMode: "auto",
+  streamingTts: true,
 };
 
 const TTS_VOICES = [
@@ -158,12 +172,22 @@ function ProviderSelect({
 
 function loadUserPrefs(): UserVoicePrefs {
   if (typeof window === "undefined") return defaults;
-  try {
-    const raw = window.localStorage.getItem(LS_KEY);
-    return raw ? { ...defaults, ...JSON.parse(raw) } : defaults;
-  } catch {
-    return defaults;
-  }
+  const p = loadVoicePrefs();
+  return {
+    inputGain: p.inputGain ?? defaults.inputGain,
+    outputVolume: Math.round((p.outputVolume ?? 0.8) * 100),
+    threshold: p.threshold ?? defaults.threshold,
+    pttKey: p.pttKey ?? defaults.pttKey,
+    sttLang: p.sttLang ?? defaults.sttLang,
+    ttsVoice: defaults.ttsVoice,
+    autoSend: p.autoSend ?? defaults.autoSend,
+    dualPersonaTts: p.dualPersonaTts ?? defaults.dualPersonaTts,
+    ambientSense: p.ambientSense ?? defaults.ambientSense,
+    wakePhraseEnabled: p.wakePhraseEnabled ?? defaults.wakePhraseEnabled,
+    wakePhrase: p.wakePhrase ?? defaults.wakePhrase,
+    sttMode: p.sttMode ?? defaults.sttMode,
+    streamingTts: p.streamingTts ?? defaults.streamingTts,
+  };
 }
 
 function VoicePage() {
@@ -193,7 +217,11 @@ function VoicePage() {
     setTtsProvider(String(getSetting("voice.tts_provider", "disabled")));
     setModelRouterEnabled(Boolean(getSetting("ai.model_router_enabled", false)));
     setAiAuditEnabled(Boolean(getSetting("ai.audit_logging_enabled", true)));
-  }, [settings.length]);
+
+    const map: Record<string, unknown> = {};
+    for (const s of settings) map[s.key] = s.value;
+    syncVoiceGlobalFromAdmin(map);
+  }, [settings.length, settings]);
 
   const [prefs, setPrefs] = useState<UserVoicePrefs>(loadUserPrefs);
   const [recording, setRecording] = useState(false);
@@ -373,7 +401,20 @@ function VoicePage() {
   });
 
   const saveUser = () => {
-    window.localStorage.setItem(LS_KEY, JSON.stringify(prefs));
+    saveVoicePrefs({
+      inputGain: prefs.inputGain,
+      outputVolume: prefs.outputVolume / 100,
+      threshold: prefs.threshold,
+      sttLang: prefs.sttLang,
+      autoSend: prefs.autoSend,
+      pttKey: prefs.pttKey,
+      dualPersonaTts: prefs.dualPersonaTts,
+      ambientSense: prefs.ambientSense,
+      wakePhraseEnabled: prefs.wakePhraseEnabled,
+      wakePhrase: prefs.wakePhrase,
+      sttMode: prefs.sttMode,
+      streamingTts: prefs.streamingTts,
+    });
     toast.success("Voice preferences saved");
   };
 
@@ -771,6 +812,24 @@ function VoicePage() {
               </Select>
             </div>
             <div>
+              <Label>STT engine</Label>
+              <Select
+                value={prefs.sttMode}
+                onValueChange={(v) =>
+                  setPrefs((p) => ({ ...p, sttMode: v as UserVoicePrefs["sttMode"] }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto">Auto (browser, then server)</SelectItem>
+                  <SelectItem value="browser">Browser only</SelectItem>
+                  <SelectItem value="server">Server Whisper (/api/stt)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
               <Label>TTS voice</Label>
               <Select
                 value={prefs.ttsVoice || (ttsProvider === "elevenlabs" ? "default" : "coral")}
@@ -820,6 +879,70 @@ function VoicePage() {
                 id="autosend"
               />
               <Label htmlFor="autosend">Auto-send on silence</Label>
+            </div>
+          </div>
+
+          <div className="rounded-lg border bg-muted/20 p-3 space-y-3">
+            <div className="text-sm font-medium">Sense ambient (Phase 11)</div>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <Label>Dual Nova/Vera TTS</Label>
+                <p className="text-xs text-muted-foreground">
+                  Separate voices when Sense replies with Nova and Vera blocks.
+                </p>
+              </div>
+              <Switch
+                checked={prefs.dualPersonaTts}
+                onCheckedChange={(v) => setPrefs((p) => ({ ...p, dualPersonaTts: v }))}
+              />
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <Label>Proactive ambient hints</Label>
+                <p className="text-xs text-muted-foreground">
+                  Overdue tasks, inbox, and risks surfaced when voice opens.
+                </p>
+              </div>
+              <Switch
+                checked={prefs.ambientSense}
+                onCheckedChange={(v) => setPrefs((p) => ({ ...p, ambientSense: v }))}
+              />
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <Label>Wake phrase (always listening)</Label>
+                <p className="text-xs text-muted-foreground">
+                  Opens voice commands when the phrase is detected. Uses extra mic time.
+                </p>
+              </div>
+              <Switch
+                checked={prefs.wakePhraseEnabled}
+                onCheckedChange={(v) => setPrefs((p) => ({ ...p, wakePhraseEnabled: v }))}
+              />
+            </div>
+            {prefs.wakePhraseEnabled && (
+              <div>
+                <Label>Wake phrase text</Label>
+                <input
+                  type="text"
+                  value={prefs.wakePhrase}
+                  onChange={(e) => setPrefs((p) => ({ ...p, wakePhrase: e.target.value }))}
+                  className="mt-1 flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  placeholder="hey sense"
+                />
+              </div>
+            )}
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <Label>Streaming TTS</Label>
+                <p className="text-xs text-muted-foreground">
+                  Prefetch the next sentence while the current one plays — faster replies.
+                </p>
+              </div>
+              <Switch
+                checked={prefs.streamingTts}
+                onCheckedChange={(v) => setPrefs((p) => ({ ...p, streamingTts: v }))}
+              />
             </div>
           </div>
           <div className="pt-2">

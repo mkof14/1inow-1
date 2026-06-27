@@ -1,12 +1,17 @@
 import type { ReactNode } from "react";
-import { Mic, MicOff, Square, Volume2, VolumeX, Loader2, Sparkles, Zap, Shield } from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
+import { Mic, MicOff, Square, Volume2, VolumeX, Loader2, Sparkles, Zap, Shield, Radio, Waves } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { AudioWaveMeter } from "@/components/voice/audio-wave-meter";
+import { AudioWaveMeter, type MeterSignalState } from "@/components/voice/audio-wave-meter";
 import type { VoicePhase } from "@/hooks/use-voice-session";
 import type { VoicePersona } from "@/lib/voice-persona";
 import { languageLabel } from "@/lib/voice-locale";
 import { SENSE_ASSETS } from "@/lib/sense-assets";
+import { loadVoicePrefs } from "@/lib/voice-prefs";
+import { getOfflineVoiceQueueCount } from "@/lib/voice-offline-queue";
+import type { AmbientInsight } from "@/lib/voice-proactive";
+import { formatPttKeyLabel } from "@/hooks/use-voice-ptt";
 
 export type VoiceConsoleMode = "chat" | "commands";
 
@@ -50,8 +55,21 @@ type Props = {
     veraSpeaking?: string;
     novaListening?: string;
     veraListening?: string;
+    meterIn?: string;
+    meterOut?: string;
+    meterLive?: string;
+    meterQuiet?: string;
+    meterHot?: string;
+    fnHandsFree?: string;
+    fnAutoSend?: string;
+    fnBargeIn?: string;
   };
   statusOverride?: string;
+  pttActive?: boolean;
+  usingServerStt?: boolean;
+  sttMode?: "auto" | "browser" | "server";
+  ambientInsight?: AmbientInsight | null;
+  onAmbientAction?: (insight: AmbientInsight) => void;
   className?: string;
 };
 
@@ -73,11 +91,35 @@ export function VoiceUnifiedConsole({
   onModeChange,
   labels,
   statusOverride,
+  pttActive = false,
+  usingServerStt = false,
+  sttMode = "auto",
+  ambientInsight = null,
+  onAmbientAction,
   className,
 }: Props) {
+  const micThreshold = loadVoicePrefs().threshold ?? 0.08;
+  const pttKey = formatPttKeyLabel(loadVoicePrefs().pttKey);
+  const [offlineQueued, setOfflineQueued] = useState(() => getOfflineVoiceQueueCount());
+
+  useEffect(() => {
+    const sync = () => setOfflineQueued(getOfflineVoiceQueueCount());
+    window.addEventListener("1inow:voice-offline-queue", sync);
+    window.addEventListener("online", sync);
+    return () => {
+      window.removeEventListener("1inow:voice-offline-queue", sync);
+      window.removeEventListener("online", sync);
+    };
+  }, []);
   const micActive = phase === "listening" || phase === "transcribing";
   const speaking = phase === "speaking";
   const live = micActive || speaking || thinking || handsFreeActive;
+  const bargeInListening = speaking && handsFreeActive && Boolean(micStream);
+  const micMeterOn = Boolean(micStream) && (micActive || handsFreeActive);
+  const outMeterOn = speaking && Boolean(speakingAudio);
+
+  const [micSignal, setMicSignal] = useState<MeterSignalState>("idle");
+  const onMicSignal = useCallback((state: MeterSignalState) => setMicSignal(state), []);
 
   const leadPersona: VoicePersona = mode === "commands" ? "nova" : "vera";
   const novaState = resolvePersonaState("nova", leadPersona, activePersona, micActive, speaking, thinking, mode);
@@ -154,6 +196,24 @@ export function VoiceUnifiedConsole({
           </div>
         )}
 
+        {ambientInsight && onAmbientAction && (
+          <div className="flex items-start gap-2 rounded-xl border border-teal-500/30 bg-teal-500/10 px-2.5 py-2">
+            <Sparkles className="mt-0.5 size-3.5 shrink-0 text-teal-600 dark:text-teal-400" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] leading-snug text-foreground">{ambientInsight.message}</p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-1.5 h-7 gap-1 rounded-full px-2.5 text-[10px]"
+                onClick={() => onAmbientAction(ambientInsight)}
+              >
+                {ambientInsight.actionLabel}
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-2">
           <PersonaCard
             name="Nova"
@@ -202,15 +262,50 @@ export function VoiceUnifiedConsole({
           <p className="text-center text-[10px] text-accent">{labels.tapMic ?? "Tap mic to start"}</p>
         )}
 
-        <div className="relative z-20 space-y-2">
-          <div className="flex items-center gap-2">
+        <div className="relative z-20 space-y-2.5 rounded-xl border border-border/70 bg-muted/25 p-2.5">
+          <div className="flex flex-wrap gap-1">
+            <FnChip
+              active={handsFreeActive}
+              icon={<Radio className="size-2.5" />}
+              label={labels.fnHandsFree ?? "Hands-free"}
+            />
+            <FnChip
+              active={conversationMode}
+              icon={<Waves className="size-2.5" />}
+              label={labels.fnAutoSend ?? "Auto-send"}
+            />
+            <FnChip
+              active={bargeInListening}
+              icon={<Mic className="size-2.5" />}
+              label={labels.fnBargeIn ?? "Barge-in"}
+              tone="amber"
+            />
+            {pttActive && (
+              <FnChip active icon={<Mic className="size-2.5" />} label={`PTT ${pttKey}`} tone="emerald" />
+            )}
+            {offlineQueued > 0 && (
+              <FnChip active icon={<Radio className="size-2.5" />} label={`Queue ${offlineQueued}`} />
+            )}
+            {(sttMode === "server" || usingServerStt) && (
+              <FnChip
+                active
+                icon={<Sparkles className="size-2.5" />}
+                label={usingServerStt ? "Whisper" : "STT server"}
+                tone="amber"
+              />
+            )}
+          </div>
+
+          <div className="flex items-stretch gap-2">
             <Button
               type="button"
               variant={micActive || handsFreeActive ? "default" : "outline"}
               size="icon"
               className={cn(
-                "relative size-10 shrink-0 rounded-full",
-                (micActive || handsFreeActive) && "bg-emerald-600 text-white ring-2 ring-emerald-400/50",
+                "relative size-11 shrink-0 self-center rounded-full transition-shadow",
+                (micActive || handsFreeActive) && "bg-emerald-600 text-white",
+                micSignal === "active" && "ring-2 ring-emerald-400/70 shadow-[0_0_12px_rgba(16,185,129,0.45)]",
+                micSignal === "hot" && "ring-2 ring-orange-400/80 shadow-[0_0_14px_rgba(251,146,60,0.5)]",
               )}
               onClick={(e) => {
                 e.stopPropagation();
@@ -226,51 +321,56 @@ export function VoiceUnifiedConsole({
                 <MicOff className="size-4" />
               )}
             </Button>
-            <div className="min-w-0 flex-1">
-              <div className="mb-0.5 flex justify-between text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
-                <span>{labels.micIn ?? "Mic"}</span>
-                <span className={micActive ? "text-emerald-600" : ""}>{micActive ? "ON" : "OFF"}</span>
-              </div>
-              <AudioWaveMeter
-                stream={micActive || handsFreeActive ? micStream : null}
-                variant="input"
-                bars={14}
-                enabled={Boolean(micStream) && (micActive || handsFreeActive) && !speaking}
-                className="h-9"
-              />
-            </div>
+
+            <AudioWaveMeter
+              stream={micMeterOn ? micStream : null}
+              variant="input"
+              bars={18}
+              enabled={micMeterOn}
+              showLevel
+              threshold={micThreshold}
+              label={labels.meterIn ?? labels.micIn ?? "Mic in"}
+              statusLabel={
+                bargeInListening
+                  ? labels.fnBargeIn ?? "BARGE"
+                  : micActive
+                    ? labels.meterLive ?? "LIVE"
+                    : labels.meterQuiet ?? "···"
+              }
+              onSignalChange={onMicSignal}
+            />
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="min-w-0 flex-1">
-              <div className="mb-0.5 flex justify-between text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
-                <span>{labels.speakerOut ?? "Voice out"}</span>
-                <span
-                  className={cn(
-                    speaking && activePersona === "nova" && "text-amber-600",
-                    speaking && activePersona === "vera" && "text-indigo-600",
-                  )}
-                >
-                  {speakerOn ? (speaking ? (activePersona === "vera" ? "VERA" : "NOVA") : "READY") : "MUTE"}
-                </span>
-              </div>
-              <AudioWaveMeter
-                audio={speakingAudio}
-                variant="output"
-                persona={activePersona ?? leadPersona}
-                bars={14}
-                enabled={speaking && Boolean(speakingAudio)}
-                className="h-9"
-              />
-            </div>
+          <div className="flex items-stretch gap-2">
+            <AudioWaveMeter
+              audio={speakingAudio}
+              variant="output"
+              persona={activePersona ?? leadPersona}
+              bars={18}
+              enabled={outMeterOn || (thinking && speakerOn)}
+              showLevel
+              label={labels.meterOut ?? labels.speakerOut ?? "Voice out"}
+              statusLabel={
+                !speakerOn
+                  ? "MUTE"
+                  : speaking
+                    ? activePersona === "vera"
+                      ? "VERA"
+                      : "NOVA"
+                    : thinking
+                      ? "…"
+                      : labels.meterQuiet ?? "READY"
+              }
+            />
             <Button
               type="button"
               variant={speakerOn ? "outline" : "ghost"}
               size="icon"
               className={cn(
-                "size-10 shrink-0 rounded-full",
-                speaking && activePersona === "nova" && "border-amber-400 text-amber-600",
-                speaking && activePersona === "vera" && "border-indigo-400 text-indigo-600",
+                "size-11 shrink-0 self-center rounded-full",
+                speaking && activePersona === "nova" && "border-amber-400 text-amber-600 ring-1 ring-amber-400/40",
+                speaking && activePersona === "vera" && "border-indigo-400 text-indigo-600 ring-1 ring-indigo-400/40",
+                outMeterOn && "shadow-[0_0_10px_rgba(99,102,241,0.25)]",
               )}
               onClick={(e) => {
                 e.stopPropagation();
@@ -473,3 +573,31 @@ function PersonaCard({
 }
 
 export default VoiceUnifiedConsole;
+
+function FnChip({
+  active,
+  icon,
+  label,
+  tone = "emerald",
+}: {
+  active: boolean;
+  icon: ReactNode;
+  label: string;
+  tone?: "emerald" | "amber";
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide transition-all",
+        active
+          ? tone === "amber"
+            ? "border-amber-400/60 bg-amber-500/20 text-amber-900 dark:text-amber-100"
+            : "border-emerald-400/60 bg-emerald-500/20 text-emerald-900 dark:text-emerald-100"
+          : "border-border/60 bg-background/50 text-muted-foreground opacity-60",
+      )}
+    >
+      {icon}
+      {label}
+    </span>
+  );
+}

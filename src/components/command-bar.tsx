@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   CommandDialog,
   CommandInput,
@@ -27,9 +27,11 @@ import { useT } from "@/lib/i18n";
 export function CommandBar({
   open,
   onOpenChange,
+  initialQuery = "",
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
+  initialQuery?: string;
 }) {
   const t = useT();
   const navigate = useNavigate();
@@ -43,6 +45,10 @@ export function CommandBar({
 
   const term = q.trim();
   const enabled = open && term.length >= 2;
+
+  useEffect(() => {
+    if (open) setQ(initialQuery);
+  }, [open, initialQuery]);
 
   const tasks = useQuery({
     queryKey: ["cmd-tasks", term],

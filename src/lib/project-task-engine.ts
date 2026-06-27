@@ -18,6 +18,7 @@ export type CreateTaskInput = {
   status?: TaskStatus;
   priority?: TaskPriority;
   assigneeId?: string | null;
+  dueDate?: string | null;
 };
 
 export type CreateProjectInput = {
@@ -70,6 +71,7 @@ export async function createTaskRecord(input: CreateTaskInput) {
       priority: input.priority ?? "medium",
       created_by: user.id,
       assignee_id: assigneeId,
+      due_date: input.dueDate ?? null,
     })
     .select("id")
     .single();
@@ -148,6 +150,31 @@ export async function createProjectRecord(input: CreateProjectInput) {
   return data;
 }
 
+export async function deleteProjectRecord(projectId: string) {
+  const user = await requireWorkspaceActor();
+  await requirePermission(user.id, "edit_projects");
+
+  const { data: project, error: fetchError } = await supabase
+    .from("projects")
+    .select("id, name")
+    .eq("id", projectId)
+    .maybeSingle();
+  if (fetchError) throw fetchError;
+  if (!project) throw new Error("Project not found");
+
+  const { error } = await supabase.from("projects").delete().eq("id", projectId);
+  if (error) throw error;
+
+  await logWorkspaceActivity({
+    userId: user.id,
+    action: "project.deleted",
+    entityType: "project",
+    entityId: projectId,
+    projectId,
+    metadata: { name: project.name },
+  });
+}
+
 export async function updateTaskStatus(taskId: string, status: TaskStatus) {
   const user = await requireWorkspaceActor();
   await requirePermission(user.id, "edit_tasks");
@@ -220,6 +247,85 @@ export async function deleteTaskRecord(taskId: string) {
     entityId: taskId,
     projectId: task.project_id,
     metadata: { title: task.title },
+  });
+}
+
+export async function updateTaskDueDate(taskId: string, dueDate: string | null) {
+  const user = await requireWorkspaceActor();
+  await requirePermission(user.id, "edit_tasks");
+
+  const { data: task, error: fetchError } = await supabase
+    .from("tasks")
+    .select("id, title, assignee_id, project_id, projects(slug)")
+    .eq("id", taskId)
+    .maybeSingle();
+  if (fetchError) throw fetchError;
+  if (!task) throw new Error("Task not found");
+
+  const { error } = await supabase.from("tasks").update({ due_date: dueDate }).eq("id", taskId);
+  if (error) throw error;
+
+  const assigneeId = task.assignee_id;
+  if (assigneeId && assigneeId !== user.id) {
+    const projectSlug = (task.projects as { slug?: string } | null)?.slug;
+    await deliverInAppNotification({
+      userId: assigneeId,
+      type: "task_update",
+      title: dueDate ? "Task due date updated" : "Task due date cleared",
+      body: task.title,
+      actorId: user.id,
+      entityType: "task",
+      entityId: taskId,
+      url: projectSlug ? `/projects/${projectSlug}` : "/tasks",
+    }).catch(() => undefined);
+  }
+
+  await logWorkspaceActivity({
+    userId: user.id,
+    action: "task.due_date_updated",
+    entityType: "task",
+    entityId: taskId,
+    projectId: task.project_id,
+    metadata: { dueDate },
+  });
+}
+
+export async function updateTaskAssignee(taskId: string, assigneeId: string | null) {
+  const user = await requireWorkspaceActor();
+  await requirePermission(user.id, "edit_tasks");
+
+  const { data: task, error: fetchError } = await supabase
+    .from("tasks")
+    .select("id, title, project_id, projects(slug)")
+    .eq("id", taskId)
+    .maybeSingle();
+  if (fetchError) throw fetchError;
+  if (!task) throw new Error("Task not found");
+
+  const { error } = await supabase.from("tasks").update({ assignee_id: assigneeId }).eq("id", taskId);
+  if (error) throw error;
+
+  if (assigneeId && assigneeId !== user.id) {
+    const projectSlug = (task.projects as { slug?: string } | null)?.slug;
+    await deliverInAppNotification({
+      userId: assigneeId,
+      type: "task_assigned",
+      title: "Task assigned to you",
+      body: task.title,
+      actorId: user.id,
+      entityType: "task",
+      entityId: taskId,
+      url: projectSlug ? `/projects/${projectSlug}` : "/tasks",
+    }).catch(() => undefined);
+  }
+
+  await logWorkspaceActivity({
+    userId: user.id,
+    action: "task.assignee_updated",
+    entityType: "task",
+    entityId: taskId,
+    projectId: task.project_id,
+    metadata: { assigneeId },
   });
 }
 

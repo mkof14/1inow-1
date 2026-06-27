@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useSetPageContext } from "@/lib/ai-context";
 import {
   Brain,
   Bot,
@@ -37,8 +38,17 @@ import {
 import { BrandMark } from "@/components/icons/compass-mark";
 
 export const Route = createFileRoute("/_authenticated/intelligence")({
+  validateSearch: (search: Record<string, unknown>) => {
+    const tab = typeof search.tab === "string" ? search.tab : undefined;
+    const allowed = ["memory", "questions", "reminders", "rules", "audit", "prefs", "agents", "workflows", "quality", "privacy"];
+    return { tab: tab && allowed.includes(tab) ? tab : undefined };
+  },
   component: IntelligencePage,
 });
+
+type IntelligenceSearch = {
+  tab?: string;
+};
 
 type Confidence = "high" | "medium" | "low";
 type MemoryType =
@@ -100,6 +110,33 @@ function ConfBadge({ c }: { c: Confidence }) {
 }
 
 function IntelligencePage() {
+  useSetPageContext({ route: "/intelligence", scope: "intelligence", title: "Intelligence" }, []);
+  const { tab: searchTab } = Route.useSearch() as IntelligenceSearch;
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState(searchTab ?? "memory");
+
+  useEffect(() => {
+    if (searchTab) setActiveTab(searchTab);
+  }, [searchTab]);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    void navigate({
+      to: "/intelligence",
+      search: tab === "memory" ? {} : { tab },
+      replace: true,
+    });
+  };
+
+  useEffect(() => {
+    const onFocus = (event: Event) => {
+      const detail = (event as CustomEvent<{ tab?: string }>).detail;
+      if (detail?.tab) setActiveTab(detail.tab);
+    };
+    window.addEventListener("1inow:intelligence-focus", onFocus);
+    return () => window.removeEventListener("1inow:intelligence-focus", onFocus);
+  }, []);
+
   return (
     <div className="mx-auto max-w-6xl px-6 py-8">
       <header className="mb-8 flex items-start justify-between gap-6">
@@ -141,7 +178,7 @@ function IntelligencePage() {
         />
       </div>
 
-      <Tabs defaultValue="memory">
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="flex w-full flex-wrap justify-start gap-1 bg-transparent p-0">
           <TabsTrigger value="memory" className="data-[state=active]:bg-card">
             <Brain className="mr-1.5 h-4 w-4" />
