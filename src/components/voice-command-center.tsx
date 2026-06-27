@@ -140,7 +140,9 @@ import {
   extractSearchFilesQuery,
   filesSearchStubMessage,
   isSearchFilesPhrase,
+  vaultSearchResultMessage,
 } from "@/lib/voice-files-actions";
+import { searchVault } from "@/lib/vault-search";
 import {
   extractOpenTeamPersonName,
   extractTeamMapFilter,
@@ -711,14 +713,17 @@ function VoiceCommandsCore({
         }
 
         if (targetPlan.intent === "search_files") {
+          const query = targetPlan.searchQuery ?? "";
           navigate({
             to: "/files" as any,
-            search: targetPlan.searchQuery ? ({ q: targetPlan.searchQuery } as any) : ({} as any),
+            search: query ? ({ q: query } as any) : ({} as any),
           });
-          if (targetPlan.searchQuery) {
+          if (query) {
+            const hits = await searchVault(query);
+            toast.message(vaultSearchResultMessage(hits.length, lang, query));
             window.dispatchEvent(
               new CustomEvent("1inow:files-focus", {
-                detail: { query: targetPlan.searchQuery, toast: true },
+                detail: { query, toast: false },
               }),
             );
           } else {

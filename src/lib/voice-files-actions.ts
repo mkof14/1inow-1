@@ -22,9 +22,11 @@ export function extractSearchFilesQuery(raw: string) {
 
 export function filesSearchStubMessage(lang = "en", query?: string) {
   const q = query ? ` «${query}»` : "";
-  if (lang.startsWith("uk")) return `Пошук у Vault скоро${q} — поки відкриваю Files.`;
-  if (lang.startsWith("ru")) return `Поиск в Vault скоро${q} — пока открываю Files.`;
-  if (lang.startsWith("es")) return `Búsqueda en Vault pronto${q} — abriendo Files.`;
-  if (lang.startsWith("de")) return `Vault-Suche kommt bald${q} — öffne Files.`;
-  return `Vault file search is coming soon${q} — opening Files.`;
+  if (lang.startsWith("uk")) return `Введіть запит для пошуку у Vault${q}.`;
+  if (lang.startsWith("ru")) return `Введите запрос для поиска в Vault${q}.`;
+  if (lang.startsWith("es")) return `Escribe una consulta para buscar en Vault${q}.`;
+  if (lang.startsWith("de")) return `Suchbegriff für Vault eingeben${q}.`;
+  return `Enter a query to search Vault${q}.`;
 }
+
+export { vaultSearchResultMessage } from "@/lib/vault-search";

@@ -746,6 +746,11 @@ const EXT2: Record<string, Dict> = {
     "page.files.title": "Vault",
     "page.files.desc":
       "Project folders, brand assets, presentations, contracts and archived media.",
+    "page.files.search": "Search",
+    "page.files.searchPlaceholder": "Search projects, tasks, voice notes…",
+    "page.files.noResults": "No matches in projects, tasks, or voice inbox.",
+    "page.files.searchNote":
+      "Searches projects, tasks, and voice inbox. Dedicated file uploads are coming next.",
     "page.reports.eyebrow": "Intelligence",
     "page.reports.title": "Intelligence",
     "page.reports.desc":
@@ -919,6 +924,11 @@ const EXT2: Record<string, Dict> = {
     "page.files.eyebrow": "Хранилище",
     "page.files.title": "Хранилище",
     "page.files.desc": "Папки проектов, брендовые материалы, презентации, договоры и архивы.",
+    "page.files.search": "Искать",
+    "page.files.searchPlaceholder": "Поиск по проектам, задачам, голосовым заметкам…",
+    "page.files.noResults": "Ничего не найдено в проектах, задачах и voice inbox.",
+    "page.files.searchNote":
+      "Ищет по проектам, задачам и voice inbox. Загрузка файлов — в следующем релизе.",
     "page.reports.eyebrow": "Аналитика",
     "page.reports.title": "Аналитика",
     "page.reports.desc":
@@ -1092,6 +1102,11 @@ const EXT2: Record<string, Dict> = {
     "page.files.eyebrow": "Сховище",
     "page.files.title": "Сховище",
     "page.files.desc": "Папки проєктів, брендові матеріали, презентації, договори та архіви.",
+    "page.files.search": "Шукати",
+    "page.files.searchPlaceholder": "Пошук проєктів, задач, голосових нотаток…",
+    "page.files.noResults": "Нічого не знайдено в проєктах, задачах і voice inbox.",
+    "page.files.searchNote":
+      "Шукає в проєктах, задачах і voice inbox. Завантаження файлів — у наступному релізі.",
     "page.reports.eyebrow": "Аналітика",
     "page.reports.title": "Аналітика",
     "page.reports.desc":
