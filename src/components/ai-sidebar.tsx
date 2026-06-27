@@ -23,6 +23,11 @@ import { useI18n } from "@/lib/i18n";
 import { BrandMark } from "@/components/icons/compass-mark";
 import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
 import { NOVA_TTS_VOICE, VERA_TTS_VOICE, splitNovaVeraSpeech } from "@/lib/sense-personas";
+import {
+  mediaRecorderSupported,
+  speechRecognitionSupported,
+  transcribeWithServerStt,
+} from "@/lib/voice-stt-client";
 
 type Mode = "docked" | "floating" | "collapsed";
 
@@ -128,14 +133,48 @@ export function AiSidebar({
   const [listening, setListening] = useState(false);
   const [speakerOn, setSpeakerOn] = useState(true);
   const recogRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const mediaChunksRef = useRef<Blob[]>([]);
+  const usingServerSttRef = useRef(false);
   const spokenIdsRef = useRef<Set<string>>(new Set());
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const stopMic = useCallback(() => {
+  const stopMic = useCallback(async () => {
     try {
       recogRef.current?.stop?.();
     } catch {}
     recogRef.current = null;
+
+    if (usingServerSttRef.current && mediaRecorderRef.current?.state === "recording") {
+      const recorder = mediaRecorderRef.current;
+      await new Promise<void>((resolve) => {
+        recorder.onstop = () => resolve();
+        try {
+          recorder.stop();
+        } catch {
+          resolve();
+        }
+      });
+      const blob = new Blob(mediaChunksRef.current, {
+        type: recorder.mimeType || "audio/webm",
+      });
+      mediaChunksRef.current = [];
+      if (blob.size >= 1024) {
+        const transcript = await transcribeWithServerStt({
+          blob,
+          mimeType: recorder.mimeType,
+          language: (langRef.current || "en").slice(0, 2),
+        });
+        if (transcript) {
+          setInput((prev) => (prev ? `${prev} ${transcript}` : transcript).trim());
+        } else {
+          setMicError("Server speech-to-text unavailable");
+        }
+      }
+    }
+
+    usingServerSttRef.current = false;
+    mediaRecorderRef.current = null;
     setListening(false);
     micStream?.getTracks().forEach((t) => t.stop());
     setMicStream(null);
@@ -143,17 +182,19 @@ export function AiSidebar({
 
   const startMic = useCallback(async () => {
     setMicError(null);
+    let stream: MediaStream | null = null;
     try {
       if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
         throw new Error("Microphone not supported");
       }
-      const stream = await navigator.mediaDevices.getUserMedia({
+      stream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
       });
       setMicStream(stream);
 
-      // Optional Web Speech recognition (Chrome/Edge/Safari).
-      const SR: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const SR: any = speechRecognitionSupported()
+        ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+        : null;
       if (SR) {
         const rec = new SR();
         rec.continuous = true;
@@ -176,8 +217,29 @@ export function AiSidebar({
           rec.start();
           setListening(true);
         } catch {}
+        return;
       }
+
+      if (mediaRecorderSupported()) {
+        usingServerSttRef.current = true;
+        const mimeType =
+          ["audio/webm", "audio/mp4"].find((type) => MediaRecorder.isTypeSupported(type)) || "";
+        const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+        mediaChunksRef.current = [];
+        recorder.ondataavailable = (event) => {
+          if (event.data.size > 0) mediaChunksRef.current.push(event.data);
+        };
+        mediaRecorderRef.current = recorder;
+        recorder.start();
+        setListening(true);
+        return;
+      }
+
+      throw new Error("Speech input not supported in this browser");
     } catch (e) {
+      stream?.getTracks().forEach((t) => t.stop());
+      setMicStream(null);
+      setListening(false);
       const msg = e instanceof Error ? e.message : "Microphone permission denied";
       setMicError(msg);
     }

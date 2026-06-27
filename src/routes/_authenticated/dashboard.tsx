@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { fetchDecisions, fetchProjects, fetchTasks, fetchProfiles } from "@/lib/queries";
 import { fetchNotifications } from "@/lib/wave1";
 import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 import {
   AlertTriangle,
   Bell,
@@ -37,20 +38,26 @@ import { firstScreenGreeting } from "@/lib/simplicity";
 import { PageHeader } from "@/components/page-header";
 import { useT } from "@/lib/i18n";
 import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
-import { getVoiceInboxItems, subscribeVoiceInbox, type VoiceInboxItem } from "@/lib/voice-intake";
+import { fetchVoiceInboxItems, type VoiceInboxItem } from "@/lib/voice-intake";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({ component: HomePage });
 
 function HomePage() {
   const t = useT();
   const { user } = useAuth();
+  const qc = useQueryClient();
   const navigate = useNavigate();
   const projects = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
   const tasks = useQuery({ queryKey: ["tasks"], queryFn: () => fetchTasks() });
   const people = useQuery({ queryKey: ["profiles"], queryFn: fetchProfiles });
   const notifs = useQuery({ queryKey: ["notifications"], queryFn: fetchNotifications });
   const decisions = useQuery({ queryKey: ["decisions"], queryFn: fetchDecisions });
-  const [voiceInbox, setVoiceInbox] = useState<VoiceInboxItem[]>([]);
+  const voiceInbox = useQuery({
+    queryKey: ["voice-inbox"],
+    queryFn: fetchVoiceInboxItems,
+    enabled: !!user?.id,
+  });
+  const voiceInboxItems = voiceInbox.data ?? [];
 
   const name =
     (user?.user_metadata as any)?.full_name?.split(" ")[0] ?? user?.email?.split("@")[0] ?? "there";
@@ -83,10 +90,24 @@ function HomePage() {
   const openVoiceCenter = () => window.dispatchEvent(new Event("1inow:open-voice"));
 
   useEffect(() => {
-    const refresh = () => setVoiceInbox(getVoiceInboxItems());
-    refresh();
-    return subscribeVoiceInbox(refresh);
-  }, []);
+    if (!user?.id) return;
+    const ch = supabase
+      .channel("voice-inbox")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "voice_inbox_items",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => qc.invalidateQueries({ queryKey: ["voice-inbox"] }),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [user?.id, qc]);
 
   // ── Widget data ────────────────────────────────────────────────────
   const now = Date.now();
@@ -303,7 +324,7 @@ function HomePage() {
       <SenseVoiceLayer
         openSense={openTalk}
         openVoiceCenter={openVoiceCenter}
-        pendingVoiceItems={voiceInbox.filter((item) => item.status === "new").length}
+        pendingVoiceItems={voiceInboxItems.filter((item) => item.status === "new").length}
       />
 
       <DailyCommandCenter
@@ -321,7 +342,9 @@ function HomePage() {
         }}
       />
 
-      <VoiceReviewQueue items={voiceInbox.filter((item) => item.status === "new").slice(0, 5)} />
+      <VoiceReviewQueue
+        items={voiceInboxItems.filter((item) => item.status === "new").slice(0, 5)}
+      />
 
       {/* Compact operating widgets */}
       <div className="grid md:grid-cols-2 gap-5 mb-10">

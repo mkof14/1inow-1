@@ -71,11 +71,11 @@ Safe defaults (no paid AI): keep `AI_PROVIDER=disabled`, `STT_PROVIDER=browser`,
 
 ## Recommended rollout order
 
-1. Apply Supabase migrations 1–9 (`docs/supabase-migration-runbook.md`)
+1. Apply Supabase migrations 1–10 (`docs/supabase-migration-runbook.md`)
 2. Enable OpenAI chat + STT/TTS in Vercel when approved
 3. Manual verify: `bash scripts/verify-workspace-manual.sh`
-4. Voice inbox persistence (Supabase table + sync)
-5. Memory teach-from-chat (“remember that…”) → `ai_memories`
+4. ~~Voice inbox persistence (Supabase table + sync)~~ — shipped (migration #10 pending apply)
+5. ~~Memory teach-from-chat (“remember that…”) → `ai_memories`~~ — shipped
 6. Public marketing: emphasize Nova/Vera on landing (already in personas section)
 
 ---

@@ -23,6 +23,7 @@ Run each file in **Supabase Dashboard → SQL Editor** (or `supabase db push`), 
 | 7 | `supabase/migrations/20260626183000_task_comments.sql` |
 | 8 | `supabase/migrations/20260626190000_ai_translation_org_scoping.sql` |
 | 9 | `supabase/migrations/20260626193000_project_members_org_scoping.sql` |
+| 10 | `supabase/migrations/20260626200000_voice_inbox_items.sql` |
 
 List locally:
 

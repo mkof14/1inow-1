@@ -60,7 +60,7 @@ No Vite/Rollup build warnings remain in the current production build.
 
 See **`docs/production-launch-checklist.md`** for the full go-live checklist and **`docs/voice-first-production-plan.md`** for Nova/Vera voice-first architecture.
 
-1. Apply Supabase migrations 1–9 when approved (not yet on production).
+1. Apply Supabase migrations 1–10 when approved (not yet on production).
 2. Run a dedicated Prettier formatting pass and commit it separately.
 3. Keep dev-owner and demo-data tools environment-gated in production.
 4. Enable OpenAI, Resend, Stripe, Sentry, and analytics in separate phases per env gates.

@@ -1,30 +1,26 @@
-export type VoiceInboxKind =
-  | "task"
-  | "project"
-  | "note"
-  | "reminder"
-  | "risk"
-  | "search"
-  | "navigation"
-  | "unknown";
-export type VoiceInboxStatus = "new" | "processed" | "dismissed";
-
-export type VoiceInboxItem = {
-  id: string;
-  raw: string;
-  title: string;
-  kind: VoiceInboxKind;
-  status: VoiceInboxStatus;
-  confidence: "high" | "medium" | "low";
-  summary: string;
-  createdAt: string;
-  processedAt?: string;
-};
+import {
+  clearProcessedVoiceInboxInDb,
+  deleteVoiceInboxFromDb,
+  fetchVoiceInboxFromDb,
+  insertVoiceInboxToDb,
+  migrateLocalVoiceInboxToDb,
+  patchVoiceInboxInDb,
+} from "@/lib/voice-inbox-engine";
+import { supabase } from "@/integrations/supabase/client";
+import type { VoiceInboxItem, VoiceInboxKind } from "@/lib/voice-intake-types";
+import { VOICE_INBOX_EVENT } from "@/lib/voice-intake-types";
+export type { VoiceInboxItem, VoiceInboxKind, VoiceInboxStatus } from "@/lib/voice-intake-types";
+export { VOICE_INBOX_EVENT } from "@/lib/voice-intake-types";
 
 const STORAGE_KEY = "1inow:voice:inbox:v1";
-const EVENT_NAME = "1inow:voice-inbox-updated";
+const MIGRATED_KEY = "1inow:voice:inbox:migrated:v1";
 
-export function getVoiceInboxItems(): VoiceInboxItem[] {
+function emitVoiceInboxUpdated() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(VOICE_INBOX_EVENT));
+}
+
+function readLocalVoiceInbox(): VoiceInboxItem[] {
   if (typeof window === "undefined") return [];
   try {
     const parsed = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "[]") as VoiceInboxItem[];
@@ -34,7 +30,54 @@ export function getVoiceInboxItems(): VoiceInboxItem[] {
   }
 }
 
-export function saveVoiceInboxItem(input: {
+function writeLocalVoiceInbox(items: VoiceInboxItem[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  emitVoiceInboxUpdated();
+}
+
+async function isSignedIn() {
+  const { data } = await supabase.auth.getSession();
+  return Boolean(data.session?.user);
+}
+
+async function ensureLocalMigration() {
+  if (typeof window === "undefined") return;
+  if (window.localStorage.getItem(MIGRATED_KEY) === "1") return;
+  if (!(await isSignedIn())) return;
+
+  const local = readLocalVoiceInbox();
+  if (local.length === 0) {
+    window.localStorage.setItem(MIGRATED_KEY, "1");
+    return;
+  }
+
+  try {
+    await migrateLocalVoiceInboxToDb(local);
+    window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.setItem(MIGRATED_KEY, "1");
+  } catch {
+    // Keep local copies until DB migration succeeds.
+  }
+}
+
+export async function fetchVoiceInboxItems(): Promise<VoiceInboxItem[]> {
+  if (!(await isSignedIn())) return readLocalVoiceInbox();
+
+  await ensureLocalMigration();
+  try {
+    return await fetchVoiceInboxFromDb();
+  } catch {
+    return readLocalVoiceInbox();
+  }
+}
+
+/** @deprecated Prefer fetchVoiceInboxItems() */
+export function getVoiceInboxItems(): VoiceInboxItem[] {
+  return readLocalVoiceInbox();
+}
+
+export async function saveVoiceInboxItem(input: {
   raw: string;
   title?: string;
   kind?: VoiceInboxKind;
@@ -45,33 +88,73 @@ export function saveVoiceInboxItem(input: {
   if (!raw) return null;
 
   const inferred = classifyVoiceInboxText(raw);
-  const item: VoiceInboxItem = {
-    id: makeId(),
+  const payload = {
     raw,
     title: cleanupTitle(input.title || inferred.title || raw),
     kind: input.kind || inferred.kind,
-    status: "new",
     confidence: input.confidence || inferred.confidence,
     summary: input.summary || inferred.summary,
-    createdAt: new Date().toISOString(),
   };
 
-  const next = [item, ...getVoiceInboxItems()].slice(0, 100);
-  writeVoiceInboxItems(next);
+  if (await isSignedIn()) {
+    try {
+      const item = await insertVoiceInboxToDb(payload);
+      emitVoiceInboxUpdated();
+      return item;
+    } catch {
+      // fall through to local
+    }
+  }
+
+  const item: VoiceInboxItem = {
+    id: makeId(),
+    ...payload,
+    status: "new",
+    createdAt: new Date().toISOString(),
+  };
+  writeLocalVoiceInbox([item, ...readLocalVoiceInbox()].slice(0, 100));
   return item;
 }
 
-export function updateVoiceInboxItem(id: string, patch: Partial<VoiceInboxItem>) {
-  const next = getVoiceInboxItems().map((item) => (item.id === id ? { ...item, ...patch } : item));
-  writeVoiceInboxItems(next);
+export async function updateVoiceInboxItem(id: string, patch: Partial<VoiceInboxItem>) {
+  if (await isSignedIn()) {
+    try {
+      await patchVoiceInboxInDb(id, patch);
+      emitVoiceInboxUpdated();
+      return;
+    } catch {
+      // fall through
+    }
+  }
+
+  const next = readLocalVoiceInbox().map((item) => (item.id === id ? { ...item, ...patch } : item));
+  writeLocalVoiceInbox(next);
 }
 
-export function deleteVoiceInboxItem(id: string) {
-  writeVoiceInboxItems(getVoiceInboxItems().filter((item) => item.id !== id));
+export async function deleteVoiceInboxItem(id: string) {
+  if (await isSignedIn()) {
+    try {
+      await deleteVoiceInboxFromDb(id);
+      emitVoiceInboxUpdated();
+      return;
+    } catch {
+      // fall through
+    }
+  }
+  writeLocalVoiceInbox(readLocalVoiceInbox().filter((item) => item.id !== id));
 }
 
-export function clearProcessedVoiceInboxItems() {
-  writeVoiceInboxItems(getVoiceInboxItems().filter((item) => item.status === "new"));
+export async function clearProcessedVoiceInboxItems() {
+  if (await isSignedIn()) {
+    try {
+      await clearProcessedVoiceInboxInDb();
+      emitVoiceInboxUpdated();
+      return;
+    } catch {
+      // fall through
+    }
+  }
+  writeLocalVoiceInbox(readLocalVoiceInbox().filter((item) => item.status === "new"));
 }
 
 export function subscribeVoiceInbox(callback: () => void) {
@@ -81,10 +164,10 @@ export function subscribeVoiceInbox(callback: () => void) {
   };
   const onCustom = () => callback();
   window.addEventListener("storage", onStorage);
-  window.addEventListener(EVENT_NAME, onCustom);
+  window.addEventListener(VOICE_INBOX_EVENT, onCustom);
   return () => {
     window.removeEventListener("storage", onStorage);
-    window.removeEventListener(EVENT_NAME, onCustom);
+    window.removeEventListener(VOICE_INBOX_EVENT, onCustom);
   };
 }
 
@@ -206,12 +289,6 @@ export function classifyVoiceInboxText(
     summary:
       "Captured thought. Decide later whether it is a task, project, note, reminder, or risk.",
   };
-}
-
-function writeVoiceInboxItems(items: VoiceInboxItem[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  window.dispatchEvent(new CustomEvent(EVENT_NAME));
 }
 
 function makeId() {

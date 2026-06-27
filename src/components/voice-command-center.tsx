@@ -339,9 +339,9 @@ export function VoiceCommandCenter({
     );
   };
 
-  const captureToInbox = () => {
+  const captureToInbox = async () => {
     if (!text.trim() || !plan) return;
-    const item = saveVoiceInboxItem({
+    const item = await saveVoiceInboxItem({
       raw: text,
       title: plan.title || text,
       kind: mapPlanToInboxKind(plan.intent),
@@ -349,6 +349,7 @@ export function VoiceCommandCenter({
       summary: plan.summary,
     });
     if (!item) return;
+    await queryClient.invalidateQueries({ queryKey: ["voice-inbox"] });
     remember(plan);
     setText("");
     setPlan(null);

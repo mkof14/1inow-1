@@ -489,8 +489,8 @@ function DevicesPage() {
     setCopied(true);
   };
 
-  const saveItemToQueue = (item: string, kind: VoiceInboxKind) => {
-    const saved = saveVoiceInboxItem({
+  const saveItemToQueue = async (item: string, kind: VoiceInboxKind) => {
+    const saved = await saveVoiceInboxItem({
       raw: item,
       title: item,
       kind,
@@ -502,7 +502,7 @@ function DevicesPage() {
     toast.success(c.queued);
   };
 
-  const saveAnalysisToQueue = () => {
+  const saveAnalysisToQueue = async () => {
     if (!analysis) return;
     const items: Array<{ raw: string; kind: VoiceInboxKind }> = [
       ...analysis.actions.map((raw) => ({ raw, kind: "task" as const })),
@@ -513,7 +513,7 @@ function DevicesPage() {
     let saved = 0;
     for (const item of items) {
       if (
-        saveVoiceInboxItem({
+        await saveVoiceInboxItem({
           raw: item.raw,
           title: item.raw,
           kind: item.kind,

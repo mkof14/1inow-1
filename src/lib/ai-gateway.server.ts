@@ -4,6 +4,7 @@ import { fetchChatThinkingData, summarizeWorkspaceContext } from "@/lib/chat-con
 import { logAiAction } from "@/lib/ai-audit.server";
 import { getChatProviderState } from "@/lib/connection-providers.server";
 import { buildSenseSystemPrompt } from "@/lib/sense-prompt.server";
+import { extractMemoryTeach, saveMemoryTeach } from "@/lib/memory-engine";
 import { buildSenseResponse, formatSenseResponse } from "@/lib/sense-engine";
 import { captureServerException } from "@/lib/monitoring.server";
 import { think, type ThinkingInput } from "@/lib/thinking";
@@ -186,6 +187,33 @@ export async function runChatGateway(input: ChatGatewayInput): Promise<ChatGatew
   const chatState = getChatProviderState();
   const provider = chatState.provider;
   const userId = await resolveChatUserId(input.authorizationHeader);
+
+  if (userId) {
+    const teach = extractMemoryTeach(input.prompt);
+    if (teach) {
+      try {
+        const text = await saveMemoryTeach({
+          userId,
+          key: teach.key,
+          value: teach.value,
+          type: teach.type,
+          lang: input.lang,
+        });
+        await logAiChatAction({
+          userId,
+          prompt: input.prompt,
+          result: text,
+          provider: "memory",
+          lang: input.lang,
+          pageContext: input.pageContext,
+        });
+        return { text, provider: "memory", mode: "local_sense" };
+      } catch (error) {
+        await captureServerException(error, { module: "memory-engine", kind: "teach" });
+      }
+    }
+  }
+
   const bundle = userId ? await buildThinkingBundle(input, userId).catch(() => null) : null;
 
   if (provider === "openai" && chatState.connected) {

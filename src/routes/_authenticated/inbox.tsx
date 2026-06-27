@@ -34,8 +34,7 @@ import { useT } from "@/lib/i18n";
 import {
   clearProcessedVoiceInboxItems,
   deleteVoiceInboxItem,
-  getVoiceInboxItems,
-  subscribeVoiceInbox,
+  fetchVoiceInboxItems,
   updateVoiceInboxItem,
   type VoiceInboxItem,
   type VoiceInboxKind,
@@ -117,7 +116,12 @@ function InboxPage() {
     queryKey: ["notifications"],
     queryFn: fetchNotifications,
   });
-  const [voiceItems, setVoiceItems] = useState<VoiceInboxItem[]>([]);
+  const voiceInbox = useQuery({
+    queryKey: ["voice-inbox"],
+    queryFn: fetchVoiceInboxItems,
+    enabled: !!user,
+  });
+  const voiceItems = voiceInbox.data ?? [];
 
   useEffect(() => {
     if (!user) return;
@@ -133,12 +137,6 @@ function InboxPage() {
       supabase.removeChannel(ch);
     };
   }, [user, qc]);
-
-  useEffect(() => {
-    const refresh = () => setVoiceItems(getVoiceInboxItems());
-    refresh();
-    return subscribeVoiceInbox(refresh);
-  }, []);
 
   const markMut = useMutation({
     mutationFn: ({
@@ -210,7 +208,7 @@ function InboxPage() {
         <TabsContent value="voice" className="mt-5">
           <VoiceInboxPanel
             items={voiceItems}
-            onChanged={() => setVoiceItems(getVoiceInboxItems())}
+            onChanged={() => qc.invalidateQueries({ queryKey: ["voice-inbox"] })}
           />
         </TabsContent>
 
@@ -306,13 +304,16 @@ function VoiceInboxPanel({ items, onChanged }: { items: VoiceInboxItem[]; onChan
     {} as Record<VoiceInboxKind | "all", number>,
   );
 
-  const markProcessed = (item: VoiceInboxItem) => {
-    updateVoiceInboxItem(item.id, { status: "processed", processedAt: new Date().toISOString() });
+  const markProcessed = async (item: VoiceInboxItem) => {
+    await updateVoiceInboxItem(item.id, {
+      status: "processed",
+      processedAt: new Date().toISOString(),
+    });
     onChanged();
   };
 
-  const remove = (item: VoiceInboxItem) => {
-    deleteVoiceInboxItem(item.id);
+  const remove = async (item: VoiceInboxItem) => {
+    await deleteVoiceInboxItem(item.id);
     onChanged();
   };
 
@@ -323,7 +324,10 @@ function VoiceInboxPanel({ items, onChanged }: { items: VoiceInboxItem[]; onChan
         description: `Captured by voice: ${item.raw}`,
         priority: item.kind === "risk" ? "high" : "medium",
       });
-      updateVoiceInboxItem(item.id, { status: "processed", processedAt: new Date().toISOString() });
+      await updateVoiceInboxItem(item.id, {
+        status: "processed",
+        processedAt: new Date().toISOString(),
+      });
       await qc.invalidateQueries({ queryKey: ["tasks"] });
       onChanged();
       toast.success("Task created from Voice Inbox");
@@ -338,7 +342,10 @@ function VoiceInboxPanel({ items, onChanged }: { items: VoiceInboxItem[]; onChan
         name: item.title || "Voice project",
         description: `Captured by voice: ${item.raw}`,
       });
-      updateVoiceInboxItem(item.id, { status: "processed", processedAt: new Date().toISOString() });
+      await updateVoiceInboxItem(item.id, {
+        status: "processed",
+        processedAt: new Date().toISOString(),
+      });
       await qc.invalidateQueries({ queryKey: ["projects"] });
       onChanged();
       toast.success("Project created from Voice Inbox");
@@ -366,8 +373,8 @@ function VoiceInboxPanel({ items, onChanged }: { items: VoiceInboxItem[]; onChan
             variant="outline"
             size="sm"
             disabled={processed.length === 0}
-            onClick={() => {
-              clearProcessedVoiceInboxItems();
+            onClick={async () => {
+              await clearProcessedVoiceInboxItems();
               onChanged();
             }}
           >
@@ -441,17 +448,20 @@ function VoiceInboxPanel({ items, onChanged }: { items: VoiceInboxItem[]; onChan
                     </div>
                     <div className="grid gap-2 sm:grid-cols-[1fr_150px]">
                       <Input
-                        value={item.title}
-                        onChange={(event) => {
-                          updateVoiceInboxItem(item.id, { title: event.target.value });
+                        key={`${item.id}-${item.title}`}
+                        defaultValue={item.title}
+                        onBlur={async (event) => {
+                          const title = event.target.value.trim();
+                          if (!title || title === item.title) return;
+                          await updateVoiceInboxItem(item.id, { title });
                           onChanged();
                         }}
                         aria-label="Voice capture title"
                       />
                       <Select
                         value={item.kind}
-                        onValueChange={(value) => {
-                          updateVoiceInboxItem(item.id, { kind: value as VoiceInboxKind });
+                        onValueChange={async (value) => {
+                          await updateVoiceInboxItem(item.id, { kind: value as VoiceInboxKind });
                           onChanged();
                         }}
                       >

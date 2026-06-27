@@ -2359,6 +2359,59 @@ export type Database = {
         };
         Relationships: [];
       };
+      voice_inbox_items: {
+        Row: {
+          confidence: string;
+          created_at: string;
+          id: string;
+          kind: string;
+          organization_id: string | null;
+          processed_at: string | null;
+          raw_text: string;
+          status: string;
+          summary: string | null;
+          title: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          confidence?: string;
+          created_at?: string;
+          id?: string;
+          kind: string;
+          organization_id?: string | null;
+          processed_at?: string | null;
+          raw_text: string;
+          status?: string;
+          summary?: string | null;
+          title: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          confidence?: string;
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          organization_id?: string | null;
+          processed_at?: string | null;
+          raw_text?: string;
+          status?: string;
+          summary?: string | null;
+          title?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "voice_inbox_items_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;

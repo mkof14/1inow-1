@@ -5,7 +5,7 @@ Everything below should be green before calling 1inow “production ready”.
 
 ## 1. Database (manual — when ready)
 
-- [ ] Apply migrations 1–9 in order (`bash scripts/verify-org-migrations.sh`)
+- [ ] Apply migrations 1–10 in order (`bash scripts/verify-org-migrations.sh`)
 - [ ] Post-apply SQL checks in `docs/supabase-migration-runbook.md`
 - [ ] Owner account exists; profiles linked to organization
 
@@ -26,10 +26,11 @@ Everything below should be green before calling 1inow “production ready”.
 - [x] Thinking engine + workspace context in chat gateway
 - [x] Dual-voice TTS in Sense Chat sidebar
 - [x] Server STT fallback in Voice Command Center
+- [x] Server STT fallback in Sense Chat sidebar (ai-sidebar)
+- [x] Voice inbox Supabase persistence + localStorage migration
+- [x] Memory teach-from-chat (“remember…”) → `ai_memories`
 - [x] Advisor routes wired to chat gateway
 - [ ] Enable OpenAI env when approved (`docs/voice-first-production-plan.md`)
-- [ ] Voice inbox Supabase persistence
-- [ ] Memory teach-back from conversation
 
 ## 4. PWA — install without native app
 
