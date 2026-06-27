@@ -37,14 +37,18 @@ if [[ -n "${VERCEL_TOKEN:-}" ]]; then
   TOKEN_FLAG=(--token "$VERCEL_TOKEN")
 fi
 
-# Vite reads .env.production.local — vercel pull writes to .vercel/ instead.
-sync_vite_env() {
-  local pulled="$1"
-  local target="$2"
-  if [[ -f "$pulled" ]]; then
-    cp "$pulled" "$target"
-    echo "▶ Synced $(basename "$target") for Vite (from $(basename "$pulled"))"
+# vercel pull omits secret values locally — export real VITE_* from .env for client build.
+prepare_vite_production_env() {
+  if [[ ! -f .env ]]; then
+    echo "✖ Missing .env with VITE_SUPABASE_* for local prebuilt builds." >&2
+    echo "  Use Vercel dashboard Redeploy, or add Supabase vars to .env locally." >&2
+    exit 1
   fi
+  set -a
+  # shellcheck disable=SC1091
+  source .env
+  set +a
+  echo "▶ Loaded Vite build env from .env"
 }
 
 # Link project on first run (non-interactive when env ids are present).
@@ -61,7 +65,8 @@ fi
 if [[ "$MODE" == "prod" ]]; then
   echo "▶ Pulling production env…"
   $VERCEL pull --yes --environment=production "${TOKEN_FLAG[@]}"
-  sync_vite_env ".vercel/.env.production.local" ".env.production.local"
+  prepare_vite_production_env
+  rm -rf .vercel/output .output
   echo "▶ Building (prod)…"
   $VERCEL build --prod "${TOKEN_FLAG[@]}"
   echo "▶ Deploying to production…"
@@ -69,7 +74,7 @@ if [[ "$MODE" == "prod" ]]; then
 else
   echo "▶ Pulling preview env…"
   $VERCEL pull --yes --environment=preview "${TOKEN_FLAG[@]}"
-  sync_vite_env ".vercel/.env.preview.local" ".env.local"
+  prepare_vite_production_env
   echo "▶ Building (preview)…"
   $VERCEL build "${TOKEN_FLAG[@]}"
   echo "▶ Deploying preview…"
