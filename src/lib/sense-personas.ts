@@ -1,5 +1,5 @@
-export const NOVA_TTS_VOICE = "marin";
-export const VERA_TTS_VOICE = "shimmer";
+export const NOVA_TTS_VOICE = "coral";
+export const VERA_TTS_VOICE = "sage";
 
 export const SENSE_PERSONA_LABELS = {
   nova: "Nova",

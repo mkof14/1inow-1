@@ -193,9 +193,10 @@ export async function runTtsGateway(input: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: process.env.OPENAI_TTS_MODEL?.trim() || "tts-1",
+        model: process.env.OPENAI_TTS_MODEL?.trim() || "tts-1-hd",
         input: input.text,
-        voice: input.voice?.trim() || "alloy",
+        voice: input.voice?.trim() || "coral",
+        speed: 0.97,
       }),
     });
 

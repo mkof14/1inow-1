@@ -11,7 +11,6 @@ import {
   Inbox,
   Loader2,
   Mic,
-  MicOff,
   Navigation,
   Search,
   ShieldCheck,
@@ -25,13 +24,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { buildSenseResponse } from "@/lib/sense-engine";
 import { createProjectRecord, createTaskRecord } from "@/lib/project-task-engine";
-import {
-  mediaRecorderSupported,
-  speechRecognitionSupported,
-  transcribeWithServerStt,
-} from "@/lib/voice-stt-client";
 import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
 import { saveVoiceInboxItem, type VoiceInboxKind } from "@/lib/voice-intake";
+import { useI18n } from "@/lib/i18n";
+import { VoiceControlBar } from "@/components/voice/voice-control-bar";
+import { useVoiceSession } from "@/hooks/use-voice-session";
+import { detectLanguageFromText } from "@/lib/voice-locale";
 
 type VoiceIntent =
   | "open_route"
@@ -129,11 +127,35 @@ export function VoiceCommandCenter({
 }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { t, lang, setLang } = useI18n();
   const [internalOpen, setInternalOpen] = useState(false);
-  const [listening, setListening] = useState(false);
   const [busy, setBusy] = useState(false);
   const [text, setText] = useState("");
   const [plan, setPlan] = useState<VoicePlan | null>(null);
+  const onTranscriptRef = useRef<(value: string, final: boolean) => void>(() => {});
+  const voice = useVoiceSession({
+    lang,
+    continuous: false,
+    onTranscript: (value, final) => onTranscriptRef.current(value, final),
+  });
+  onTranscriptRef.current = (value, final) => {
+    setText(value);
+    if (final) {
+      const detected = detectLanguageFromText(value);
+      if (detected && detected !== lang) setLang(detected);
+      setPlan(parseVoiceCommand(value));
+    }
+  };
+  const voiceLabels = {
+    micOn: t("voice.mic.on"),
+    micOff: t("voice.mic.off"),
+    speakerOn: t("voice.speaker.on"),
+    speakerOff: t("voice.speaker.off"),
+    listening: t("voice.status.listening"),
+    transcribing: t("voice.status.transcribing"),
+    speaking: t("voice.status.speaking"),
+    idle: t("voice.status.idle"),
+  };
   const [history, setHistory] = useState<VoicePlan[]>(() => {
     if (typeof window === "undefined") return [];
     try {
@@ -142,10 +164,6 @@ export function VoiceCommandCenter({
       return [];
     }
   });
-  const recognitionRef = useRef<any>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
-  const mediaChunksRef = useRef<Blob[]>([]);
   const open = controlledOpen ?? internalOpen;
   const setOpen = onOpenChange ?? setInternalOpen;
 
@@ -154,104 +172,6 @@ export function VoiceCommandCenter({
       localStorage.setItem("1inow:voice:history:v1", JSON.stringify(history.slice(0, 6)));
     } catch {}
   }, [history]);
-
-  const stopListening = useCallback(() => {
-    try {
-      recognitionRef.current?.stop?.();
-    } catch {}
-    recognitionRef.current = null;
-    try {
-      if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
-    } catch {}
-    mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
-    mediaStreamRef.current = null;
-    setListening(false);
-  }, []);
-
-  const startServerListening = useCallback(async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaStreamRef.current = stream;
-      const mimeType =
-        ["audio/webm", "audio/mp4"].find((type) => MediaRecorder.isTypeSupported(type)) || "";
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-      mediaChunksRef.current = [];
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) mediaChunksRef.current.push(event.data);
-      };
-      recorder.onstop = async () => {
-        stream.getTracks().forEach((track) => track.stop());
-        mediaStreamRef.current = null;
-        setListening(false);
-        const blob = new Blob(mediaChunksRef.current, {
-          type: recorder.mimeType || "audio/webm",
-        });
-        if (blob.size < 1024) {
-          toast.error("Recording too short — try again");
-          return;
-        }
-        const transcript = await transcribeWithServerStt({
-          blob,
-          mimeType: recorder.mimeType,
-          language: (navigator.language || "en").slice(0, 2),
-        });
-        if (!transcript) {
-          toast.message("Server speech-to-text is not available. Type the command instead.");
-          return;
-        }
-        setText(transcript);
-        setPlan(parseVoiceCommand(transcript));
-      };
-      mediaRecorderRef.current = recorder;
-      recorder.start();
-      setListening(true);
-    } catch {
-      toast.error("Microphone unavailable");
-      setListening(false);
-    }
-  }, []);
-
-  const startListening = useCallback(() => {
-    const SR: any = speechRecognitionSupported()
-      ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-      : null;
-    if (!SR) {
-      if (mediaRecorderSupported()) {
-        void startServerListening();
-        return;
-      }
-      toast.message("Browser speech recognition is not available. Use text command input.");
-      return;
-    }
-    const rec = new SR();
-    rec.continuous = false;
-    rec.interimResults = true;
-    rec.lang = navigator.language || "en-US";
-    let finalText = "";
-    rec.onresult = (event: any) => {
-      let interim = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const result = event.results[i];
-        if (result.isFinal) finalText += result[0].transcript + " ";
-        else interim += result[0].transcript;
-      }
-      setText((finalText + interim).trim());
-    };
-    rec.onend = () => {
-      setListening(false);
-      const value = finalText.trim();
-      if (value) setPlan(parseVoiceCommand(value));
-    };
-    rec.onerror = () => {
-      setListening(false);
-      toast.error("Voice capture stopped. Try again or type the command.");
-    };
-    recognitionRef.current = rec;
-    setListening(true);
-    rec.start();
-  }, [startServerListening]);
-
-  useEffect(() => () => stopListening(), [stopListening]);
 
   const quickCommands = useMemo(
     () => [
@@ -375,7 +295,7 @@ export function VoiceCommandCenter({
         open={open}
         onOpenChange={(value) => {
           setOpen(value);
-          if (!value) stopListening();
+          if (!value) void voice.stopMic();
         }}
       >
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
@@ -390,26 +310,25 @@ export function VoiceCommandCenter({
             <div className="rounded-2xl border border-border surface-aurora shimmer-border ring-accent-soft p-4">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-sm font-semibold">Say or type what you want 1inow to do</div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Nova captures movement. Vera checks meaning, risk, and missing context. Sense
-                    keeps voice actions local, reviewable, and explicit before anything changes.
-                  </p>
+                  <div className="text-sm font-semibold">
+                    {t("voice.center.title", "Say or type what you want")}
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">{t("voice.center.hint")}</p>
                 </div>
-                <Button
-                  type="button"
-                  variant={listening ? "default" : "outline"}
-                  size="sm"
-                  className={cn(
-                    "gap-2",
-                    listening && "bg-accent text-accent-foreground hover:bg-accent/90",
-                  )}
-                  onClick={listening ? stopListening : startListening}
-                >
-                  {listening ? <Mic className="size-4" /> : <MicOff className="size-4" />}
-                  {listening ? "Listening" : "Voice"}
-                </Button>
               </div>
+              <VoiceControlBar
+                phase={voice.phase}
+                lang={lang}
+                micStream={voice.micStream}
+                speakerOn={voice.speakerOn}
+                speakingAudio={voice.speakingAudio}
+                error={voice.error}
+                onToggleMic={voice.toggleMic}
+                onToggleSpeaker={voice.toggleSpeaker}
+                labels={voiceLabels}
+                compact
+                className="mb-3"
+              />
               <Textarea
                 value={text}
                 onChange={(event) => {

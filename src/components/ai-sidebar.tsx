@@ -8,26 +8,19 @@ import {
   Maximize2,
   Minimize2,
   Mic,
-  MicOff,
-  Volume2,
-  VolumeX,
   Send,
   ChevronRight,
   ChevronLeft,
   Loader2,
 } from "lucide-react";
-import { StudioMeter } from "@/components/voice/studio-meter";
 import { cn } from "@/lib/utils";
 import { useAiPageContext } from "@/lib/ai-context";
 import { useI18n } from "@/lib/i18n";
 import { BrandMark } from "@/components/icons/compass-mark";
 import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
-import { NOVA_TTS_VOICE, VERA_TTS_VOICE, splitNovaVeraSpeech } from "@/lib/sense-personas";
-import {
-  mediaRecorderSupported,
-  speechRecognitionSupported,
-  transcribeWithServerStt,
-} from "@/lib/voice-stt-client";
+import { VoiceControlBar } from "@/components/voice/voice-control-bar";
+import { useVoiceSession } from "@/hooks/use-voice-session";
+import { detectLanguageFromText } from "@/lib/voice-locale";
 
 type Mode = "docked" | "floating" | "collapsed";
 
@@ -71,7 +64,7 @@ export function AiSidebar({
   onClose: () => void;
   onOpenVoiceCommand?: () => void;
 }) {
-  const { t, lang } = useI18n();
+  const { t, lang, setLang } = useI18n();
   const langRef = useRef(lang);
   langRef.current = lang;
   const [input, setInput] = useState("");
@@ -118,149 +111,39 @@ export function AiSidebar({
     } catch {}
   }, [messages, status]);
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const spokenIdsRef = useRef<Set<string>>(new Set());
+
+  const voice = useVoiceSession({
+    lang,
+    continuous: true,
+    onTranscript: (text) => setInput(text),
+  });
+
+  const stopSpeaking = voice.stopSpeaking;
   const clearHistory = useCallback(() => {
     try {
       window.localStorage.removeItem(HISTORY_KEY);
     } catch {}
     setMessages([]);
     spokenIdsRef.current = new Set();
-  }, [setMessages]);
-  const scrollRef = useRef<HTMLDivElement>(null);
+    stopSpeaking();
+  }, [setMessages, stopSpeaking]);
 
-  // Voice IO state
-  const [micStream, setMicStream] = useState<MediaStream | null>(null);
-  const [micError, setMicError] = useState<string | null>(null);
-  const [listening, setListening] = useState(false);
-  const [speakerOn, setSpeakerOn] = useState(true);
-  const recogRef = useRef<any>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const mediaChunksRef = useRef<Blob[]>([]);
-  const usingServerSttRef = useRef(false);
-  const spokenIdsRef = useRef<Set<string>>(new Set());
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const voiceLabels = {
+    micOn: t("voice.mic.on"),
+    micOff: t("voice.mic.off"),
+    speakerOn: t("voice.speaker.on"),
+    speakerOff: t("voice.speaker.off"),
+    listening: t("voice.status.listening"),
+    transcribing: t("voice.status.transcribing"),
+    speaking: t("voice.status.speaking"),
+    idle: t("voice.status.idle"),
+  };
 
-  const stopMic = useCallback(async () => {
-    try {
-      recogRef.current?.stop?.();
-    } catch {}
-    recogRef.current = null;
-
-    if (usingServerSttRef.current && mediaRecorderRef.current?.state === "recording") {
-      const recorder = mediaRecorderRef.current;
-      await new Promise<void>((resolve) => {
-        recorder.onstop = () => resolve();
-        try {
-          recorder.stop();
-        } catch {
-          resolve();
-        }
-      });
-      const blob = new Blob(mediaChunksRef.current, {
-        type: recorder.mimeType || "audio/webm",
-      });
-      mediaChunksRef.current = [];
-      if (blob.size >= 1024) {
-        const transcript = await transcribeWithServerStt({
-          blob,
-          mimeType: recorder.mimeType,
-          language: (langRef.current || "en").slice(0, 2),
-        });
-        if (transcript) {
-          setInput((prev) => (prev ? `${prev} ${transcript}` : transcript).trim());
-        } else {
-          setMicError("Server speech-to-text unavailable");
-        }
-      }
-    }
-
-    usingServerSttRef.current = false;
-    mediaRecorderRef.current = null;
-    setListening(false);
-    micStream?.getTracks().forEach((t) => t.stop());
-    setMicStream(null);
-  }, [micStream]);
-
-  const startMic = useCallback(async () => {
-    setMicError(null);
-    let stream: MediaStream | null = null;
-    try {
-      if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
-        throw new Error("Microphone not supported");
-      }
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-      });
-      setMicStream(stream);
-
-      const SR: any = speechRecognitionSupported()
-        ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-        : null;
-      if (SR) {
-        const rec = new SR();
-        rec.continuous = true;
-        rec.interimResults = true;
-        rec.lang = langRef.current || "en-US";
-        let finalBuf = "";
-        rec.onresult = (e: any) => {
-          let interim = "";
-          for (let i = e.resultIndex; i < e.results.length; i++) {
-            const r = e.results[i];
-            if (r.isFinal) finalBuf += r[0].transcript + " ";
-            else interim += r[0].transcript;
-          }
-          setInput((finalBuf + interim).trim());
-        };
-        rec.onend = () => setListening(false);
-        rec.onerror = () => setListening(false);
-        recogRef.current = rec;
-        try {
-          rec.start();
-          setListening(true);
-        } catch {}
-        return;
-      }
-
-      if (mediaRecorderSupported()) {
-        usingServerSttRef.current = true;
-        const mimeType =
-          ["audio/webm", "audio/mp4"].find((type) => MediaRecorder.isTypeSupported(type)) || "";
-        const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-        mediaChunksRef.current = [];
-        recorder.ondataavailable = (event) => {
-          if (event.data.size > 0) mediaChunksRef.current.push(event.data);
-        };
-        mediaRecorderRef.current = recorder;
-        recorder.start();
-        setListening(true);
-        return;
-      }
-
-      throw new Error("Speech input not supported in this browser");
-    } catch (e) {
-      stream?.getTracks().forEach((t) => t.stop());
-      setMicStream(null);
-      setListening(false);
-      const msg = e instanceof Error ? e.message : "Microphone permission denied";
-      setMicError(msg);
-    }
-  }, []);
-
-  // Cleanup on unmount / close
+  // Speak new assistant replies via Nova/Vera voices.
   useEffect(() => {
-    return () => {
-      try {
-        recogRef.current?.stop?.();
-      } catch {}
-      micStream?.getTracks().forEach((t) => t.stop());
-      try {
-        audioRef.current?.pause();
-      } catch {}
-    };
-  }, []);
-
-  // Speak new assistant messages with a human voice via /api/tts.
-  useEffect(() => {
-    if (!speakerOn) return;
+    if (!voice.speakerOn) return;
     const last = messages[messages.length - 1];
     if (!last || last.role !== "assistant") return;
     if (status === "streaming" || status === "submitted") return;
@@ -271,77 +154,8 @@ export function AiSidebar({
       .trim();
     if (!text) return;
     spokenIdsRef.current.add(last.id);
-
-    let cancelled = false;
-    let blobUrl: string | null = null;
-    (async () => {
-      try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const token = sessionData.session?.access_token;
-        const headers: Record<string, string> = { "Content-Type": "application/json" };
-        if (token) headers.Authorization = `Bearer ${token}`;
-
-        const parts = splitNovaVeraSpeech(text);
-        const segments =
-          parts.hasStructure && (parts.nova || parts.vera)
-            ? [
-                { text: parts.nova, voice: NOVA_TTS_VOICE },
-                { text: parts.vera, voice: VERA_TTS_VOICE },
-              ].filter((s) => s.text)
-            : [{ text, voice: NOVA_TTS_VOICE }];
-
-        for (const segment of segments) {
-          if (cancelled) return;
-          const res = await fetch("/api/tts", {
-            method: "POST",
-            headers,
-            body: JSON.stringify({
-              text: segment.text,
-              voice: segment.voice,
-              lang: langRef.current,
-            }),
-          });
-          if (!res.ok || !res.body || cancelled) {
-            speakSenseLocally(text);
-            return;
-          }
-          const blob = await res.blob();
-          if (cancelled) return;
-          blobUrl = URL.createObjectURL(blob);
-          try {
-            audioRef.current?.pause();
-          } catch {}
-          await new Promise<void>((resolve) => {
-            const a = new Audio(blobUrl!);
-            audioRef.current = a;
-            a.onended = () => resolve();
-            a.onerror = () => resolve();
-            a.play().catch(() => resolve());
-          });
-          if (blobUrl) URL.revokeObjectURL(blobUrl);
-          blobUrl = null;
-        }
-      } catch {
-        speakSenseLocally(text);
-      }
-    })();
-    return () => {
-      cancelled = true;
-      if (blobUrl) URL.revokeObjectURL(blobUrl);
-    };
-  }, [messages, status, speakerOn]);
-
-  const toggleSpeaker = () => {
-    setSpeakerOn((v) => {
-      const next = !v;
-      if (!next) {
-        try {
-          audioRef.current?.pause();
-        } catch {}
-      }
-      return next;
-    });
-  };
+    void voice.speakText(text);
+  }, [messages, status, voice.speakerOn, voice.speakText]);
 
   const SUGGESTIONS = [
     t("ai.chip.attention"),
@@ -358,10 +172,12 @@ export function AiSidebar({
     (text: string) => {
       const v = text.trim();
       if (!v || status === "streaming" || status === "submitted") return;
+      const detected = detectLanguageFromText(v);
+      if (detected && detected !== lang) setLang(detected);
       sendMessage({ text: v });
       setInput("");
     },
-    [sendMessage, status],
+    [sendMessage, status, lang, setLang],
   );
 
   if (!open) return null;
@@ -379,7 +195,7 @@ export function AiSidebar({
           <img src={SENSE_ASSETS.sense} alt="" className="size-8 rounded-lg shadow-sm" />
           <div className="leading-tight">
             <div className="text-sm font-medium">{SENSE_NAME}</div>
-            <div className="text-[10px] text-muted-foreground">Nova, Vera, voice, commands</div>
+            <div className="text-[10px] text-muted-foreground">{t("voice.subtitle")}</div>
           </div>
         </div>
         <div className="flex items-center gap-0.5">
@@ -393,15 +209,6 @@ export function AiSidebar({
               {t("ai.clear", "Clear")}
             </button>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn("size-7", speakerOn ? "text-accent" : "text-muted-foreground")}
-            onClick={toggleSpeaker}
-            title={speakerOn ? "Mute voice" : "Unmute voice"}
-          >
-            {speakerOn ? <Volume2 className="size-3.5" /> : <VolumeX className="size-3.5" />}
-          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -496,22 +303,20 @@ export function AiSidebar({
         }}
         className="border-t border-border p-3 space-y-2"
       >
-        {(micStream || micError) && (
-          <div className="flex items-center gap-2">
-            <StudioMeter stream={micStream} className="flex-1" />
-            {listening && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-accent">
-                <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-                REC
-              </span>
-            )}
-            {micError && (
-              <span className="text-[10px] text-destructive truncate max-w-[140px]">
-                {micError}
-              </span>
-            )}
-          </div>
-        )}
+        <VoiceControlBar
+          phase={voice.phase}
+          statusOverride={
+            status === "streaming" || status === "submitted" ? t("common.thinking") : undefined
+          }
+          lang={lang}
+          micStream={voice.micStream}
+          speakerOn={voice.speakerOn}
+          speakingAudio={voice.speakingAudio}
+          error={voice.error}
+          onToggleMic={voice.toggleMic}
+          onToggleSpeaker={voice.toggleSpeaker}
+          labels={voiceLabels}
+        />
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2">
           <textarea
             value={input}
@@ -527,19 +332,6 @@ export function AiSidebar({
             className="min-w-0 w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
           />
           <div className="flex shrink-0 items-center gap-1 pb-1">
-            <Button
-              type="button"
-              variant={micStream ? "default" : "outline"}
-              size="icon"
-              className={cn(
-                "size-9 rounded-full",
-                micStream && "bg-accent text-accent-foreground hover:bg-accent/90",
-              )}
-              title={micStream ? "Stop mic" : "Start mic"}
-              onClick={micStream ? stopMic : startMic}
-            >
-              {micStream ? <Mic className="size-3.5" /> : <MicOff className="size-3.5" />}
-            </Button>
             <Button
               type="submit"
               size="icon"
@@ -557,45 +349,6 @@ export function AiSidebar({
       </form>
     </aside>
   );
-}
-
-function speakSenseLocally(text: string) {
-  if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-  const synth = window.speechSynthesis;
-  synth.cancel();
-  const voices = synth.getVoices();
-  const primary =
-    voices.find((voice) => /female|samantha|victoria|zira|google us english/i.test(voice.name)) ??
-    voices[0];
-  const secondary =
-    voices.find(
-      (voice) =>
-        voice.name !== primary?.name && /male|alex|daniel|google uk english/i.test(voice.name),
-    ) ??
-    voices.find((voice) => voice.name !== primary?.name) ??
-    primary;
-
-  const chunks = splitSenseSpeech(text);
-  chunks.forEach((chunk) => {
-    const utterance = new SpeechSynthesisUtterance(chunk.text);
-    utterance.voice = chunk.persona === "nova" ? (primary ?? null) : (secondary ?? primary ?? null);
-    utterance.rate = chunk.persona === "nova" ? 1.04 : 0.92;
-    utterance.pitch = chunk.persona === "nova" ? 1.08 : 0.86;
-    utterance.volume = 1;
-    synth.speak(utterance);
-  });
-}
-
-function splitSenseSpeech(text: string): Array<{ persona: "nova" | "vera"; text: string }> {
-  const nova = text.match(/Nova:\s*([\s\S]*?)(?:\nVera:|$)/i)?.[1]?.trim();
-  const vera = text.match(/Vera:\s*([\s\S]*?)(?:\n\n|$)/i)?.[1]?.trim();
-  if (nova || vera) {
-    return [
-      nova ? { persona: "nova" as const, text: `Nova. ${nova}` } : null,
-      vera ? { persona: "vera" as const, text: `Vera. ${vera}` } : null,
-    ].filter(Boolean) as Array<{ persona: "nova" | "vera"; text: string }>;
-  }
-  return [{ persona: "nova", text }];
 }
 
 function SensePersonaMini({

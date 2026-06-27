@@ -4,7 +4,8 @@ import { fetchChatThinkingData, summarizeWorkspaceContext } from "@/lib/chat-con
 import { logAiAction } from "@/lib/ai-audit.server";
 import { getChatProviderState } from "@/lib/connection-providers.server";
 import { buildSenseSystemPrompt } from "@/lib/sense-prompt.server";
-import { extractMemoryTeach, saveMemoryTeach } from "@/lib/memory-engine";
+import { extractMemoryTeach, saveConversationMemory, saveMemoryTeach } from "@/lib/memory-engine";
+import { resolveResponseLang } from "@/lib/voice-locale";
 import { buildSenseResponse, formatSenseResponse } from "@/lib/sense-engine";
 import { captureServerException } from "@/lib/monitoring.server";
 import { think, type ThinkingInput } from "@/lib/thinking";
@@ -187,9 +188,11 @@ export async function runChatGateway(input: ChatGatewayInput): Promise<ChatGatew
   const chatState = getChatProviderState();
   const provider = chatState.provider;
   const userId = await resolveChatUserId(input.authorizationHeader);
+  const lang = resolveResponseLang(input.lang, input.prompt);
+  const gatewayInput = { ...input, lang };
 
   if (userId) {
-    const teach = extractMemoryTeach(input.prompt);
+    const teach = extractMemoryTeach(gatewayInput.prompt);
     if (teach) {
       try {
         const text = await saveMemoryTeach({
@@ -197,15 +200,15 @@ export async function runChatGateway(input: ChatGatewayInput): Promise<ChatGatew
           key: teach.key,
           value: teach.value,
           type: teach.type,
-          lang: input.lang,
+          lang: gatewayInput.lang,
         });
         await logAiChatAction({
           userId,
-          prompt: input.prompt,
+          prompt: gatewayInput.prompt,
           result: text,
           provider: "memory",
-          lang: input.lang,
-          pageContext: input.pageContext,
+          lang: gatewayInput.lang,
+          pageContext: gatewayInput.pageContext,
         });
         return { text, provider: "memory", mode: "local_sense" };
       } catch (error) {
@@ -214,34 +217,49 @@ export async function runChatGateway(input: ChatGatewayInput): Promise<ChatGatew
     }
   }
 
-  const bundle = userId ? await buildThinkingBundle(input, userId).catch(() => null) : null;
+  const bundle = userId ? await buildThinkingBundle(gatewayInput, userId).catch(() => null) : null;
 
   if (provider === "openai" && chatState.connected) {
-    if (!userId) return runLocalSense(input, bundle);
+    if (!userId) return runLocalSense(gatewayInput, bundle);
     const allowed = await hasAssistantPermission(userId);
-    if (!allowed) return runLocalSense(input, bundle);
+    if (!allowed) return runLocalSense(gatewayInput, bundle);
 
     try {
-      const text = await callOpenAIChat(input.prompt, input.lang, {
-        pageContext: input.pageContext,
+      const text = await callOpenAIChat(gatewayInput.prompt, gatewayInput.lang, {
+        pageContext: gatewayInput.pageContext,
         thinking: bundle?.thinking,
         workspaceSummary: bundle?.workspaceSummary,
       });
       await logAiChatAction({
         userId,
-        prompt: input.prompt,
+        prompt: gatewayInput.prompt,
         result: text,
         provider: "openai",
-        lang: input.lang,
-        pageContext: input.pageContext,
+        lang: gatewayInput.lang,
+        pageContext: gatewayInput.pageContext,
         thinking: bundle?.thinking,
       });
+      saveConversationMemory({
+        userId,
+        question: gatewayInput.prompt,
+        answer: text,
+        lang: gatewayInput.lang,
+      }).catch(() => undefined);
       return { text, provider: "openai", mode: "openai" };
     } catch (error) {
       await captureServerException(error, { module: "ai-gateway", provider: "openai" });
-      return runLocalSense(input, bundle);
+      return runLocalSense(gatewayInput, bundle);
     }
   }
 
-  return runLocalSense(input, bundle);
+  const local = runLocalSense(gatewayInput, bundle);
+  if (userId) {
+    saveConversationMemory({
+      userId,
+      question: gatewayInput.prompt,
+      answer: local.text,
+      lang: gatewayInput.lang,
+    }).catch(() => undefined);
+  }
+  return local;
 }
