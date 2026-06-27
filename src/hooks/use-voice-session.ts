@@ -2,7 +2,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { detectLanguageFromText, toSpeechLocale, toSttLanguage } from "@/lib/voice-locale";
 import { loadVoicePrefs, saveVoicePrefs } from "@/lib/voice-prefs";
 import { detectVoiceControl, isStopPhrase, type VoiceControlAction } from "@/lib/voice-control-phrases";
-import { speakAssistantText } from "@/lib/voice-tts-client";
+import { releaseMicAnalyser, releaseOutputAnalyser, ensureAudioContext } from "@/lib/voice-audio-context";
+import { speakPersonaText } from "@/lib/voice-tts-client";
+import type { VoicePersona } from "@/lib/voice-persona";
 import {
   mediaRecorderSupported,
   speechRecognitionSupported,
@@ -31,6 +33,8 @@ type Options = {
 };
 
 const DEFAULT_AUTO_SEND_MS = 850;
+
+export type VoiceSessionApi = ReturnType<typeof useVoiceSession>;
 
 export function useVoiceSession(options: Options) {
   const {
@@ -66,6 +70,7 @@ export function useVoiceSession(options: Options) {
   const [conversationActive, setConversationActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [speakingAudio, setSpeakingAudio] = useState<HTMLAudioElement | null>(null);
+  const [activePersona, setActivePersona] = useState<VoicePersona | null>(null);
 
   const recogRef = useRef<any>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -106,11 +111,14 @@ export function useVoiceSession(options: Options) {
     bargeInActiveRef.current = false;
     try {
       audioRef.current?.pause();
+      audioRef.current = null;
     } catch {}
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
     }
     setSpeakingAudio(null);
+    setActivePersona(null);
+    releaseOutputAnalyser();
     pausedForSpeechRef.current = false;
     if (conversationActiveRef.current && conversationMode) {
       setPhase("listening");
@@ -158,6 +166,7 @@ export function useVoiceSession(options: Options) {
   const releaseMicStream = useCallback(() => {
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
+    releaseMicAnalyser();
     setMicStream(null);
   }, []);
 
@@ -322,13 +331,14 @@ export function useVoiceSession(options: Options) {
       if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
         throw new Error("Microphone not supported");
       }
+      await ensureAudioContext();
       stream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
       });
       streamRef.current = stream;
-      setMicStream(stream);
     }
 
+    setMicStream(stream);
     setPhase("listening");
 
     if (speechRecognitionSupported()) {
@@ -449,37 +459,44 @@ export function useVoiceSession(options: Options) {
       const token = ++speakAbortRef.current;
       clearSilenceTimer();
 
-      const keepMicForBargeIn = conversationActiveRef.current && conversationMode;
-      if (keepMicForBargeIn) {
-        bargeInActiveRef.current = true;
-      } else {
-        const wasListening = conversationActiveRef.current && !listeningPausedRef.current;
-        if (wasListening) {
-          pausedForSpeechRef.current = true;
-          await pauseListening();
-        }
+      const wasListening = conversationActiveRef.current && !listeningPausedRef.current;
+      if (wasListening) {
+        pausedForSpeechRef.current = true;
+        bargeInActiveRef.current = false;
+        await pauseListening();
       }
 
       setPhase("speaking");
       const langCode = speakLang ?? langRef.current;
-      await speakAssistantText(text, langCode, (audio) => {
-        if (token !== speakAbortRef.current) return;
-        audioRef.current = audio;
-        setSpeakingAudio(audio);
-      });
+      await speakPersonaText(
+        text,
+        langCode,
+        (audio) => {
+          if (token !== speakAbortRef.current) return;
+          audioRef.current = audio;
+          setSpeakingAudio(audio);
+        },
+        (persona) => {
+          if (token !== speakAbortRef.current) return;
+          setActivePersona(persona);
+        },
+        () => token !== speakAbortRef.current,
+      );
 
       if (token !== speakAbortRef.current) return;
       setSpeakingAudio(null);
+      setActivePersona(null);
+      releaseOutputAnalyser();
       bargeInActiveRef.current = false;
       pausedForSpeechRef.current = false;
 
       if (conversationActiveRef.current && conversationMode) {
-        setPhase("listening");
+        await resumeListening();
       } else {
         setPhase("idle");
       }
     },
-    [clearSilenceTimer, conversationMode, pauseListening, speakerOn],
+    [clearSilenceTimer, conversationMode, pauseListening, resumeListening, speakerOn],
   );
 
   useEffect(() => {
@@ -506,6 +523,7 @@ export function useVoiceSession(options: Options) {
     conversationMode,
     handsFreeActive,
     speakingAudio,
+    activePersona,
     error,
     toggleMic,
     setSpeakerOn,

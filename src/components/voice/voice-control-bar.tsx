@@ -109,9 +109,9 @@ export function VoiceControlBar({
 
         <AudioWaveMeter
           audio={speakingAudio}
-          active={speaking && !speakingAudio}
           variant="output"
           bars={compact ? 10 : 12}
+          enabled={Boolean(speakingAudio)}
         />
 
         <Button

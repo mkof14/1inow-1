@@ -194,9 +194,9 @@ export function VoiceLivePanel({
 
           <AudioWaveMeter
             audio={speakingAudio}
-            active={(speaking || thinking) && !speakingAudio}
             variant="output"
             bars={compact ? 14 : 18}
+            enabled={Boolean(speakingAudio)}
             className="h-10"
           />
 

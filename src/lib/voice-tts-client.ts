@@ -1,7 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { isFounderModeEnabled } from "@/lib/founder-mode";
-import { resolveSenseVoice } from "@/lib/sense-personas";
+import { resolveSenseVoice, resolveTtsVoices, splitNovaVeraSpeech } from "@/lib/sense-personas";
 import { toSpeakableText } from "@/lib/voice-speakable";
+import type { VoicePersona } from "@/lib/voice-persona";
 import { loadVoicePrefs } from "@/lib/voice-prefs";
 import { toSpeechLocale } from "@/lib/voice-locale";
 
@@ -83,11 +84,12 @@ export async function playServerTts(
   text: string,
   lang: string,
   onAudio?: (audio: HTMLAudioElement | null) => void,
-  options?: { singleVoice?: boolean },
+  options?: { singleVoice?: boolean; voiceId?: string; isAborted?: () => boolean },
 ) {
   const headers = await buildTtsHeaders();
 
-  const voice = resolveSenseVoice(lang);
+  const voices = resolveTtsVoices(lang);
+  const voice = options?.voiceId ?? resolveSenseVoice(lang);
   const segments = [{ text, voice }];
 
   const volume = loadVoicePrefs().outputVolume ?? 1;
@@ -109,17 +111,29 @@ export async function playServerTts(
       const audio = new Audio(url);
       audio.volume = Math.min(1, Math.max(0, volume));
       onAudio?.(audio);
-      audio.onended = () => {
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        if (poll) clearInterval(poll);
         URL.revokeObjectURL(url);
         onAudio?.(null);
         resolve();
       };
-      audio.onerror = () => {
-        URL.revokeObjectURL(url);
-        onAudio?.(null);
-        resolve();
-      };
-      void audio.play().catch(() => resolve());
+      audio.onended = finish;
+      audio.onerror = finish;
+      void audio.play().catch(finish);
+      let poll: ReturnType<typeof setInterval> | undefined;
+      if (options?.isAborted) {
+        poll = setInterval(() => {
+          if (options.isAborted?.()) {
+            try {
+              audio.pause();
+            } catch {}
+            finish();
+          }
+        }, 80);
+      }
     });
 
     if (segments.length > 1 && !options?.singleVoice) await sleep(NOVA_VERA_PAUSE_MS);
@@ -150,19 +164,58 @@ export async function speakAssistantText(
   text: string,
   lang: string,
   onAudio?: (audio: HTMLAudioElement | null) => void,
+  onPersona?: (persona: VoicePersona | null) => void,
 ): Promise<boolean> {
-  const spoken = toSpeakableText(text);
-  if (!spoken) return false;
-  const ok = await playServerTts(spoken, lang, onAudio, { singleVoice: true });
-  if (!ok) await speakLocally(spoken, lang);
-  return true;
+  return speakPersonaText(text, lang, onAudio, onPersona);
 }
 
-/** @deprecated Prefer speakAssistantText — single natural voice for daily use. */
+/** Speak Nova/Vera blocks with distinct voices when structured; otherwise lead voice only. */
+export async function speakPersonaText(
+  text: string,
+  lang: string,
+  onAudio?: (audio: HTMLAudioElement | null) => void,
+  onPersona?: (persona: VoicePersona | null) => void,
+  isAborted?: () => boolean,
+): Promise<boolean> {
+  const split = splitNovaVeraSpeech(text);
+  const voices = resolveTtsVoices(lang);
+  const segments: { persona: VoicePersona; line: string; voiceId: string }[] = [];
+
+  if (split.hasStructure) {
+    if (split.nova.trim()) segments.push({ persona: "nova", line: split.nova.trim(), voiceId: voices.nova });
+    if (split.vera.trim()) segments.push({ persona: "vera", line: split.vera.trim(), voiceId: voices.vera });
+  } else {
+    const spoken = toSpeakableText(text);
+    if (!spoken) return false;
+    segments.push({ persona: "nova", line: spoken, voiceId: voices.nova });
+  }
+
+  let ok = true;
+  for (let i = 0; i < segments.length; i++) {
+    if (isAborted?.()) break;
+    const seg = segments[i]!;
+    onPersona?.(seg.persona);
+    const played = await playServerTts(seg.line, lang, onAudio, {
+      voiceId: seg.voiceId,
+      isAborted,
+    });
+    if (!played) ok = false;
+    if (i < segments.length - 1) await sleep(NOVA_VERA_PAUSE_MS);
+  }
+  onPersona?.(null);
+
+  if (!ok) {
+    const fallback = toSpeakableText(text);
+    if (fallback) await speakLocally(fallback, lang);
+  }
+  return ok;
+}
+
+/** @deprecated Use speakPersonaText */
 export async function speakNovaVeraText(
   text: string,
   lang: string,
   onAudio?: (audio: HTMLAudioElement | null) => void,
 ): Promise<boolean> {
-  return speakAssistantText(text, lang, onAudio);
+  return speakPersonaText(text, lang, onAudio);
 }

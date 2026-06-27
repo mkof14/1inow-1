@@ -1,176 +1,189 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { getMicAnalyser, getOutputAnalyser } from "@/lib/voice-audio-context";
+import type { VoicePersona } from "@/lib/voice-persona";
 
 type Props = {
-  /** Live mic stream */
   stream?: MediaStream | null;
-  /** TTS playback element for output visualization */
   audio?: HTMLAudioElement | null;
-  /** Synthetic pulse when speaking without analyser */
-  active?: boolean;
   bars?: number;
   variant?: "input" | "output";
+  persona?: VoicePersona | null;
   className?: string;
+  enabled?: boolean;
 };
 
 /**
- * Dual-mode audio meter: mic input (stream) or speaker output (audio element / pulse).
+ * Real audio meter — reads AnalyserNode via DOM refs (~15fps), no React re-render loop.
+ * No synthetic/fake wave animation.
  */
 export function AudioWaveMeter({
   stream,
   audio,
-  active = false,
   bars = 12,
   variant = "input",
+  persona = null,
   className,
+  enabled = true,
 }: Props) {
-  const [levels, setLevels] = useState<number[]>(() => Array(bars).fill(0));
+  const barRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const rafRef = useRef<number | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const ctxRef = useRef<AudioContext | null>(null);
-  const dataRef = useRef<Uint8Array | null>(null);
-  const pulseRef = useRef(0);
+  const frameSkipRef = useRef(0);
 
   useEffect(() => {
-    const cleanup = () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-      analyserRef.current = null;
-      dataRef.current = null;
-      ctxRef.current?.close().catch(() => {});
-      ctxRef.current = null;
+    const flat = () => {
+      barRefs.current.forEach((el) => {
+        if (el) el.style.height = "3px";
+      });
     };
 
-    if (stream) {
-      const AC =
-        window.AudioContext ||
-        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      const ctx = new AC();
-      const src = ctx.createMediaStreamSource(stream);
-      const analyser = ctx.createAnalyser();
-      analyser.fftSize = 256;
-      analyser.smoothingTimeConstant = 0.78;
-      src.connect(analyser);
-      ctxRef.current = ctx;
-      analyserRef.current = analyser;
-      dataRef.current = new Uint8Array(analyser.frequencyBinCount);
+    const stop = () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+      frameSkipRef.current = 0;
+    };
 
-      const tick = () => {
-        const a = analyserRef.current;
-        const d = dataRef.current;
-        if (!a || !d) return;
-        a.getByteFrequencyData(d as Uint8Array<ArrayBuffer>);
-        setLevels(bucketLevels(d, bars));
-        rafRef.current = requestAnimationFrame(tick);
-      };
-      rafRef.current = requestAnimationFrame(tick);
-      return cleanup;
+    if (!enabled) {
+      flat();
+      return stop;
     }
 
-    if (audio) {
-      try {
-        const AC =
-          window.AudioContext ||
-          (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-        const ctx = new AC();
-        const src = ctx.createMediaElementSource(audio);
-        const analyser = ctx.createAnalyser();
-        analyser.fftSize = 256;
-        analyser.smoothingTimeConstant = 0.82;
-        src.connect(analyser);
-        analyser.connect(ctx.destination);
-        ctxRef.current = ctx;
-        analyserRef.current = analyser;
-        dataRef.current = new Uint8Array(analyser.frequencyBinCount);
+    let analyser: AnalyserNode | null = null;
+    let freqData: Uint8Array | null = null;
+    let timeData: Uint8Array | null = null;
 
-        const tick = () => {
-          const a = analyserRef.current;
-          const d = dataRef.current;
-          if (!a || !d) return;
-          a.getByteFrequencyData(d as Uint8Array<ArrayBuffer>);
-          setLevels(bucketLevels(d, bars));
+    const resolveAnalyser = () => {
+      return variant === "output"
+        ? getOutputAnalyser(audio ?? null)
+        : getMicAnalyser(stream ?? null);
+    };
+
+    const startLoop = () => {
+      if (!analyser || !freqData || !timeData) return;
+      stop();
+
+      const tick = () => {
+        if (!analyser || !freqData || !timeData) return;
+
+        frameSkipRef.current += 1;
+        if (frameSkipRef.current % 2 !== 0) {
           rafRef.current = requestAnimationFrame(tick);
-        };
-        rafRef.current = requestAnimationFrame(tick);
-        return cleanup;
-      } catch {
-        // Element may already be wired — fall through to pulse
-      }
-    }
+          return;
+        }
 
-    if (active) {
-      const tick = () => {
-        pulseRef.current += 0.12;
-        const next = Array.from({ length: bars }, (_, i) => {
-          const wave = Math.sin(pulseRef.current + i * 0.55) * 0.5 + 0.5;
-          return 0.15 + wave * 0.55;
-        });
-        setLevels(next);
+        analyser.getByteFrequencyData(freqData);
+        analyser.getByteTimeDomainData(timeData);
+
+        let rms = 0;
+        for (let i = 0; i < timeData.length; i++) {
+          const v = (timeData[i]! - 128) / 128;
+          rms += v * v;
+        }
+        rms = Math.sqrt(rms / timeData.length);
+
+        const levels = bucketLevels(freqData, bars, rms);
+        for (let i = 0; i < bars; i++) {
+          const el = barRefs.current[i];
+          if (!el) continue;
+          el.style.height = `${Math.max(3, Math.round((levels[i] ?? 0) * 28))}px`;
+        }
+
         rafRef.current = requestAnimationFrame(tick);
       };
+
       rafRef.current = requestAnimationFrame(tick);
-      return cleanup;
+    };
+
+    const attach = () => {
+      analyser = resolveAnalyser();
+      if (!analyser) {
+        flat();
+        return false;
+      }
+      freqData = new Uint8Array(analyser.frequencyBinCount);
+      timeData = new Uint8Array(analyser.fftSize);
+      startLoop();
+      return true;
+    };
+
+    if (attach()) {
+      return stop;
     }
 
-    setLevels(Array(bars).fill(0));
-    return cleanup;
-  }, [stream, audio, active, bars]);
+    if (variant === "output" && audio) {
+      const onPlaying = () => {
+        attach();
+      };
+      audio.addEventListener("playing", onPlaying);
+      return () => {
+        audio.removeEventListener("playing", onPlaying);
+        stop();
+      };
+    }
 
-  const live = Boolean(stream || audio || active);
+    flat();
+    return stop;
+  }, [stream, audio, bars, enabled, variant]);
+
+  const hasSource = variant === "output" ? Boolean(audio) : Boolean(stream);
+  const live = enabled && hasSource;
   const isOutput = variant === "output";
+  const outputTone =
+    persona === "nova"
+      ? "border-amber-400/50 bg-amber-500/10"
+      : persona === "vera"
+        ? "border-indigo-400/50 bg-indigo-500/10"
+        : "border-violet-400/40 bg-violet-500/5";
 
   return (
     <div
       role="meter"
       aria-label={isOutput ? "Speaker level" : "Microphone level"}
       className={cn(
-        "flex h-8 flex-1 min-w-0 items-end gap-[2px] rounded-lg border px-2 py-1 transition-all duration-300",
+        "flex min-w-0 flex-1 items-end gap-[2px] rounded-xl border px-2 py-1.5 transition-colors duration-300",
         live
           ? isOutput
-            ? "border-violet-400/40 bg-violet-500/5 shadow-[inset_0_0_12px_hsl(var(--accent)/0.06)]"
-            : "border-accent/40 bg-accent/5 shadow-[inset_0_0_12px_hsl(var(--accent)/0.08)]"
+            ? outputTone
+            : "border-emerald-400/45 bg-emerald-500/8"
           : "border-dashed border-border/80 bg-muted/20",
         className,
       )}
     >
-      {levels.map((v, i) => {
-        const h = Math.max(2, Math.round(v * 22));
-        const color = isOutput
-          ? v > 0.5
-            ? "bg-violet-400"
-            : v > 0.2
-              ? "bg-violet-400/70"
+      {Array.from({ length: bars }, (_, i) => (
+        <span
+          key={i}
+          ref={(el) => {
+            barRefs.current[i] = el;
+          }}
+          className={cn(
+            "w-[3px] rounded-full transition-[height] duration-75",
+            isOutput
+              ? persona === "nova"
+                ? "bg-amber-400/80"
+                : persona === "vera"
+                  ? "bg-indigo-400/80"
+                  : "bg-violet-400/50"
               : live
-                ? "bg-violet-400/35"
-                : "bg-muted-foreground/25"
-          : v > 0.78
-            ? "bg-red-400"
-            : v > 0.5
-              ? "bg-amber-400"
-              : v > 0.15
-                ? "bg-emerald-400"
-                : live
-                  ? "bg-emerald-500/40"
-                  : "bg-muted-foreground/25";
-        return (
-          <span
-            key={i}
-            className={cn("w-[3px] rounded-full transition-[height] duration-75", color)}
-            style={{ height: `${h}px` }}
-          />
-        );
-      })}
+                ? "bg-emerald-400/85"
+                : "bg-muted-foreground/25",
+          )}
+          style={{ height: 3 }}
+        />
+      ))}
     </div>
   );
 }
 
-function bucketLevels(data: Uint8Array, bars: number) {
+function bucketLevels(data: Uint8Array, bars: number, rms: number) {
   const next = new Array(bars).fill(0);
   const binSize = Math.max(1, Math.floor(data.length / bars));
+  const rmsBoost = Math.min(1, rms * 4.5);
+
   for (let i = 0; i < bars; i++) {
     let sum = 0;
     for (let j = 0; j < binSize; j++) sum += data[i * binSize + j] ?? 0;
-    next[i] = sum / binSize / 255;
+    const freq = sum / binSize / 255;
+    next[i] = Math.min(1, freq * 0.65 + rmsBoost * 0.55);
   }
   return next;
 }

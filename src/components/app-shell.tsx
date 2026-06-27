@@ -50,10 +50,10 @@ import { useT } from "@/lib/i18n";
 import { BrandWordmark } from "@/components/icons/compass-icons";
 import { BrandMark } from "@/components/icons/compass-mark";
 import { AiSidebar, type AiSidebarMode } from "@/components/ai-sidebar";
+import type { VoiceConsoleMode } from "@/components/voice/voice-unified-console";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { InstallPrompt } from "@/components/install-prompt";
-import { VoiceCommandCenter } from "@/components/voice-command-center";
 import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -70,7 +70,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [quickOpen, setQuickOpen] = useState(0);
   const [aiOpen, setAiOpen] = useState(false);
   const [aiMode, setAiMode] = useState<AiSidebarMode>("floating");
-  const [voiceOpen, setVoiceOpen] = useState(false);
+  const [aiVoiceTab, setAiVoiceTab] = useState<VoiceConsoleMode>("chat");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // Close drawer on route change
@@ -97,7 +97,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const openVoice = () => setVoiceOpen(true);
+    const openVoice = () => {
+      setAiVoiceTab("commands");
+      setAiOpen(true);
+    };
     window.addEventListener("1inow:open-voice", openVoice);
     return () => window.removeEventListener("1inow:open-voice", openVoice);
   }, []);
@@ -517,7 +520,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
         <QuickCreate openSignal={quickOpen} />
         <CommandBar open={cmdOpen} onOpenChange={setCmdOpen} />
-        <VoiceCommandCenter open={voiceOpen} onOpenChange={setVoiceOpen} showLauncher={false} />
         <MobileBottomNav />
         <InstallPrompt />
       </div>
@@ -528,7 +530,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           mode="docked"
           onModeChange={setAiMode}
           onClose={() => setAiOpen(false)}
-          onOpenVoiceCommand={() => setVoiceOpen(true)}
+          initialVoiceTab={aiVoiceTab}
         />
       )}
       {aiMode === "floating" && aiOpen && (
@@ -537,7 +539,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           mode="floating"
           onModeChange={setAiMode}
           onClose={() => setAiOpen(false)}
-          onOpenVoiceCommand={() => setVoiceOpen(true)}
+          initialVoiceTab={aiVoiceTab}
         />
       )}
     </div>

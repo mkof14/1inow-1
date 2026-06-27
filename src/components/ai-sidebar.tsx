@@ -19,8 +19,11 @@ import { useAiPageContext } from "@/lib/ai-context";
 import { useI18n } from "@/lib/i18n";
 import { BrandMark } from "@/components/icons/compass-mark";
 import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
-import { VoiceLivePanel } from "@/components/voice/voice-live-panel";
-import { toSpeakableText } from "@/lib/voice-speakable";
+import { VoiceUnifiedConsole, type VoiceConsoleMode } from "@/components/voice/voice-unified-console";
+import {
+  VoiceCommandCenter,
+  type VoiceCommandsBridge,
+} from "@/components/voice-command-center";
 import { useVoiceSession } from "@/hooks/use-voice-session";
 import { resolveResponseLang } from "@/lib/voice-locale";
 
@@ -59,18 +62,20 @@ export function AiSidebar({
   mode,
   onModeChange,
   onClose,
-  onOpenVoiceCommand,
+  initialVoiceTab = "chat",
 }: {
   open: boolean;
   mode: Mode;
   onModeChange: (m: Mode) => void;
   onClose: () => void;
-  onOpenVoiceCommand?: () => void;
+  initialVoiceTab?: VoiceConsoleMode;
 }) {
   const { t, lang, setLang } = useI18n();
   const activeLangRef = useRef(lang);
   activeLangRef.current = lang;
   const [input, setInput] = useState("");
+  const [voiceMode, setVoiceMode] = useState<VoiceConsoleMode>(initialVoiceTab);
+  const commandsBridgeRef = useRef<VoiceCommandsBridge | null>(null);
   const { context } = useAiPageContext();
   const ctxRef = useRef(context);
   ctxRef.current = context;
@@ -118,12 +123,20 @@ export function AiSidebar({
   const spokenIdsRef = useRef<Set<string>>(new Set());
   const submitRef = useRef<(text: string) => void>(() => {});
 
+  useEffect(() => {
+    if (open) setVoiceMode(initialVoiceTab);
+  }, [open, initialVoiceTab]);
+
   const voice = useVoiceSession({
     lang,
     continuous: true,
     conversationMode: true,
     autoSend: true,
     onTranscript: (text, final) => {
+      if (voiceMode === "commands" && commandsBridgeRef.current) {
+        commandsBridgeRef.current.onTranscript(text, final);
+        return;
+      }
       setInput(text);
       if (final && text.trim()) {
         const responseLang = resolveResponseLang(lang, text);
@@ -138,6 +151,10 @@ export function AiSidebar({
     onAutoSend: (utterance, utteranceLang) => {
       if (utteranceLang !== lang) setLang(utteranceLang);
       activeLangRef.current = utteranceLang;
+      if (voiceMode === "commands" && commandsBridgeRef.current) {
+        commandsBridgeRef.current.onAutoSend(utterance);
+        return;
+      }
       submitRef.current(utterance);
     },
     onVoiceControl: (action) => {
@@ -169,6 +186,16 @@ export function AiSidebar({
     stop: t("voice.stop", "Stop"),
     bargeIn: t("voice.bargeIn"),
     thinking: t("common.thinking"),
+    tabChat: t("voice.tab.chat", "Chat · Vera"),
+    tabCommands: t("voice.tab.commands", "Commands · Nova"),
+    novaRole: t("voice.nova.role"),
+    veraRole: t("voice.vera.role"),
+    micIn: t("voice.meter.mic"),
+    speakerOut: t("voice.meter.out"),
+    novaSpeaking: t("voice.status.novaSpeaking"),
+    veraSpeaking: t("voice.status.veraSpeaking"),
+    novaListening: t("voice.status.novaListening"),
+    veraListening: t("voice.status.veraListening"),
   };
 
   const handleVoiceStop = useCallback(() => {
@@ -189,7 +216,7 @@ export function AiSidebar({
       .map((p) => (p.type === "text" ? p.text : ""))
       .join("")
       .trim();
-    const spoken = toSpeakableText(text);
+    const spoken = text;
     if (!spoken) return;
     spokenIdsRef.current.add(last.id);
     const lastUser = [...messages].reverse().find((m) => m.role === "user");
@@ -274,6 +301,10 @@ export function AiSidebar({
       </header>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+        {voiceMode === "commands" ? (
+          <VoiceCommandCenter embedded sharedVoice={voice} bridgeRef={commandsBridgeRef} />
+        ) : (
+          <>
         {messages.length === 0 && (
           <div className="space-y-4">
             <div className="rounded-xl bg-muted/40 border border-border p-3 text-sm">
@@ -286,33 +317,16 @@ export function AiSidebar({
               <SensePersonaMini
                 image={SENSE_ASSETS.nova}
                 name="Nova"
-                role="Execution voice"
-                text="Turns commands into the next useful move."
+                role={t("voice.nova.role", "Action · next step")}
+                text={t("voice.nova.hint", "Commands, tasks, navigation.")}
               />
               <SensePersonaMini
                 image={SENSE_ASSETS.vera}
                 name="Vera"
-                role="Review voice"
-                text="Checks meaning, risk, and missing context."
+                role={t("voice.vera.role", "Review · risk · meaning")}
+                text={t("voice.vera.hint", "Questions, analysis, context.")}
               />
             </div>
-            {onOpenVoiceCommand && (
-              <button
-                type="button"
-                onClick={onOpenVoiceCommand}
-                className="w-full rounded-xl border border-accent/25 bg-accent/10 p-3 text-left transition-colors hover:border-accent/45 hover:bg-accent/15"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-medium text-foreground">Sense Voice Center</div>
-                    <div className="mt-1 text-[12px] text-muted-foreground">
-                      Nova captures and moves. Vera reviews before action.
-                    </div>
-                  </div>
-                  <Mic className="size-4 shrink-0 text-accent" />
-                </div>
-              </button>
-            )}
             <div className="space-y-1.5">
               {SUGGESTIONS.map((s) => (
                 <button
@@ -340,16 +354,18 @@ export function AiSidebar({
             <Loader2 className="size-3 animate-spin" /> {t("common.thinking")}
           </div>
         )}
+          </>
+        )}
       </div>
 
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          submit(input);
+          if (voiceMode === "chat") submit(input);
         }}
         className="border-t border-border p-3 space-y-2"
       >
-        <VoiceLivePanel
+        <VoiceUnifiedConsole
           phase={voice.phase}
           thinking={status === "streaming" || status === "submitted"}
           statusOverride={
@@ -364,11 +380,15 @@ export function AiSidebar({
           error={voice.error}
           handsFreeActive={voice.handsFreeActive}
           conversationMode={voice.conversationMode}
+          activePersona={voice.activePersona}
+          mode={voiceMode}
+          onModeChange={setVoiceMode}
           onToggleMic={voice.toggleMic}
           onToggleSpeaker={voice.toggleSpeaker}
           onStop={handleVoiceStop}
           labels={voiceLabels}
         />
+        {voiceMode === "chat" && (
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2">
           <textarea
             value={input}
@@ -399,6 +419,7 @@ export function AiSidebar({
             </Button>
           </div>
         </div>
+        )}
         <div className="flex items-center justify-between text-[10px] text-muted-foreground">
           <span>{t("ai.hint")}</span>
           <kbd className="font-mono px-1.5 py-0.5 rounded bg-muted">⌘J</kbd>
