@@ -1,6 +1,20 @@
 export const NOVA_TTS_VOICE = "coral";
 export const VERA_TTS_VOICE = "sage";
 
+/** Per-locale OpenAI voice pairs (natural, warm; text language drives pronunciation). */
+const TTS_PROFILES: Record<string, { nova: string; vera: string }> = {
+  en: { nova: "coral", vera: "sage" },
+  ru: { nova: "shimmer", vera: "onyx" },
+  uk: { nova: "shimmer", vera: "sage" },
+  es: { nova: "nova", vera: "shimmer" },
+  de: { nova: "alloy", vera: "fable" },
+};
+
+export function resolveTtsVoices(lang: string) {
+  const code = lang.slice(0, 2).toLowerCase();
+  return TTS_PROFILES[code] ?? TTS_PROFILES.en;
+}
+
 export const SENSE_PERSONA_LABELS = {
   nova: "Nova",
   vera: "Vera",

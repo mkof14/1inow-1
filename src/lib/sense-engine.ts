@@ -1,4 +1,6 @@
-export type SensePersona = "nova" | "vera";
+import { resolveResponseLang } from "@/lib/voice-locale";
+
+export type SenseLocale = "en" | "ru" | "uk" | "es" | "de";
 
 export type SenseModule = {
   id: "sense-chat" | "voice-center";
@@ -35,176 +37,298 @@ export function buildSenseResponse(input: string, context?: unknown, lang = "en"
   const text = input.trim();
   const lower = text.toLowerCase();
   const locale = resolveSenseLocale(lang, text);
-  const contextLabel = inferContextLabel(context);
-  const intent = inferIntent(lower);
+  const contextLabel = inferContextLabel(context, locale);
+  const intent = inferIntent(lower, locale);
 
-  if (locale === "ru" || locale === "uk") {
-    return {
-      summary: `Sense видит два рабочих модуля: Sense Chat для понимания контекста и Voice Center для команд голосом. Сейчас запрос распознан как: ${intent.ru}. Контекст: ${contextLabel.ru}.`,
-      nova: buildNovaRu(intent.ru),
-      vera: buildVeraRu(intent.ru),
-      next: buildNextRu(intent.ru),
-      modules: MODULES,
-      speech: {
-        nova: `Nova. ${buildNovaRu(intent.ru)}`,
-        vera: `Vera. ${buildVeraRu(intent.ru)}`,
-      },
-    };
-  }
+  if (locale === "uk") return buildLocalizedResponse("uk", intent, contextLabel);
+  if (locale === "ru") return buildLocalizedResponse("ru", intent, contextLabel);
+  if (locale === "es") return buildLocalizedResponse("es", intent, contextLabel);
+  if (locale === "de") return buildLocalizedResponse("de", intent, contextLabel);
+  return buildLocalizedResponse("en", intent, contextLabel);
+}
 
+function buildLocalizedResponse(
+  locale: SenseLocale,
+  intent: { en: string; ru: string; uk: string; es: string; de: string },
+  contextLabel: { en: string; ru: string; uk: string; es: string; de: string },
+): SenseResponse {
+  const key = intent[locale];
+  const ctx = contextLabel[locale];
+  const copy = LOCALE_COPY[locale];
   return {
-    summary: `Sense sees two working modules: Sense Chat for context and Voice Center for voice commands. Current intent: ${intent.en}. Context: ${contextLabel.en}.`,
-    nova: buildNovaEn(intent.en),
-    vera: buildVeraEn(intent.en),
-    next: buildNextEn(intent.en),
+    summary: copy.summary(key, ctx),
+    nova: copy.nova(key),
+    vera: copy.vera(key),
+    next: copy.next(key),
     modules: MODULES,
     speech: {
-      nova: `Nova. ${buildNovaEn(intent.en)}`,
-      vera: `Vera. ${buildVeraEn(intent.en)}`,
+      nova: copy.nova(key),
+      vera: copy.vera(key),
     },
   };
 }
 
-function resolveSenseLocale(lang: string, text: string) {
-  const code = lang.slice(0, 2).toLowerCase();
-  if (code === "uk") return "uk";
-  if (code === "ru" || /[а-яё]/i.test(text)) return "ru";
+function resolveSenseLocale(lang: string, text: string): SenseLocale {
+  const code = resolveResponseLang(lang, text).slice(0, 2);
+  if (code === "ru" || code === "uk" || code === "es" || code === "de") return code;
+  if (/[а-яё]/i.test(text)) return /[іїєґ]/i.test(text) ? "uk" : "ru";
   return "en";
 }
 
 export function formatSenseResponse(response: SenseResponse, lang = "en") {
-  const ru = lang.startsWith("ru") || lang.startsWith("uk") || /[а-яё]/i.test(response.summary);
-  if (ru) {
-    return [
-      response.summary,
-      "",
-      `Nova: ${response.nova}`,
-      `Vera: ${response.vera}`,
-      "",
-      "Дальше:",
-      ...response.next.map((item) => `- ${item}`),
-    ].join("\n");
-  }
-
+  const locale = resolveSenseLocale(lang, response.summary);
+  const nextLabel =
+    locale === "ru" || locale === "uk"
+      ? "Дальше:"
+      : locale === "es"
+        ? "Siguientes pasos:"
+        : locale === "de"
+          ? "Nächste Schritte:"
+          : "Next:";
   return [
     response.summary,
     "",
     `Nova: ${response.nova}`,
     `Vera: ${response.vera}`,
     "",
-    "Next:",
+    nextLabel,
     ...response.next.map((item) => `- ${item}`),
   ].join("\n");
 }
 
-function inferIntent(lower: string) {
-  if (containsAny(lower, ["создай", "create", "add task", "new task", "новая задача"])) {
-    return { en: "create action", ru: "создать действие" };
-  }
-  if (containsAny(lower, ["risk", "blocker", "риск", "блокер", "опасн"])) {
-    return { en: "risk review", ru: "проверка риска" };
-  }
-  if (containsAny(lower, ["today", "сегодня", "день", "focus", "фокус"])) {
-    return { en: "daily focus", ru: "фокус дня" };
-  }
-  if (containsAny(lower, ["voice", "голос", "listen", "слуш", "speak", "говор"])) {
-    return { en: "voice workflow", ru: "голосовой сценарий" };
-  }
-  if (containsAny(lower, ["project", "проект", "portfolio", "портф"])) {
-    return { en: "project context", ru: "контекст проекта" };
-  }
-  return { en: "workspace reasoning", ru: "разбор рабочего контекста" };
+function inferIntent(lower: string, locale: SenseLocale) {
+  const b = PHRASES[locale];
+  if (containsAny(lower, b.create)) return INTENTS.create;
+  if (containsAny(lower, b.risk)) return INTENTS.risk;
+  if (containsAny(lower, b.today)) return INTENTS.today;
+  if (containsAny(lower, b.voice)) return INTENTS.voice;
+  if (containsAny(lower, b.project)) return INTENTS.project;
+  return INTENTS.default;
 }
 
-function inferContextLabel(context: unknown) {
-  if (!context || typeof context !== "object") {
-    return { en: "general workspace", ru: "общее рабочее пространство" };
-  }
+function inferContextLabel(context: unknown, locale: SenseLocale) {
+  if (!context || typeof context !== "object") return CONTEXT.general[locale];
   const serialized = JSON.stringify(context).toLowerCase();
-  if (serialized.includes("dashboard")) return { en: "Home dashboard", ru: "главная Home" };
-  if (serialized.includes("project")) return { en: "project surface", ru: "проектная поверхность" };
-  if (serialized.includes("task")) return { en: "task surface", ru: "поверхность задач" };
-  if (serialized.includes("voice")) return { en: "voice surface", ru: "голосовая поверхность" };
-  return { en: "current page context", ru: "контекст текущей страницы" };
+  if (serialized.includes("dashboard")) return CONTEXT.dashboard[locale];
+  if (serialized.includes("project")) return CONTEXT.project[locale];
+  if (serialized.includes("task")) return CONTEXT.task[locale];
+  if (serialized.includes("voice")) return CONTEXT.voice[locale];
+  return CONTEXT.page[locale];
 }
 
-function buildNovaEn(intent: string) {
-  if (intent === "risk review")
-    return "I move first to the concrete blocker: identify the risky item, owner, and next action.";
-  if (intent === "daily focus")
-    return "I compress the day into one useful move and push it toward a visible task or route.";
-  if (intent === "voice workflow")
-    return "I listen for command verbs and convert speech into a draft action, route, reminder, or inbox item.";
-  if (intent === "create action")
-    return "I turn the request into an executable draft, then wait for confirmation before changing data.";
-  return "I turn the request into motion: open the right place, draft the next step, or reduce the work to one action.";
-}
+const INTENTS = {
+  create: {
+    en: "create action",
+    ru: "создать действие",
+    uk: "створити дію",
+    es: "crear acción",
+    de: "Aktion erstellen",
+  },
+  risk: {
+    en: "risk review",
+    ru: "проверка риска",
+    uk: "перевірка ризику",
+    es: "revisión de riesgos",
+    de: "Risikoprüfung",
+  },
+  today: {
+    en: "daily focus",
+    ru: "фокус дня",
+    uk: "фокус дня",
+    es: "enfoque del día",
+    de: "Tagesfokus",
+  },
+  voice: {
+    en: "voice workflow",
+    ru: "голосовой сценарий",
+    uk: "голосовий сценарій",
+    es: "flujo de voz",
+    de: "Sprachworkflow",
+  },
+  project: {
+    en: "project context",
+    ru: "контекст проекта",
+    uk: "контекст проєкту",
+    es: "contexto del proyecto",
+    de: "Projektkontext",
+  },
+  default: {
+    en: "workspace reasoning",
+    ru: "разбор рабочего контекста",
+    uk: "розбір робочого контексту",
+    es: "análisis del espacio de trabajo",
+    de: "Arbeitskontext-Analyse",
+  },
+};
 
-function buildVeraEn(intent: string) {
-  if (intent === "risk review")
-    return "I slow the action down: check evidence, ambiguity, hidden dependency, and whether the risk needs a decision.";
-  if (intent === "daily focus")
-    return "I protect the day from noise: check priority, timing, and whether the suggested move is actually meaningful.";
-  if (intent === "voice workflow")
-    return "I verify the command before execution: meaning, risk, missing context, and whether Sense should ask again.";
-  if (intent === "create action")
-    return "I check title, deadline, owner, project context, and whether this should be a task, note, or decision.";
-  return "I check meaning before movement: confidence, missing context, risk, and whether action is justified.";
-}
+const PHRASES: Record<SenseLocale, Record<string, string[]>> = {
+  en: {
+    create: ["create", "add task", "new task"],
+    risk: ["risk", "blocker"],
+    today: ["today", "focus"],
+    voice: ["voice", "listen", "speak"],
+    project: ["project", "portfolio"],
+  },
+  ru: {
+    create: ["создай", "добавь", "новая задача", "надо"],
+    risk: ["риск", "блокер", "опасн"],
+    today: ["сегодня", "день", "фокус"],
+    voice: ["голос", "слуш", "говор"],
+    project: ["проект", "портф"],
+  },
+  uk: {
+    create: ["створи", "додай", "нова задача", "треба"],
+    risk: ["ризик", "блокер"],
+    today: ["сьогодні", "день", "фокус"],
+    voice: ["голос", "слух", "говор"],
+    project: ["проєкт", "проект"],
+  },
+  es: {
+    create: ["crear", "nueva tarea", "añadir"],
+    risk: ["riesgo", "bloqueo"],
+    today: ["hoy", "enfoque"],
+    voice: ["voz", "hablar"],
+    project: ["proyecto"],
+  },
+  de: {
+    create: ["erstellen", "neue aufgabe", "hinzufügen"],
+    risk: ["risiko", "blocker"],
+    today: ["heute", "fokus"],
+    voice: ["stimme", "sprache"],
+    project: ["projekt"],
+  },
+};
 
-function buildNovaRu(intent: string) {
-  if (intent === "проверка риска")
-    return "Я сразу ищу конкретный блокер: рискованный объект, владельца и следующий шаг.";
-  if (intent === "фокус дня")
-    return "Я сжимаю день до одного полезного движения и веду его к задаче или нужному разделу.";
-  if (intent === "голосовой сценарий")
-    return "Я слушаю глаголы команды и превращаю речь в черновик действия, маршрут, напоминание или inbox item.";
-  if (intent === "создать действие")
-    return "Я превращаю запрос в исполнимый черновик и жду подтверждения перед изменением данных.";
-  return "Я превращаю запрос в движение: открыть нужное место, собрать следующий шаг или свести работу к одному действию.";
-}
+const CONTEXT = {
+  general: {
+    en: "general workspace",
+    ru: "общее рабочее пространство",
+    uk: "загальний робочий простір",
+    es: "espacio de trabajo general",
+    de: "allgemeiner Arbeitsbereich",
+  },
+  dashboard: {
+    en: "Home dashboard",
+    ru: "главная Home",
+    uk: "головна Home",
+    es: "panel principal",
+    de: "Home-Dashboard",
+  },
+  project: {
+    en: "project surface",
+    ru: "проектная поверхность",
+    uk: "проєктна поверхня",
+    es: "superficie de proyectos",
+    de: "Projektbereich",
+  },
+  task: {
+    en: "task surface",
+    ru: "поверхность задач",
+    uk: "поверхня задач",
+    es: "superficie de tareas",
+    de: "Aufgabenbereich",
+  },
+  voice: {
+    en: "voice surface",
+    ru: "голосовая поверхность",
+    uk: "голосова поверхня",
+    es: "superficie de voz",
+    de: "Sprachbereich",
+  },
+  page: {
+    en: "current page context",
+    ru: "контекст текущей страницы",
+    uk: "контекст поточної сторінки",
+    es: "contexto de la página actual",
+    de: "aktueller Seitenkontext",
+  },
+};
 
-function buildVeraRu(intent: string) {
-  if (intent === "проверка риска")
-    return "Я замедляю действие: проверяю доказательства, неясность, скрытую зависимость и нужна ли отдельная decision.";
-  if (intent === "фокус дня")
-    return "Я защищаю день от шума: проверяю приоритет, время и реальную полезность следующего шага.";
-  if (intent === "голосовой сценарий")
-    return "Я проверяю команду до исполнения: смысл, риск, недостающий контекст и нужно ли Sense уточнить.";
-  if (intent === "создать действие")
-    return "Я проверяю название, срок, владельца, проектный контекст и тип: задача, заметка или решение.";
-  return "Я проверяю смысл до движения: уверенность, недостающий контекст, риск и оправданность действия.";
-}
-
-function buildNextEn(intent: string) {
-  if (intent === "voice workflow") {
-    return [
-      "Use Voice Center for raw capture.",
-      "Let Nova draft the action.",
-      "Let Vera block unclear execution.",
-    ];
+const LOCALE_COPY: Record<
+  SenseLocale,
+  {
+    summary: (intent: string, ctx: string) => string;
+    nova: (intent: string) => string;
+    vera: (intent: string) => string;
+    next: (intent: string) => string[];
   }
-  return [
-    "Use Sense Chat for context.",
-    "Use Voice Center when the request is a command.",
-    "Confirm before Sense changes data.",
-  ];
-}
+> = {
+  en: {
+    summary: (intent, ctx) =>
+      `Sense sees Sense Chat for context and Voice Center for commands. Intent: ${intent}. Context: ${ctx}.`,
+    nova: (intent) =>
+      intent.includes("risk")
+        ? "I'll find the blocker, owner, and next step."
+        : "I'll turn this into one clear move you can confirm.",
+    vera: (intent) =>
+      intent.includes("risk")
+        ? "I'll check evidence and whether action is really justified."
+        : "I'll slow down if context, timing, or risk is missing.",
+    next: () => [
+      "Use Sense Chat for context.",
+      "Use Voice Center for commands.",
+      "Confirm before anything changes.",
+    ],
+  },
+  ru: {
+    summary: (intent, ctx) =>
+      `Sense видит Sense Chat для контекста и Voice Center для команд. Запрос: ${intent}. Контекст: ${ctx}.`,
+    nova: (intent) =>
+      intent.includes("риск")
+        ? "Сначала найду блокер, ответственного и следующий шаг."
+        : "Превращу это в одно понятное действие с вашим подтверждением.",
+    vera: (intent) =>
+      intent.includes("риск")
+        ? "Проверю доказательства и оправданность действия."
+        : "Замедлюсь, если не хватает контекста, времени или ясности.",
+    next: () => [
+      "Sense Chat — для контекста.",
+      "Voice Center — для команд.",
+      "Подтверждайте перед изменениями.",
+    ],
+  },
+  uk: {
+    summary: (intent, ctx) =>
+      `Sense бачить Sense Chat для контексту та Voice Center для команд. Запит: ${intent}. Контекст: ${ctx}.`,
+    nova: (intent) =>
+      intent.includes("риз")
+        ? "Спочатку знайду блокер, відповідального та наступний крок."
+        : "Перетворю це на одну зрозумілу дію з вашим підтвердженням.",
+    vera: (intent) =>
+      intent.includes("риз")
+        ? "Перевірю докази та чи дія справді потрібна."
+        : "Сповільнюсь, якщо бракує контексту або ясності.",
+    next: () => [
+      "Sense Chat — для контексту.",
+      "Voice Center — для команд.",
+      "Підтверджуйте перед змінами.",
+    ],
+  },
+  es: {
+    summary: (intent, ctx) =>
+      `Sense usa Sense Chat para contexto y Voice Center para comandos. Intención: ${intent}. Contexto: ${ctx}.`,
+    nova: () => "Convierto esto en un siguiente paso claro que puedes confirmar.",
+    vera: () => "Reviso contexto, riesgo y si falta algo antes de actuar.",
+    next: () => [
+      "Sense Chat para contexto.",
+      "Voice Center para comandos.",
+      "Confirma antes de cambiar datos.",
+    ],
+  },
+  de: {
+    summary: (intent, ctx) =>
+      `Sense nutzt Sense Chat für Kontext und Voice Center für Befehle. Absicht: ${intent}. Kontext: ${ctx}.`,
+    nova: () => "Ich mache daraus einen klaren nächsten Schritt zur Bestätigung.",
+    vera: () => "Ich prüfe Kontext, Risiko und fehlende Informationen.",
+    next: () => [
+      "Sense Chat für Kontext.",
+      "Voice Center für Befehle.",
+      "Vor Änderungen bestätigen.",
+    ],
+  },
+};
 
-function buildNextRu(intent: string) {
-  if (intent === "голосовой сценарий") {
-    return [
-      "Использовать Voice Center для сырого ввода.",
-      "Дать Nova собрать действие.",
-      "Дать Vera остановить неясное исполнение.",
-    ];
-  }
-  return [
-    "Использовать Sense Chat для контекста.",
-    "Использовать Voice Center, когда это команда.",
-    "Подтверждать перед изменением данных.",
-  ];
-}
+export type SensePersona = "nova" | "vera";
 
 function containsAny(text: string, words: string[]) {
   return words.some((word) => text.includes(word));

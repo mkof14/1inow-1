@@ -174,7 +174,9 @@ export function getTtsProviderState(): ProviderState {
       : ready
         ? provider === "openai"
           ? "OpenAI text-to-speech is wired to /api/tts (requires use_voice permission)."
-          : `Text-to-speech provider ${provider} is configured but not wired to runtime calls yet.`
+          : provider === "elevenlabs"
+            ? "ElevenLabs text-to-speech is wired to /api/tts (requires use_voice permission)."
+            : `Text-to-speech provider ${provider} is configured but not wired to runtime calls yet.`
         : "Text-to-speech service is not connected yet.",
     capabilities: ["tts", "voice-commands", "audit"],
     missingSecrets,
@@ -182,7 +184,9 @@ export function getTtsProviderState(): ProviderState {
       ? "Use browser synthesis for local playback or approve a server TTS provider."
       : ready && provider === "openai"
         ? "Set TTS_PROVIDER=openai and OPENAI_API_KEY; grant use_voice to allowed users."
-        : "Implement the selected TTS adapter after provider approval.",
+        : ready && provider === "elevenlabs"
+          ? "Set TTS_PROVIDER=elevenlabs and ELEVENLABS_API_KEY; grant use_voice to allowed users."
+          : "Implement the selected TTS adapter after provider approval.",
   };
 }
 

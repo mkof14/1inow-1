@@ -1,6 +1,55 @@
 import { supabase } from "@/integrations/supabase/client";
-import { NOVA_TTS_VOICE, VERA_TTS_VOICE, splitNovaVeraSpeech } from "@/lib/sense-personas";
+import { resolveTtsVoices, splitNovaVeraSpeech } from "@/lib/sense-personas";
 import { loadVoicePrefs } from "@/lib/voice-prefs";
+import { toSpeechLocale } from "@/lib/voice-locale";
+
+const LOCAL_VOICE_HINTS: Record<string, { nova: RegExp[]; vera: RegExp[]; lang: string }> = {
+  ru: {
+    lang: "ru-RU",
+    nova: [/milena|google русский|ru-ru.*female|yandex.*female/i],
+    vera: [/yuri|dmitri|google русский.*male|ru-ru.*male/i],
+  },
+  uk: {
+    lang: "uk-UA",
+    nova: [/lesya|uk-ua|ukrainian.*female/i],
+    vera: [/uk-ua.*male|ukrainian.*male/i],
+  },
+  es: {
+    lang: "es-ES",
+    nova: [/monica|paulina|google español|es-es.*female|spanish.*female/i],
+    vera: [/diego|jorge|google español.*male|es-es.*male/i],
+  },
+  de: {
+    lang: "de-DE",
+    nova: [/anna|petra|google deutsch|de-de.*female|german.*female/i],
+    vera: [/markus|stefan|google deutsch.*male|de-de.*male/i],
+  },
+  en: {
+    lang: "en-US",
+    nova: [/samantha|zira|google us english|karen|female.*en/i],
+    vera: [/daniel|alex|google uk english male|tom/i],
+  },
+};
+
+async function waitForVoices() {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) return [];
+  const synth = window.speechSynthesis;
+  const voices = synth.getVoices();
+  if (voices.length) return voices;
+  return new Promise<SpeechSynthesisVoice[]>((resolve) => {
+    const done = () => resolve(synth.getVoices());
+    synth.onvoiceschanged = done;
+    setTimeout(done, 400);
+  });
+}
+
+function pickVoice(voices: SpeechSynthesisVoice[], hints: RegExp[], lang: string) {
+  return (
+    hints.map((h) => voices.find((v) => h.test(v.name) || h.test(v.lang))).find(Boolean) ??
+    voices.find((v) => v.lang.startsWith(lang.slice(0, 2))) ??
+    voices[0]
+  );
+}
 
 export async function playServerTts(
   text: string,
@@ -12,14 +61,15 @@ export async function playServerTts(
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (token) headers.Authorization = `Bearer ${token}`;
 
+  const voices = resolveTtsVoices(lang);
   const parts = splitNovaVeraSpeech(text);
   const segments =
     parts.hasStructure && (parts.nova || parts.vera)
       ? [
-          { text: parts.nova, voice: NOVA_TTS_VOICE },
-          { text: parts.vera, voice: VERA_TTS_VOICE },
+          { text: parts.nova, voice: voices.nova },
+          { text: parts.vera, voice: voices.vera },
         ].filter((s) => s.text)
-      : [{ text, voice: NOVA_TTS_VOICE }];
+      : [{ text, voice: voices.nova }];
 
   const volume = loadVoicePrefs().outputVolume ?? 1;
 
@@ -53,17 +103,20 @@ export async function playServerTts(
   return true;
 }
 
-export function speakLocally(text: string, lang: string) {
+export async function speakLocally(text: string, lang: string) {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
   const synth = window.speechSynthesis;
   synth.cancel();
-  const voices = synth.getVoices();
-  const locale = lang.slice(0, 2);
-  const pick = (hint: RegExp) =>
-    voices.find((v) => hint.test(v.name) || v.lang.startsWith(locale)) ?? voices[0];
-
-  const primary = pick(/female|samantha|victoria|zira|coral|nova/i);
-  const secondary = pick(/male|alex|daniel|sage|onyx/i);
+  const code = lang.slice(0, 2).toLowerCase();
+  const hints = LOCAL_VOICE_HINTS[code] ?? LOCAL_VOICE_HINTS.en;
+  const voices = await waitForVoices();
+  const primary = pickVoice(voices, hints.nova, hints.lang);
+  const secondary =
+    pickVoice(
+      voices.filter((v) => v.name !== primary?.name),
+      hints.vera,
+      hints.lang,
+    ) ?? primary;
 
   const parts = splitNovaVeraSpeech(text);
   const chunks =
@@ -77,9 +130,19 @@ export function speakLocally(text: string, lang: string) {
   for (const chunk of chunks as Array<{ persona: "nova" | "vera"; text: string }>) {
     const utterance = new SpeechSynthesisUtterance(chunk.text);
     utterance.voice = chunk.persona === "nova" ? (primary ?? null) : (secondary ?? primary ?? null);
-    utterance.lang = locale === "uk" ? "uk-UA" : locale === "ru" ? "ru-RU" : locale;
-    utterance.rate = chunk.persona === "nova" ? 0.98 : 0.92;
-    utterance.pitch = chunk.persona === "nova" ? 1.02 : 0.94;
+    utterance.lang = toSpeechLocale(lang);
+    utterance.rate = chunk.persona === "nova" ? 0.96 : 0.9;
+    utterance.pitch = chunk.persona === "nova" ? 1.0 : 0.95;
     synth.speak(utterance);
   }
+}
+
+export async function speakNovaVeraText(
+  text: string,
+  lang: string,
+  onAudio?: (audio: HTMLAudioElement | null) => void,
+): Promise<boolean> {
+  const ok = await playServerTts(text, lang, onAudio);
+  if (!ok) await speakLocally(text, lang);
+  return true;
 }

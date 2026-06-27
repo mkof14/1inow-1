@@ -20,7 +20,7 @@ import { BrandMark } from "@/components/icons/compass-mark";
 import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
 import { VoiceControlBar } from "@/components/voice/voice-control-bar";
 import { useVoiceSession } from "@/hooks/use-voice-session";
-import { detectLanguageFromText } from "@/lib/voice-locale";
+import { resolveResponseLang } from "@/lib/voice-locale";
 
 type Mode = "docked" | "floating" | "collapsed";
 
@@ -65,8 +65,8 @@ export function AiSidebar({
   onOpenVoiceCommand?: () => void;
 }) {
   const { t, lang, setLang } = useI18n();
-  const langRef = useRef(lang);
-  langRef.current = lang;
+  const activeLangRef = useRef(lang);
+  activeLangRef.current = lang;
   const [input, setInput] = useState("");
   const { context } = useAiPageContext();
   const ctxRef = useRef(context);
@@ -74,7 +74,7 @@ export function AiSidebar({
   const [transport] = useState(() =>
     makeTransport(
       () => ctxRef.current,
-      () => langRef.current,
+      () => activeLangRef.current,
     ),
   );
 
@@ -117,7 +117,14 @@ export function AiSidebar({
   const voice = useVoiceSession({
     lang,
     continuous: true,
-    onTranscript: (text) => setInput(text),
+    onTranscript: (text, final) => {
+      setInput(text);
+      if (final && text.trim()) {
+        const responseLang = resolveResponseLang(lang, text);
+        if (responseLang !== lang) setLang(responseLang);
+        activeLangRef.current = responseLang;
+      }
+    },
   });
 
   const stopSpeaking = voice.stopSpeaking;
@@ -154,7 +161,13 @@ export function AiSidebar({
       .trim();
     if (!text) return;
     spokenIdsRef.current.add(last.id);
-    void voice.speakText(text);
+    const lastUser = [...messages].reverse().find((m) => m.role === "user");
+    const userText = lastUser?.parts
+      .map((p) => (p.type === "text" ? p.text : ""))
+      .join("")
+      .trim();
+    const speakLang = userText ? resolveResponseLang(lang, userText) : lang;
+    void voice.speakText(text, speakLang);
   }, [messages, status, voice.speakerOn, voice.speakText]);
 
   const SUGGESTIONS = [
@@ -172,8 +185,9 @@ export function AiSidebar({
     (text: string) => {
       const v = text.trim();
       if (!v || status === "streaming" || status === "submitted") return;
-      const detected = detectLanguageFromText(v);
-      if (detected && detected !== lang) setLang(detected);
+      const responseLang = resolveResponseLang(lang, v);
+      if (responseLang !== lang) setLang(responseLang);
+      activeLangRef.current = responseLang;
       sendMessage({ text: v });
       setInput("");
     },

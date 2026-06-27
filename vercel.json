@@ -1,12 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "tanstack-start",
   "buildCommand": "vite build",
-  "framework": null,
-  "build": {
-    "env": {
-      "NITRO_PRESET": "vercel"
-    }
-  },
+  "installCommand": "npm install",
   "headers": [
     {
       "source": "/(.*)",

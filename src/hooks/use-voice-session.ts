@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toSpeechLocale, toSttLanguage } from "@/lib/voice-locale";
 import { loadVoicePrefs, saveVoicePrefs } from "@/lib/voice-prefs";
-import { playServerTts, speakLocally } from "@/lib/voice-tts-client";
+import { speakNovaVeraText } from "@/lib/voice-tts-client";
 import {
   mediaRecorderSupported,
   speechRecognitionSupported,
@@ -184,17 +184,17 @@ export function useVoiceSession(options: Options) {
   }, []);
 
   const speakText = useCallback(
-    async (text: string) => {
+    async (text: string, speakLang?: string) => {
       if (!speakerOn || !text.trim()) return;
       const token = ++speakAbortRef.current;
       setPhase("speaking");
-      const ok = await playServerTts(text, langRef.current, (audio) => {
+      const langCode = speakLang ?? langRef.current;
+      await speakNovaVeraText(text, langCode, (audio) => {
         if (token !== speakAbortRef.current) return;
         audioRef.current = audio;
         setSpeakingAudio(audio);
       });
       if (token !== speakAbortRef.current) return;
-      if (!ok) speakLocally(text, langRef.current);
       setSpeakingAudio(null);
       setPhase("idle");
     },

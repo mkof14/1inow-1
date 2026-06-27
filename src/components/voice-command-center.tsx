@@ -29,7 +29,8 @@ import { saveVoiceInboxItem, type VoiceInboxKind } from "@/lib/voice-intake";
 import { useI18n } from "@/lib/i18n";
 import { VoiceControlBar } from "@/components/voice/voice-control-bar";
 import { useVoiceSession } from "@/hooks/use-voice-session";
-import { detectLanguageFromText } from "@/lib/voice-locale";
+import { resolveResponseLang } from "@/lib/voice-locale";
+import { buildPerspectiveSpeech, toVoiceLocale, voiceBundle, VOICE_ROUTES } from "@/lib/voice-i18n";
 
 type VoiceIntent =
   | "open_route"
@@ -65,41 +66,6 @@ type VoicePerspective = {
   image: string;
   text: string;
 };
-
-const ROUTES = [
-  {
-    route: "/dashboard",
-    label: "Dashboard",
-    words: ["dashboard", "home", "today", "главная", "домой", "сегодня"],
-  },
-  { route: "/projects", label: "Projects", words: ["projects", "project", "проекты", "проект"] },
-  { route: "/tasks", label: "Tasks", words: ["tasks", "task", "задачи", "задача", "дела"] },
-  { route: "/calendar", label: "Calendar", words: ["calendar", "календарь", "расписание"] },
-  {
-    route: "/inbox",
-    label: "Inbox",
-    words: ["inbox", "notifications", "уведомления", "инбокс", "входящие"],
-  },
-  {
-    route: "/communication",
-    label: "Communication",
-    words: ["messages", "communication", "chat", "сообщения", "коммуникации", "чат"],
-  },
-  { route: "/people", label: "People", words: ["people", "contacts", "люди", "контакты"] },
-  { route: "/reports", label: "Reports", words: ["reports", "отчеты", "аналитика"] },
-  {
-    route: "/intelligence",
-    label: "Intelligence",
-    words: ["intelligence", "brain", "интеллект", "мозг"],
-  },
-  {
-    route: "/ai",
-    label: "Sense",
-    words: ["sense", "advisor", "assistant", "помощник", "ассистент"],
-  },
-  { route: "/administration", label: "Admin", words: ["admin", "админ", "администрирование"] },
-  { route: "/settings", label: "Settings", words: ["settings", "настройки"] },
-];
 
 const EXAMPLES = [
   "Create task call contractor tomorrow",
@@ -141,9 +107,9 @@ export function VoiceCommandCenter({
   onTranscriptRef.current = (value, final) => {
     setText(value);
     if (final) {
-      const detected = detectLanguageFromText(value);
-      if (detected && detected !== lang) setLang(detected);
-      setPlan(parseVoiceCommand(value));
+      const responseLang = resolveResponseLang(lang, value);
+      if (responseLang !== lang) setLang(responseLang);
+      setPlan(parseVoiceCommand(value, responseLang));
     }
   };
   const voiceLabels = {
@@ -173,18 +139,63 @@ export function VoiceCommandCenter({
     } catch {}
   }, [history]);
 
-  const quickCommands = useMemo(
-    () => [
-      { label: "Today", icon: CalendarDays, text: "What is important today?" },
-      { label: "Risks", icon: AlertTriangle, text: "Show risks" },
-      { label: "New task", icon: CheckSquare, text: "Create task " },
-      { label: "New project", icon: FolderKanban, text: "Create project " },
-    ],
-    [],
-  );
+  const quickCommands = useMemo(() => {
+    const loc = toVoiceLocale(lang);
+    const labels =
+      loc === "ru"
+        ? { today: "Сегодня", risks: "Риски", task: "Задача", project: "Проект" }
+        : loc === "uk"
+          ? { today: "Сьогодні", risks: "Ризики", task: "Задача", project: "Проєкт" }
+          : loc === "es"
+            ? { today: "Hoy", risks: "Riesgos", task: "Tarea", project: "Proyecto" }
+            : loc === "de"
+              ? { today: "Heute", risks: "Risiken", task: "Aufgabe", project: "Projekt" }
+              : { today: "Today", risks: "Risks", task: "New task", project: "New project" };
+    const texts =
+      loc === "ru"
+        ? {
+            today: "Что сегодня важно?",
+            risks: "Покажи риски",
+            task: "Создай задачу ",
+            project: "Создай проект ",
+          }
+        : loc === "uk"
+          ? {
+              today: "Що сьогодні важливо?",
+              risks: "Покажи ризики",
+              task: "Створи задачу ",
+              project: "Створи проєкт ",
+            }
+          : loc === "es"
+            ? {
+                today: "¿Qué es importante hoy?",
+                risks: "Mostrar riesgos",
+                task: "Crear tarea ",
+                project: "Crear proyecto ",
+              }
+            : loc === "de"
+              ? {
+                  today: "Was ist heute wichtig?",
+                  risks: "Risiken zeigen",
+                  task: "Aufgabe erstellen ",
+                  project: "Projekt erstellen ",
+                }
+              : {
+                  today: "What is important today?",
+                  risks: "Show risks",
+                  task: "Create task ",
+                  project: "Create project ",
+                };
+    return [
+      { label: labels.today, icon: CalendarDays, text: texts.today },
+      { label: labels.risks, icon: AlertTriangle, text: texts.risks },
+      { label: labels.task, icon: CheckSquare, text: texts.task },
+      { label: labels.project, icon: FolderKanban, text: texts.project },
+    ];
+  }, [lang]);
 
   const analyze = (value = text) => {
-    const next = parseVoiceCommand(value);
+    const next = parseVoiceCommand(value, lang);
     setPlan(next);
   };
 
@@ -206,11 +217,12 @@ export function VoiceCommandCenter({
               ? "What is important today?"
               : [current, answer.trim()].filter(Boolean).join(" ");
     setText(nextText);
-    setPlan(parseVoiceCommand(nextText));
+    setPlan(parseVoiceCommand(nextText, lang));
   };
 
   const execute = async () => {
     if (!plan) return;
+    const toasts = voiceBundle(lang, text).toasts;
     setBusy(true);
     try {
       if (
@@ -231,23 +243,23 @@ export function VoiceCommandCenter({
           description: plan.description || null,
         });
         await queryClient.invalidateQueries({ queryKey: ["tasks"] });
-        toast.success("Task created from voice command");
+        toast.success(toasts.taskCreated);
       } else if (plan.intent === "create_project") {
         await createProjectRecord({
           name: plan.title?.trim() || "Untitled project",
           description: plan.description || null,
         });
         await queryClient.invalidateQueries({ queryKey: ["projects"] });
-        toast.success("Project created from voice command");
+        toast.success(toasts.projectCreated);
       } else {
-        toast.message("This voice action is drafted but not executable yet.");
+        toast.message(toasts.notExecutable);
       }
       remember(plan);
       setText("");
       setPlan(null);
       setOpen(false);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Voice command failed");
+      toast.error(error instanceof Error ? error.message : voiceBundle(lang, text).toasts.failed);
     } finally {
       setBusy(false);
     }
@@ -273,7 +285,7 @@ export function VoiceCommandCenter({
     remember(plan);
     setText("");
     setPlan(null);
-    toast.success("Saved to Voice Inbox");
+    toast.success(voiceBundle(lang, text).toasts.savedInbox);
   };
 
   return (
@@ -345,7 +357,7 @@ export function VoiceCommandCenter({
                     type="button"
                     onClick={() => {
                       setText(command.text);
-                      setPlan(parseVoiceCommand(command.text));
+                      setPlan(parseVoiceCommand(command.text, lang));
                     }}
                     className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-accent/35 hover:text-foreground"
                   >
@@ -369,6 +381,8 @@ export function VoiceCommandCenter({
               <VoicePlanPreview
                 plan={plan}
                 busy={busy}
+                lang={lang}
+                onSpeak={(payload) => voice.speakText(payload)}
                 onCancel={() => setPlan(null)}
                 onCapture={captureToInbox}
                 onConfirm={execute}
@@ -389,7 +403,7 @@ export function VoiceCommandCenter({
                       type="button"
                       onClick={() => {
                         setText(example);
-                        setPlan(parseVoiceCommand(example));
+                        setPlan(parseVoiceCommand(example, lang));
                       }}
                       className="block w-full rounded-lg px-2 py-1.5 text-left text-xs text-muted-foreground transition-colors hover:bg-accent/5 hover:text-foreground"
                     >
@@ -433,6 +447,8 @@ export function VoiceCommandCenter({
 function VoicePlanPreview({
   plan,
   busy,
+  lang,
+  onSpeak,
   onCancel,
   onCapture,
   onConfirm,
@@ -440,12 +456,15 @@ function VoicePlanPreview({
 }: {
   plan: VoicePlan;
   busy: boolean;
+  lang: string;
+  onSpeak: (text: string) => void;
   onCancel: () => void;
   onCapture: () => void;
   onConfirm: () => void;
   onClarify: (answer: string) => void;
 }) {
-  const perspectives = buildVoicePerspectives(plan);
+  const perspectives = buildVoicePerspectives(plan, lang);
+  const speechText = `Nova: ${perspectives[0]?.text ?? ""}\n\nVera: ${perspectives[1]?.text ?? ""}`;
 
   return (
     <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
@@ -525,7 +544,7 @@ function VoicePlanPreview({
             variant="outline"
             size="sm"
             className="shrink-0 gap-1.5"
-            onClick={() => speakVoicePerspectives(perspectives)}
+            onClick={() => onSpeak(speechText)}
           >
             <Volume2 className="size-3.5" />
             Speak both
@@ -621,7 +640,8 @@ function ConfidenceBadge({ value }: { value: VoicePlan["confidence"] }) {
   );
 }
 
-function buildVoicePerspectives(plan: VoicePlan): VoicePerspective[] {
+function buildVoicePerspectives(plan: VoicePlan, uiLang: string): VoicePerspective[] {
+  const locale = toVoiceLocale(uiLang, plan.rawText || plan.title || plan.summary);
   const sense = buildSenseResponse(
     plan.rawText || plan.title || plan.summary,
     {
@@ -631,265 +651,198 @@ function buildVoicePerspectives(plan: VoicePlan): VoicePerspective[] {
       executable: plan.executable,
       question: plan.question,
     },
-    typeof navigator === "undefined" ? "en" : navigator.language,
+    locale,
   );
-  const operatorText = plan.question
-    ? `${sense.nova} Clarification needed before action: ${plan.question}`
-    : plan.executable
-      ? `${sense.nova} Ready after confirmation: ${plan.summary}`
-      : `${sense.nova} Keep this as a draft until it becomes executable: ${plan.summary}`;
-
-  const auditorText =
-    plan.confidence === "low"
-      ? `${sense.vera} Confidence is low. Save it, clarify it, or convert it into a cleaner task before execution.`
-      : plan.intent === "create_task"
-        ? `${sense.vera} Check deadline, project, and owner. A task without context can become noise.`
-        : plan.intent === "create_project"
-          ? `${sense.vera} Check outcome and first action. A project without a next task will not move.`
-          : plan.intent === "show_risks"
-            ? `${sense.vera} Risk review is useful now. Do not create new work before checking blockers and owners.`
-            : plan.intent === "show_today"
-              ? `${sense.vera} Good moment for focus. Choose one important move, not a long list.`
-              : `${sense.vera} This looks safe. It does not change data unless you explicitly confirm the action.`;
+  const { operator, auditor } = buildPerspectiveSpeech(locale, plan, sense);
+  const roles =
+    locale === "ru" || locale === "uk"
+      ? { nova: "Действие и следующий шаг", vera: "Риск, смысл, приоритет" }
+      : locale === "es"
+        ? { nova: "Acción y siguiente paso", vera: "Riesgo y prioridad" }
+        : locale === "de"
+          ? { nova: "Aktion und nächster Schritt", vera: "Risiko und Priorität" }
+          : { nova: "Action and next step", vera: "Risk, meaning, priority" };
 
   return [
     {
       persona: "Nova",
-      role: "Action, motion, next step",
-      voice: "clear execution voice",
+      role: roles.nova,
+      voice: locale === "ru" || locale === "uk" ? "тёплый голос Nova" : "Nova voice",
       image: SENSE_ASSETS.nova,
-      text: operatorText,
+      text: operator,
     },
     {
       persona: "Vera",
-      role: "Risk, truth, priority filter",
-      voice: "careful review voice",
+      role: roles.vera,
+      voice: locale === "ru" || locale === "uk" ? "спокойный голос Vera" : "Vera voice",
       image: SENSE_ASSETS.vera,
-      text: auditorText,
+      text: auditor,
     },
   ];
 }
 
-function speakVoicePerspectives(perspectives: VoicePerspective[]) {
-  if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-    toast.message("Browser speech synthesis is not available.");
-    return;
-  }
-
-  const synth = window.speechSynthesis;
-  synth.cancel();
-  const voices = synth.getVoices();
-  const firstVoice = voices[0];
-  const secondVoice = voices.find((voice) => voice.name !== firstVoice?.name) ?? voices[1];
-
-  perspectives.forEach((item, index) => {
-    const utterance = new SpeechSynthesisUtterance(`${item.persona}. ${item.text}`);
-    utterance.voice = index === 0 ? (firstVoice ?? null) : (secondVoice ?? firstVoice ?? null);
-    utterance.rate = index === 0 ? 1.02 : 0.94;
-    utterance.pitch = index === 0 ? 1.06 : 0.88;
-    utterance.volume = 1;
-    synth.speak(utterance);
-  });
-}
-
-function parseVoiceCommand(raw: string): VoicePlan {
+function parseVoiceCommand(raw: string, uiLang = "en"): VoicePlan {
   const text = raw.trim();
   const lower = normalize(text);
+  const locale = toVoiceLocale(uiLang, text);
+  const b = voiceBundle(uiLang, text);
+  const en = voiceBundle("en");
 
-  if (!text) return unknownPlan(text, "No command text was provided.");
+  const taskPhrases = [...en.createTask, ...b.createTask];
+  const projectPhrases = [...en.createProject, ...b.createProject];
+  const todayPhrases = [...en.today, ...b.today];
+  const riskPhrases = [...en.risks, ...b.risks];
+  const searchPhrases = [...en.search, ...b.search];
+  const notePhrases = [...en.note, ...b.note];
+  const reminderPhrases = [...en.reminder, ...b.reminder];
 
-  const createTaskMatch = matchCreate(lower, [
-    "create task",
-    "new task",
-    "add task",
-    "создай задачу",
-    "добавь задачу",
-    "новая задача",
-    "мне нужно",
-    "надо",
-    "нужно",
-  ]);
+  if (!text) return unknownPlan(text, b.unknownSummary, b);
+
+  const createTaskMatch = matchCreate(lower, taskPhrases);
   if (createTaskMatch) {
     const title = cleanupTitle(text.slice(createTaskMatch.length));
     return {
       rawText: text,
       intent: "create_task",
-      label: "Create task",
+      label: b.labels.create_task,
       summary: title
-        ? `Create a task named "${title}".`
-        : "I can create a task, but I need the actual task title first.",
+        ? locale === "ru" || locale === "uk"
+          ? `Создать задачу «${title}».`
+          : locale === "es"
+            ? `Crear tarea «${title}».`
+            : locale === "de"
+              ? `Aufgabe «${title}» erstellen.`
+              : `Create a task named "${title}".`
+        : b.labels.create_task + (locale === "ru" ? " — нужен заголовок." : ""),
       title: title || undefined,
       description: inferDomainDescription(lower),
       confidence: title ? "high" : "low",
-      evidence: [
-        "Matched create task phrase",
-        "Execution requires explicit confirmation",
-        "Source: local voice intent parser",
-      ],
-      question: title ? undefined : "What exactly should the task be?",
-      quickReplies: title
-        ? undefined
-        : ["Call someone", "Prepare documents", "Buy something", "Review project"],
-      advice: [
-        "If this has a deadline, include today, tomorrow, or a date in the command.",
-        "If it belongs to a project, mention the project name.",
-      ],
+      evidence: [b.evidence.createMatched, b.evidence.confirmRequired, b.evidence.source],
+      question: title ? undefined : b.taskTitleQuestion,
+      quickReplies: title ? undefined : b.quick.task,
+      advice: [b.advice.taskDeadline, b.advice.taskProject],
       executable: Boolean(title),
     };
   }
 
-  const createProjectMatch = matchCreate(lower, [
-    "create project",
-    "new project",
-    "add project",
-    "создай проект",
-    "добавь проект",
-    "новый проект",
-  ]);
+  const createProjectMatch = matchCreate(lower, projectPhrases);
   if (createProjectMatch) {
     const title = cleanupTitle(text.slice(createProjectMatch.length));
     return {
       rawText: text,
       intent: "create_project",
-      label: "Create project",
+      label: b.labels.create_project,
       summary: title
-        ? `Create a project named "${title}".`
-        : "I can create a project, but I need a project name first.",
+        ? locale === "ru" || locale === "uk"
+          ? `Создать проект «${title}».`
+          : locale === "es"
+            ? `Crear proyecto «${title}».`
+            : locale === "de"
+              ? `Projekt «${title}» erstellen.`
+              : `Create a project named "${title}".`
+        : b.labels.create_project,
       title: title || undefined,
       description: inferDomainDescription(lower),
       confidence: title ? "high" : "low",
-      evidence: [
-        "Matched create project phrase",
-        "Execution requires explicit confirmation",
-        "Source: local voice intent parser",
-      ],
-      question: title ? undefined : "What should this project be called?",
-      quickReplies: title
-        ? undefined
-        : ["New business project", "Home project", "DigitalInvest project", "Personal project"],
-      advice: [
-        "A useful project needs a clear outcome, owner, and next action.",
-        "After creation, add the first task so the project does not stay empty.",
-      ],
+      evidence: [b.evidence.createMatched, b.evidence.confirmRequired, b.evidence.source],
+      question: title ? undefined : b.projectTitleQuestion,
+      quickReplies: title ? undefined : b.quick.project,
+      advice: [b.advice.projectOutcome, b.advice.projectTask],
       executable: Boolean(title),
     };
   }
 
-  if (
-    includesAny(lower, [
-      "what should i do",
-      "what do i do",
-      "next step",
-      "what next",
-      "help me",
-      "помоги",
-      "что мне делать",
-      "что дальше",
-      "следующий шаг",
-      "разбери день",
-      "разбери мой день",
-      "план на день",
-    ])
-  ) {
+  if (includesAny(lower, todayPhrases)) {
     return routePlan(
       "show_today",
-      "Review today's priorities",
-      "Open Dashboard for a practical daily brief: focus, risks, waiting items, and next actions.",
+      b.labels.show_today,
+      locale === "ru" || locale === "uk"
+        ? "Открыть Dashboard: фокус дня, риски и следующие шаги."
+        : locale === "es"
+          ? "Abrir Dashboard: enfoque, riesgos y acciones."
+          : locale === "de"
+            ? "Dashboard öffnen: Fokus, Risiken und nächste Schritte."
+            : "Open Dashboard for today focus, risks, and next actions.",
       "/dashboard",
       "high",
-      [
-        "Matched help/today planning phrase",
-        "Dashboard and System Brain already derive today focus from existing data",
-      ],
-      [
-        "Start with the highest-risk or overdue item, not the easiest item.",
-        "If the day is unclear, save raw thoughts to Voice Inbox first.",
-        "Use System Brain when you want a deeper project and waiting review.",
-      ],
+      [b.evidence.helpToday, b.evidence.dashboardBrain],
+      [b.advice.todayFocus, b.advice.todayInbox],
       text,
     );
   }
 
-  if (includesAny(lower, ["show risks", "risks", "риск", "риски", "покажи риски"])) {
+  if (includesAny(lower, riskPhrases)) {
     return routePlan(
       "show_risks",
-      "Show risks",
-      "Open Projects risk view context.",
+      b.labels.show_risks,
+      locale === "ru" || locale === "uk"
+        ? "Открыть Projects для обзора рисков."
+        : locale === "es"
+          ? "Abrir Projects para revisar riesgos."
+          : locale === "de"
+            ? "Projects öffnen für Risikoübersicht."
+            : "Open Projects risk context.",
       "/projects",
       "high",
-      ["Matched risk phrase", "Best current risk surface is Projects + Daily Command Center"],
-      [
-        "Review risks before creating more work.",
-        "A risk should be attached to a project and have an owner or next action.",
-      ],
+      [b.evidence.riskPhrase, b.evidence.riskSurface],
+      [b.advice.risksFirst, b.advice.riskOwner],
       text,
     );
   }
 
-  if (
-    includesAny(lower, [
-      "what today",
-      "today important",
-      "what is important today",
-      "что сегодня",
-      "что важно",
-      "сегодня важно",
-    ])
-  ) {
-    return routePlan(
-      "show_today",
-      "Show today's command center",
-      "Open Dashboard for today focus, risk, decisions, and suggested actions.",
-      "/dashboard",
-      "high",
-      ["Matched today/focus phrase", "Dashboard contains Daily Command Center"],
-      [
-        "Use today view to choose one concrete next move.",
-        "If something feels unclear, ask Sense to save it as a voice inbox item.",
-      ],
-      text,
-    );
-  }
-
-  if (includesAny(lower, ["search", "find", "найди", "поиск"])) {
+  if (includesAny(lower, searchPhrases)) {
     return routePlan(
       "search",
-      "Open search",
-      "Open Dashboard. Use global search from the top bar or slash shortcut.",
+      b.labels.search,
+      locale === "ru" || locale === "uk"
+        ? "Открыть Dashboard и использовать глобальный поиск."
+        : locale === "es"
+          ? "Abrir Dashboard y usar búsqueda global."
+          : locale === "de"
+            ? "Dashboard öffnen und globale Suche nutzen."
+            : "Open Dashboard and use global search.",
       "/dashboard",
       "medium",
-      ["Matched search phrase", "Global command/search is available in app shell"],
-      ["Search is currently routed to the app shell/global search surface."],
+      [b.evidence.searchPhrase, b.evidence.searchShell],
+      [b.evidence.searchShell],
       text,
     );
   }
 
-  if (includesAny(lower, ["note", "idea", "remember", "заметка", "идея", "запиши", "мысль"])) {
+  if (includesAny(lower, notePhrases)) {
     const title = cleanupTitle(
-      text.replace(/^(note|idea|remember|заметка|идея|запиши|мысль)/i, ""),
+      text.replace(/^(note|idea|remember|заметка|идея|запиши|мысль|nota|idee|notiz)/i, ""),
     );
     return {
       rawText: text,
       intent: "draft_note",
-      label: "Draft note",
-      summary: "Notes are drafted here. Dedicated note creation is not connected yet.",
+      label: b.labels.draft_note,
+      summary:
+        locale === "ru" || locale === "uk"
+          ? "Заметка сохранена как черновик."
+          : locale === "es"
+            ? "Nota guardada como borrador."
+            : locale === "de"
+              ? "Notiz als Entwurf gespeichert."
+              : "Note drafted here.",
       title: title || text,
       confidence: "medium",
-      evidence: [
-        "Matched note phrase",
-        "Notes route exists, but write flow is not connected in voice center yet",
-      ],
-      question: "Should this stay as a note, become a task, or attach to a project?",
-      quickReplies: ["Keep as note", "Turn into task", "Attach to project", "Ask me later"],
-      advice: [
-        "Good notes preserve context. Good tasks include a verb and a next action.",
-        "If this affects an active project, mention the project name next time.",
-      ],
+      evidence: [b.evidence.notePhrase, b.evidence.noteNotConnected],
+      question:
+        locale === "ru" || locale === "uk"
+          ? "Оставить заметкой, сделать задачей или привязать к проекту?"
+          : locale === "es"
+            ? "¿Nota, tarea o proyecto?"
+            : locale === "de"
+              ? "Notiz, Aufgabe oder Projekt?"
+              : "Note, task, or project?",
+      quickReplies: b.quick.note,
+      advice: [b.advice.noteTypes, b.advice.noteProject],
       executable: false,
     };
   }
 
-  if (includesAny(lower, ["remind", "reminder", "напомни", "напоминание"])) {
+  if (includesAny(lower, reminderPhrases)) {
     const hasTimeSignal = includesAny(lower, [
       "today",
       "tomorrow",
@@ -911,43 +864,53 @@ function parseVoiceCommand(raw: string): VoicePlan {
     return {
       rawText: text,
       intent: "draft_reminder",
-      label: "Draft reminder",
+      label: b.labels.draft_reminder,
       summary:
-        "Reminder intent detected. Reminder execution needs a dedicated reminders data flow later.",
+        locale === "ru" || locale === "uk"
+          ? "Напоминание сохранено как черновик."
+          : locale === "es"
+            ? "Recordatorio guardado como borrador."
+            : locale === "de"
+              ? "Erinnerung als Entwurf gespeichert."
+              : "Reminder drafted for later.",
       title: text,
       confidence: hasTimeSignal ? "medium" : "low",
-      evidence: ["Matched reminder phrase", "No production reminder execution is connected yet"],
-      question: hasTimeSignal ? undefined : "When should I remind you?",
-      quickReplies: hasTimeSignal ? undefined : ["Today", "Tomorrow", "This week", "Ask me later"],
-      advice: [
-        "Reminder execution is not connected yet, so I can safely save this as a draft.",
-        "Use a specific time later when reminders are connected.",
-      ],
+      evidence: [b.evidence.reminderPhrase, b.evidence.reminderNotConnected],
+      question: hasTimeSignal ? undefined : b.reminderTimeQuestion,
+      quickReplies: hasTimeSignal ? undefined : b.quick.reminder,
+      advice: [b.advice.reminderDraft, b.advice.reminderTime],
       executable: false,
     };
   }
 
-  const route = ROUTES.find((item) =>
+  const routeHit = VOICE_ROUTES.find((item) =>
     includesAny(lower, [
-      "open " + item.label.toLowerCase(),
-      "go " + item.label.toLowerCase(),
-      ...item.words,
+      ...item.words.en,
+      ...item.words[locale],
+      ...b.openPrefix.map((p) => `${p} ${item.labels[locale].toLowerCase()}`),
     ]),
   );
-  if (route) {
+  if (routeHit) {
+    const label = routeHit.labels[locale];
     return routePlan(
       "open_route",
-      `Open ${route.label}`,
-      `Navigate to ${route.label}.`,
-      route.route,
+      label,
+      locale === "ru" || locale === "uk"
+        ? `Перейти: ${label}.`
+        : locale === "es"
+          ? `Ir a ${label}.`
+          : locale === "de"
+            ? `Öffne ${label}.`
+            : `Navigate to ${label}.`,
+      routeHit.route,
       "high",
-      [`Matched route keywords: ${route.words.slice(0, 3).join(", ")}`, "Source: local route map"],
-      [`Opening ${route.label} is a safe command and does not change data.`],
+      [b.evidence.routeKeywords, b.evidence.routeMap],
+      [b.evidence.routeMap],
       text,
     );
   }
 
-  return unknownPlan(text, "I can draft this, but I need a clearer command before executing.");
+  return unknownPlan(text, b.unknownSummary, b);
 }
 
 function routePlan(
@@ -963,24 +926,18 @@ function routePlan(
   return { rawText, intent, label, summary, route, confidence, evidence, advice, executable: true };
 }
 
-function unknownPlan(text: string, summary: string): VoicePlan {
+function unknownPlan(text: string, summary: string, b: ReturnType<typeof voiceBundle>): VoicePlan {
   return {
     rawText: text,
     intent: "unknown",
-    label: "Unknown command",
+    label: b.labels.unknown,
     summary,
     title: text || undefined,
     confidence: "low",
-    evidence: [
-      "No supported local intent matched",
-      "Try create task, create project, open page, show today, or show risks",
-    ],
-    question: "What should I do with this?",
-    quickReplies: ["Save as note", "Turn into task", "Create project", "Show today"],
-    advice: [
-      "When unsure, I will save the thought instead of inventing an action.",
-      "For execution, say a clear verb: create, open, show, find, remind, or save.",
-    ],
+    evidence: [b.evidence.noIntent, b.evidence.tryPhrases],
+    question: b.unknownQuestion,
+    quickReplies: b.quick.unknown,
+    advice: [b.advice.unknownSave, b.advice.unknownVerbs],
     executable: false,
   };
 }

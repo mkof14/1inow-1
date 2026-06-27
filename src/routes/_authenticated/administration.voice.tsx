@@ -34,7 +34,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchSystemSettings, updateSystemSetting, type SystemSetting } from "@/lib/admin-queries";
 import { dictionaries } from "@/lib/i18n/dictionaries";
 import { useRef } from "react";
-import { Textarea } from "@/components/ui/textarea";
+import { ELEVENLABS_VOICE_OPTIONS } from "@/lib/elevenlabs-voices";
 
 export const Route = createFileRoute("/_authenticated/administration/voice")({
   component: VoicePage,
@@ -109,8 +109,12 @@ const TTS_PROVIDER_OPTIONS = [
     note: "No server voice synthesis. Safe production default.",
   },
   { id: "browser", label: "Browser", note: "Future client speech synthesis fallback." },
-  { id: "openai", label: "OpenAI", note: "Future server TTS endpoint." },
-  { id: "elevenlabs", label: "ElevenLabs", note: "Future high-quality voice option." },
+  { id: "openai", label: "OpenAI", note: "Server TTS via /api/tts (tts-1-hd)." },
+  {
+    id: "elevenlabs",
+    label: "ElevenLabs",
+    note: "Natural multilingual TTS via /api/tts (eleven_multilingual_v2).",
+  },
   { id: "azure", label: "Azure Speech", note: "Future enterprise TTS option." },
 ];
 
@@ -260,12 +264,14 @@ function VoicePage() {
       const headers: Record<string, string> = { "Content-Type": "application/json" };
       if (token) headers.Authorization = `Bearer ${token}`;
 
+      const defaultVoice = ttsProvider === "elevenlabs" ? ELEVENLABS_VOICE_OPTIONS[0].id : "coral";
       const res = await fetch("/api/tts", {
         method: "POST",
         headers,
         body: JSON.stringify({
           text: ttsText,
-          voice: prefs.ttsVoice && prefs.ttsVoice !== "default" ? prefs.ttsVoice : "alloy",
+          lang: prefs.sttLang || "en",
+          voice: prefs.ttsVoice && prefs.ttsVoice !== "default" ? prefs.ttsVoice : defaultVoice,
         }),
       });
       if (!res.ok) throw new Error((await res.text()) || `TTS ${res.status}`);
@@ -767,18 +773,21 @@ function VoicePage() {
             <div>
               <Label>TTS voice</Label>
               <Select
-                value={prefs.ttsVoice || "alloy"}
+                value={prefs.ttsVoice || (ttsProvider === "elevenlabs" ? "default" : "coral")}
                 onValueChange={(v) => setPrefs((p) => ({ ...p, ttsVoice: v }))}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {TTS_VOICES.map((v) => (
-                    <SelectItem key={v.id} value={v.id}>
-                      {v.label}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="default">Default (Nova/Vera per language)</SelectItem>
+                  {(ttsProvider === "elevenlabs" ? ELEVENLABS_VOICE_OPTIONS : TTS_VOICES).map(
+                    (v) => (
+                      <SelectItem key={v.id} value={v.id}>
+                        {v.label}
+                      </SelectItem>
+                    ),
+                  )}
                 </SelectContent>
               </Select>
             </div>

@@ -2,7 +2,9 @@ import process from "node:process";
 import { createClient } from "@supabase/supabase-js";
 import { logAiAction } from "@/lib/ai-audit.server";
 import { getSttProviderState, getTtsProviderState } from "@/lib/connection-providers.server";
+import { synthesizeElevenLabsSpeech } from "@/lib/elevenlabs-tts.server";
 import { captureServerException } from "@/lib/monitoring.server";
+import { resolveTtsVoices } from "@/lib/sense-personas";
 import type { Database } from "@/integrations/supabase/types";
 
 async function resolveVoiceUserId(authorizationHeader?: string | null) {
@@ -56,6 +58,19 @@ async function logVoiceAction(input: {
     payload: { provider: input.provider },
     sources: [],
   });
+}
+
+function ttsNotReady(service: ReturnType<typeof getTtsProviderState>) {
+  return {
+    ok: false as const,
+    status: 501,
+    body: {
+      message: service.message,
+      disabled: service.disabled,
+      provider: service.provider,
+      status: service.status,
+    },
+  };
 }
 
 export async function runSttGateway(input: {
@@ -140,6 +155,88 @@ export async function runSttGateway(input: {
   }
 }
 
+async function runOpenAiTts(input: {
+  text: string;
+  voice?: string | null;
+  lang?: string | null;
+  userId: string;
+}) {
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  if (!apiKey) {
+    return {
+      ok: false as const,
+      status: 503,
+      body: { message: "OPENAI_API_KEY is missing." },
+    };
+  }
+
+  const voices = resolveTtsVoices(input.lang ?? "en");
+  const response = await fetch("https://api.openai.com/v1/audio/speech", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: process.env.OPENAI_TTS_MODEL?.trim() || "tts-1-hd",
+      input: input.text,
+      voice: input.voice?.trim() || voices.nova,
+      speed: 0.97,
+    }),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`OpenAI TTS error (${response.status}): ${detail || response.statusText}`);
+  }
+
+  const audio = await response.arrayBuffer();
+  await logVoiceAction({
+    userId: input.userId,
+    kind: "tts",
+    provider: "openai",
+    payload: {
+      text: input.text.slice(0, 200),
+      voice: input.voice ?? voices.nova,
+      lang: input.lang ?? null,
+      bytes: audio.byteLength,
+    },
+  });
+
+  return {
+    ok: true as const,
+    audio,
+    contentType: response.headers.get("content-type") || "audio/mpeg",
+  };
+}
+
+async function runElevenLabsTts(input: {
+  text: string;
+  voice?: string | null;
+  lang?: string | null;
+  userId: string;
+}) {
+  const result = await synthesizeElevenLabsSpeech(input);
+  await logVoiceAction({
+    userId: input.userId,
+    kind: "tts",
+    provider: "elevenlabs",
+    payload: {
+      text: input.text.slice(0, 200),
+      voice: result.voiceId,
+      model: result.model,
+      lang: input.lang ?? null,
+      bytes: result.audio.byteLength,
+    },
+  });
+
+  return {
+    ok: true as const,
+    audio: result.audio,
+    contentType: result.contentType,
+  };
+}
+
 export async function runTtsGateway(input: {
   text: string;
   voice?: string | null;
@@ -147,17 +244,10 @@ export async function runTtsGateway(input: {
   authorizationHeader?: string | null;
 }) {
   const service = getTtsProviderState();
-  if (service.provider !== "openai" || !service.connected) {
-    return {
-      ok: false as const,
-      status: 501,
-      body: {
-        message: service.message,
-        disabled: service.disabled,
-        provider: service.provider,
-        status: service.status,
-      },
-    };
+  const wired =
+    service.connected && (service.provider === "openai" || service.provider === "elevenlabs");
+  if (!wired) {
+    return ttsNotReady(service);
   }
 
   const userId = await resolveVoiceUserId(input.authorizationHeader);
@@ -176,53 +266,11 @@ export async function runTtsGateway(input: {
     };
   }
 
-  const apiKey = process.env.OPENAI_API_KEY?.trim();
-  if (!apiKey) {
-    return {
-      ok: false as const,
-      status: 503,
-      body: { message: "OPENAI_API_KEY is missing." },
-    };
-  }
-
   try {
-    const response = await fetch("https://api.openai.com/v1/audio/speech", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: process.env.OPENAI_TTS_MODEL?.trim() || "tts-1-hd",
-        input: input.text,
-        voice: input.voice?.trim() || "coral",
-        speed: 0.97,
-      }),
-    });
-
-    if (!response.ok) {
-      const detail = await response.text();
-      throw new Error(`OpenAI TTS error (${response.status}): ${detail || response.statusText}`);
+    if (service.provider === "elevenlabs") {
+      return await runElevenLabsTts({ ...input, userId });
     }
-
-    const audio = await response.arrayBuffer();
-    await logVoiceAction({
-      userId,
-      kind: "tts",
-      provider: "openai",
-      payload: {
-        text: input.text.slice(0, 200),
-        voice: input.voice ?? "alloy",
-        lang: input.lang ?? null,
-        bytes: audio.byteLength,
-      },
-    });
-
-    return {
-      ok: true as const,
-      audio,
-      contentType: response.headers.get("content-type") || "audio/mpeg",
-    };
+    return await runOpenAiTts({ ...input, userId });
   } catch (error) {
     await captureServerException(error, { module: "voice-gateway", kind: "tts" });
     return {

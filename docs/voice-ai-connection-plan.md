@@ -6,7 +6,7 @@
 
 - `/api/chat` — OpenAI adapter when `AI_PROVIDER=openai` (Phase A)
 - `/api/stt` — OpenAI Whisper when `STT_PROVIDER=openai`
-- `/api/tts` — OpenAI speech when `TTS_PROVIDER=openai`
+- `/api/tts` — OpenAI speech when `TTS_PROVIDER=openai`, ElevenLabs when `TTS_PROVIDER=elevenlabs`
 
 Paid external services remain disabled by default until env selectors and secrets are configured.
 
@@ -39,7 +39,7 @@ Supported future modes:
 - `disabled`: production-safe default.
 - `browser`: future browser speech synthesis fallback.
 - `openai`: server speech synthesis (`/api/tts`).
-- `elevenlabs`: future high-quality voice generation.
+- `elevenlabs`: high-quality multilingual voice generation (`/api/tts`, `eleven_multilingual_v2`).
 - `azure`: future enterprise speech synthesis.
 
 ## Runtime Rules
@@ -69,6 +69,9 @@ Future private secrets:
 - `ANTHROPIC_API_KEY`
 - `GEMINI_API_KEY`
 - `ELEVENLABS_API_KEY`
+- `ELEVENLABS_MODEL` (default `eleven_multilingual_v2`)
+- `ELEVENLABS_OUTPUT_FORMAT` (default `mp3_44100_128`)
+- `ELEVENLABS_VOICE_NOVA` / `ELEVENLABS_VOICE_VERA` (optional persona overrides)
 - `GOOGLE_SPEECH_API_KEY`
 - `AZURE_SPEECH_KEY`
 - `AZURE_SPEECH_REGION`
@@ -91,14 +94,14 @@ Future private secrets:
 2. Add private provider secrets in Vercel and local private env.
 3. Grant `use_voice` (and `use_assistant` for chat) to allowed users.
 4. Implement server STT for non-OpenAI providers (Google, Azure) if needed.
-5. Implement server TTS for ElevenLabs/Azure if higher-quality voice is required.
+5. ~~Implement server TTS for ElevenLabs/Azure if higher-quality voice is required.~~ ElevenLabs wired; Azure still pending.
 6. Add user-level rate limits and cost caps per organization.
 
 ## Disabled Until Approved
 
 - Anthropic runtime calls
 - Gemini runtime calls
-- ElevenLabs runtime calls
+- ~~ElevenLabs runtime calls~~ (wired via `src/lib/elevenlabs-tts.server.ts`)
 - Google Speech runtime calls
 - Azure Speech runtime calls
 - Internal model gateway runtime calls
