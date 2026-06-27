@@ -37,6 +37,16 @@ if [[ -n "${VERCEL_TOKEN:-}" ]]; then
   TOKEN_FLAG=(--token "$VERCEL_TOKEN")
 fi
 
+# Vite reads .env.production.local — vercel pull writes to .vercel/ instead.
+sync_vite_env() {
+  local pulled="$1"
+  local target="$2"
+  if [[ -f "$pulled" ]]; then
+    cp "$pulled" "$target"
+    echo "▶ Synced $(basename "$target") for Vite (from $(basename "$pulled"))"
+  fi
+}
+
 # Link project on first run (non-interactive when env ids are present).
 if [[ ! -f .vercel/project.json ]]; then
   echo "▶ Linking project to Vercel…"
@@ -51,6 +61,7 @@ fi
 if [[ "$MODE" == "prod" ]]; then
   echo "▶ Pulling production env…"
   $VERCEL pull --yes --environment=production "${TOKEN_FLAG[@]}"
+  sync_vite_env ".vercel/.env.production.local" ".env.production.local"
   echo "▶ Building (prod)…"
   $VERCEL build --prod "${TOKEN_FLAG[@]}"
   echo "▶ Deploying to production…"
@@ -58,6 +69,7 @@ if [[ "$MODE" == "prod" ]]; then
 else
   echo "▶ Pulling preview env…"
   $VERCEL pull --yes --environment=preview "${TOKEN_FLAG[@]}"
+  sync_vite_env ".vercel/.env.preview.local" ".env.local"
   echo "▶ Building (preview)…"
   $VERCEL build "${TOKEN_FLAG[@]}"
   echo "▶ Deploying preview…"
