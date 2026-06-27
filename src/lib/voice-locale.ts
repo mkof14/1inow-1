@@ -28,8 +28,8 @@ export function detectLanguageFromText(text: string): LangCode | null {
   if (/[\u0400-\u04FF]/.test(sample)) {
     if (/[іїєґ]/i.test(sample)) return "uk";
     if (/[ыэёъ]/i.test(sample)) return "ru";
-    // Cyrillic without uk markers — lean Russian if ы/э present else Ukrainian
-    return /[ыэёъ]/i.test(sample) ? "ru" : "uk";
+    // Default Cyrillic without Ukrainian markers to Russian (user base)
+    return "ru";
   }
   if (/[äöüß]/i.test(sample) || /\b(und|ich|nicht|bitte|danke)\b/i.test(sample)) return "de";
   if (/[ñáéíóúü¿¡]/i.test(sample) || /\b(hola|gracias|por favor|qué)\b/i.test(sample)) return "es";
@@ -54,4 +54,14 @@ export function languageLabel(code: string) {
     de: "DE",
   };
   return labels[code.slice(0, 2).toLowerCase()] ?? code.slice(0, 2).toUpperCase();
+}
+
+/** Heuristic: user is asking a question rather than issuing a command. */
+export function isLikelyQuestion(text: string) {
+  const sample = text.trim();
+  if (!sample) return false;
+  if (sample.includes("?")) return true;
+  return /\b(what|why|how|when|who|where|tell me|explain|help me|can you|could you|что|как|почему|зачем|когда|где|кто|объясни|расскажи|помоги|скажи|подскажи|чем|какой|какая|какие|wie|warum|wann|was|qué|cómo|por qu[ée]|cuándo)\b/i.test(
+    sample,
+  );
 }

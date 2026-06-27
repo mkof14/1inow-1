@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { supabase } from "@/integrations/supabase/client";
+import { resolveAuthSession } from "@/lib/auth-session";
 import {
   enforceFounderModePolicy,
   isFounderModeEnabled,
@@ -13,9 +14,15 @@ export const Route = createFileRoute("/_authenticated")({
     enforceFounderModePolicy();
     if (isFounderModeEnabled()) return;
 
-    const { data } = await supabase.auth.getSession();
-    syncFounderModeWithSession(Boolean(data.session));
-    if (!data.session) {
+    const session = await resolveAuthSession();
+    syncFounderModeWithSession(Boolean(session));
+    if (!session) {
+      throw redirect({ to: "/auth" });
+    }
+
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData.user) {
+      await supabase.auth.signOut();
       throw redirect({ to: "/auth" });
     }
   },

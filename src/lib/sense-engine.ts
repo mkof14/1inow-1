@@ -85,15 +85,23 @@ export function formatSenseResponse(response: SenseResponse, lang = "en") {
         : locale === "de"
           ? "Nächste Schritte:"
           : "Next:";
-  return [
-    response.summary,
-    "",
-    `Nova: ${response.nova}`,
-    `Vera: ${response.vera}`,
-    "",
-    nextLabel,
-    ...response.next.map((item) => `- ${item}`),
-  ].join("\n");
+  // Single conversational voice — no Nova/Vera blocks (voice-first UX).
+  const body =
+    locale === "ru" || locale === "uk"
+      ? `${response.summary} ${response.nova}`
+      : `${response.summary} ${response.nova}`;
+  return [body.trim(), "", nextLabel, ...response.next.map((item) => `- ${item}`)].join("\n");
+}
+
+/** Short line for TTS only — one natural sentence. */
+export function formatSenseSpeechLine(response: SenseResponse, lang = "en"): string {
+  const locale = resolveSenseLocale(lang, response.summary);
+  const lead = response.summary.trim();
+  const action = response.nova.trim();
+  if (locale === "ru" || locale === "uk") {
+    return action.length > 20 ? action : `${lead} ${action}`.trim();
+  }
+  return action.length > 20 ? action : `${lead} ${action}`.trim();
 }
 
 function inferIntent(lower: string, locale: SenseLocale) {
@@ -103,6 +111,7 @@ function inferIntent(lower: string, locale: SenseLocale) {
   if (containsAny(lower, b.today)) return INTENTS.today;
   if (containsAny(lower, b.voice)) return INTENTS.voice;
   if (containsAny(lower, b.project)) return INTENTS.project;
+  if (containsAny(lower, b.question)) return INTENTS.question;
   return INTENTS.default;
 }
 
@@ -159,6 +168,13 @@ const INTENTS = {
     es: "análisis del espacio de trabajo",
     de: "Arbeitskontext-Analyse",
   },
+  question: {
+    en: "open question",
+    ru: "открытый вопрос",
+    uk: "відкрите питання",
+    es: "pregunta abierta",
+    de: "offene Frage",
+  },
 };
 
 const PHRASES: Record<SenseLocale, Record<string, string[]>> = {
@@ -168,6 +184,18 @@ const PHRASES: Record<SenseLocale, Record<string, string[]>> = {
     today: ["today", "focus"],
     voice: ["voice", "listen", "speak"],
     project: ["project", "portfolio"],
+    question: [
+      "what",
+      "why",
+      "how",
+      "when",
+      "who",
+      "where",
+      "explain",
+      "tell me",
+      "help me",
+      "?",
+    ],
   },
   ru: {
     create: ["создай", "добавь", "новая задача", "надо"],
@@ -175,6 +203,7 @@ const PHRASES: Record<SenseLocale, Record<string, string[]>> = {
     today: ["сегодня", "день", "фокус"],
     voice: ["голос", "слуш", "говор"],
     project: ["проект", "портф"],
+    question: ["что", "как", "почему", "зачем", "когда", "где", "кто", "объясни", "расскажи", "помоги", "?"],
   },
   uk: {
     create: ["створи", "додай", "нова задача", "треба"],
@@ -182,6 +211,7 @@ const PHRASES: Record<SenseLocale, Record<string, string[]>> = {
     today: ["сьогодні", "день", "фокус"],
     voice: ["голос", "слух", "говор"],
     project: ["проєкт", "проект"],
+    question: ["що", "як", "чому", "навіщо", "коли", "де", "хто", "поясни", "?"],
   },
   es: {
     create: ["crear", "nueva tarea", "añadir"],
@@ -189,6 +219,7 @@ const PHRASES: Record<SenseLocale, Record<string, string[]>> = {
     today: ["hoy", "enfoque"],
     voice: ["voz", "hablar"],
     project: ["proyecto"],
+    question: ["qué", "cómo", "por qué", "cuándo", "dónde", "quién", "explica", "?"],
   },
   de: {
     create: ["erstellen", "neue aufgabe", "hinzufügen"],
@@ -196,6 +227,7 @@ const PHRASES: Record<SenseLocale, Record<string, string[]>> = {
     today: ["heute", "fokus"],
     voice: ["stimme", "sprache"],
     project: ["projekt"],
+    question: ["was", "wie", "warum", "wann", "wo", "wer", "erkläre", "?"],
   },
 };
 
@@ -254,16 +286,22 @@ const LOCALE_COPY: Record<
   }
 > = {
   en: {
-    summary: (intent, ctx) =>
-      `Sense sees Sense Chat for context and Voice Center for commands. Intent: ${intent}. Context: ${ctx}.`,
+    summary: (intent, ctx) => {
+      if (intent.includes("question"))
+        return ctx.includes("dashboard")
+          ? "For today: open Home for priorities, risks, and unowned tasks."
+          : "I'm here to help with your day, projects, or tasks — tell me what you need.";
+      if (intent.includes("risk")) return "Checking risks: blockers, overdue items, and missing owners.";
+      if (intent.includes("daily")) return "Today's focus: three priorities, one blocker, one waiting-on.";
+      return `Got it — ${intent}. Context: ${ctx}.`;
+    },
     nova: (intent) =>
-      intent.includes("risk")
-        ? "I'll find the blocker, owner, and next step."
-        : "I'll turn this into one clear move you can confirm.",
-    vera: (intent) =>
-      intent.includes("risk")
-        ? "I'll check evidence and whether action is really justified."
-        : "I'll slow down if context, timing, or risk is missing.",
+      intent.includes("question")
+        ? "Say open Home, show risks, or create a task — I'll guide the next step."
+        : intent.includes("risk")
+          ? "Open the risks view or say show risks — we'll walk through it."
+          : "Tell me more and I'll suggest one clear move you can confirm.",
+    vera: () => "",
     next: () => [
       "Use Sense Chat for context.",
       "Use Voice Center for commands.",
@@ -271,16 +309,34 @@ const LOCALE_COPY: Record<
     ],
   },
   ru: {
-    summary: (intent, ctx) =>
-      `Sense видит Sense Chat для контекста и Voice Center для команд. Запрос: ${intent}. Контекст: ${ctx}.`,
+    summary: (intent, ctx) => {
+      if (intent.includes("question") || intent.includes("вопрос") || intent.includes("питан")) {
+        if (ctx.includes("главн") || ctx.includes("Home") || ctx.includes("dashboard"))
+          return "Смотрю на ваш день: откройте Home — там приоритеты, риски и задачи без владельца.";
+        if (ctx.includes("проект"))
+          return "По проектам: проверьте статус, дедлайны и кто ждёт решения от вас.";
+        if (ctx.includes("задач"))
+          return "По задачам: начните с просроченных и тех, где вы блокируете других.";
+        return "Я здесь, чтобы помочь разобрать день, проекты или задачи — скажите, что именно вас волнует.";
+      }
+      if (intent.includes("риск") || intent.includes("risk"))
+        return "Проверяю риски: ищу блокеры, просрочки и задачи без ответственного.";
+      if (intent.includes("фокус") || intent.includes("today") || intent.includes("день"))
+        return "На сегодня: три приоритета, один блокер и одно ожидание от других — начните с Home.";
+      return `Понял запрос про ${intent}. Контекст: ${ctx}.`;
+    },
     nova: (intent) =>
-      intent.includes("риск")
-        ? "Сначала найду блокер, ответственного и следующий шаг."
-        : "Превращу это в одно понятное действие с вашим подтверждением.",
+      intent.includes("question") || intent.includes("вопрос") || intent.includes("питан")
+        ? "Могу открыть Home, показать риски или помочь создать задачу — скажите, что нужно."
+        : intent.includes("риск")
+          ? "Откройте раздел рисков или скажите «покажи риски» — разберём по пунктам."
+          : "Скажите конкретнее, и я предложу один шаг, который можно выполнить сейчас.",
     vera: (intent) =>
-      intent.includes("риск")
-        ? "Проверю доказательства и оправданность действия."
-        : "Замедлюсь, если не хватает контекста, времени или ясности.",
+      intent.includes("question") || intent.includes("вопрос") || intent.includes("питан")
+        ? ""
+        : intent.includes("риск")
+          ? "Сначала подтвердим, что риск реальный, а не просто шум."
+          : "",
     next: () => [
       "Sense Chat — для контекста.",
       "Voice Center — для команд.",

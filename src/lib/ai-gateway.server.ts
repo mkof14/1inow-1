@@ -5,8 +5,12 @@ import { logAiAction } from "@/lib/ai-audit.server";
 import { getChatProviderState } from "@/lib/connection-providers.server";
 import { buildSenseSystemPrompt } from "@/lib/sense-prompt.server";
 import { extractMemoryTeach, saveConversationMemory, saveMemoryTeach } from "@/lib/memory-engine";
-import { resolveResponseLang } from "@/lib/voice-locale";
+import { resolveResponseLang, isLikelyQuestion } from "@/lib/voice-locale";
 import { buildSenseResponse, formatSenseResponse } from "@/lib/sense-engine";
+import {
+  FOUNDER_VOICE_USER_ID,
+  isFounderVoiceBypassHeader,
+} from "@/lib/founder-voice.server";
 import { captureServerException } from "@/lib/monitoring.server";
 import { think, type ThinkingInput } from "@/lib/thinking";
 import type { Database } from "@/integrations/supabase/types";
@@ -16,6 +20,7 @@ export type ChatGatewayInput = {
   lang: string;
   pageContext?: unknown;
   authorizationHeader?: string | null;
+  requestHeaders?: Headers | Record<string, string | null | undefined>;
 };
 
 export type ChatGatewayResult = {
@@ -187,7 +192,12 @@ function runLocalSense(
 export async function runChatGateway(input: ChatGatewayInput): Promise<ChatGatewayResult> {
   const chatState = getChatProviderState();
   const provider = chatState.provider;
-  const userId = await resolveChatUserId(input.authorizationHeader);
+  const founderBypass = input.requestHeaders
+    ? isFounderVoiceBypassHeader(input.requestHeaders)
+    : false;
+  const userId =
+    (await resolveChatUserId(input.authorizationHeader)) ??
+    (founderBypass ? FOUNDER_VOICE_USER_ID : null);
   const lang = resolveResponseLang(input.lang, input.prompt);
   const gatewayInput = { ...input, lang };
 
@@ -221,8 +231,10 @@ export async function runChatGateway(input: ChatGatewayInput): Promise<ChatGatew
 
   if (provider === "openai" && chatState.connected) {
     if (!userId) return runLocalSense(gatewayInput, bundle);
-    const allowed = await hasAssistantPermission(userId);
-    if (!allowed) return runLocalSense(gatewayInput, bundle);
+    if (!founderBypass) {
+      const allowed = await hasAssistantPermission(userId);
+      if (!allowed) return runLocalSense(gatewayInput, bundle);
+    }
 
     try {
       const text = await callOpenAIChat(gatewayInput.prompt, gatewayInput.lang, {

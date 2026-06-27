@@ -2,14 +2,16 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  resolveUserRoleFlags,
+  ADMIN_AREA_PERMISSIONS,
   resolveAdminAreaAccess,
+  resolveUserRoleFlags,
   type AdminAreaPermission,
 } from "@/lib/auth-roles";
 import { completeAuthenticatedInvite, readInviteToken } from "@/lib/invitations";
 import {
   disableFounderMode,
   enforceFounderModePolicy,
+  FOUNDER_ADMIN_ACCESS,
   FOUNDER_USER,
   isFounderModeEnabled,
   syncFounderModeWithSession,
@@ -47,10 +49,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (founderMode) {
       setSession(null);
-      setIsAdmin(false);
-      setIsSuperAdmin(false);
-      setCanAccessAdmin(false);
-      setAdminPermissions(null);
+      setIsAdmin(FOUNDER_ADMIN_ACCESS.isAdmin);
+      setIsSuperAdmin(FOUNDER_ADMIN_ACCESS.isSuperAdmin);
+      setCanAccessAdmin(FOUNDER_ADMIN_ACCESS.canAccessAdmin);
+      setAdminPermissions(
+        Object.fromEntries(ADMIN_AREA_PERMISSIONS.map((key) => [key, true])) as Record<
+          AdminAreaPermission,
+          boolean
+        >,
+      );
       setLoading(false);
       return;
     }
@@ -88,10 +95,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (founderMode) {
-      setIsAdmin(false);
-      setIsSuperAdmin(false);
-      setCanAccessAdmin(false);
-      setAdminPermissions(null);
+      setIsAdmin(FOUNDER_ADMIN_ACCESS.isAdmin);
+      setIsSuperAdmin(FOUNDER_ADMIN_ACCESS.isSuperAdmin);
+      setCanAccessAdmin(FOUNDER_ADMIN_ACCESS.canAccessAdmin);
+      setAdminPermissions(
+        Object.fromEntries(ADMIN_AREA_PERMISSIONS.map((key) => [key, true])) as Record<
+          AdminAreaPermission,
+          boolean
+        >,
+      );
       return;
     }
 

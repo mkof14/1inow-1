@@ -2,6 +2,10 @@ import process from "node:process";
 import { createClient } from "@supabase/supabase-js";
 import { logAiAction } from "@/lib/ai-audit.server";
 import { getSttProviderState, getTtsProviderState } from "@/lib/connection-providers.server";
+import {
+  FOUNDER_VOICE_USER_ID,
+  isFounderVoiceBypassHeader,
+} from "@/lib/founder-voice.server";
 import { synthesizeElevenLabsSpeech } from "@/lib/elevenlabs-tts.server";
 import { captureServerException } from "@/lib/monitoring.server";
 import { resolveTtsVoices } from "@/lib/sense-personas";
@@ -242,6 +246,7 @@ export async function runTtsGateway(input: {
   voice?: string | null;
   lang?: string | null;
   authorizationHeader?: string | null;
+  requestHeaders?: Headers | Record<string, string | null | undefined>;
 }) {
   const service = getTtsProviderState();
   const wired =
@@ -250,15 +255,20 @@ export async function runTtsGateway(input: {
     return ttsNotReady(service);
   }
 
+  const founderBypass = input.requestHeaders
+    ? isFounderVoiceBypassHeader(input.requestHeaders)
+    : false;
   const userId = await resolveVoiceUserId(input.authorizationHeader);
-  if (!userId) {
+  const effectiveUserId = userId ?? (founderBypass ? FOUNDER_VOICE_USER_ID : null);
+
+  if (!effectiveUserId) {
     return {
       ok: false as const,
       status: 401,
       body: { message: "Sign in required for server text-to-speech." },
     };
   }
-  if (!(await hasVoicePermission(userId))) {
+  if (!founderBypass && userId && !(await hasVoicePermission(userId))) {
     return {
       ok: false as const,
       status: 403,
@@ -268,9 +278,9 @@ export async function runTtsGateway(input: {
 
   try {
     if (service.provider === "elevenlabs") {
-      return await runElevenLabsTts({ ...input, userId });
+      return await runElevenLabsTts({ ...input, userId: effectiveUserId });
     }
-    return await runOpenAiTts({ ...input, userId });
+    return await runOpenAiTts({ ...input, userId: effectiveUserId });
   } catch (error) {
     await captureServerException(error, { module: "voice-gateway", kind: "tts" });
     return {

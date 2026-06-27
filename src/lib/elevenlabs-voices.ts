@@ -51,6 +51,9 @@ export function resolveElevenLabsVoices(lang: string) {
 
 /** Map OpenAI voice names from the client to ElevenLabs voice ids. */
 export function resolveElevenLabsVoiceId(lang: string, requestedVoice?: string | null) {
+  const senseOverride = process.env.ELEVENLABS_VOICE_SENSE?.trim();
+  if (senseOverride && ELEVENLABS_VOICE_ID.test(senseOverride)) return senseOverride;
+
   const voices = resolveElevenLabsVoices(lang);
   const trimmed = requestedVoice?.trim();
   if (trimmed && ELEVENLABS_VOICE_ID.test(trimmed)) return trimmed;
@@ -59,10 +62,6 @@ export function resolveElevenLabsVoiceId(lang: string, requestedVoice?: string |
   if (trimmed === openai.vera) return voices.vera;
   if (trimmed === openai.nova) return voices.nova;
 
-  const allOpenAiVera = new Set(
-    Object.keys(ELEVENLABS_PROFILES).map((code) => resolveTtsVoices(code).vera),
-  );
-  if (trimmed && allOpenAiVera.has(trimmed)) return voices.vera;
-
+  // Default: one Sense voice (warm female profile per locale).
   return voices.nova;
 }

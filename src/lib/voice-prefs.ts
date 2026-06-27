@@ -3,6 +3,13 @@ const STORAGE_KEY = "dios.voice.user";
 export type VoicePrefs = {
   speakerOn: boolean;
   outputVolume: number;
+  /** Hands-free: one tap keeps the mic session alive between turns */
+  conversationMode?: boolean;
+  /** Auto-submit after the user finishes speaking */
+  autoSend?: boolean;
+  autoSendDelayMs?: number;
+  /** Auto-run high-confidence voice commands after brief pause */
+  autoExecute?: boolean;
   sttLang?: string;
   inputGain?: number;
   threshold?: number;
@@ -11,6 +18,10 @@ export type VoicePrefs = {
 const DEFAULTS: VoicePrefs = {
   speakerOn: true,
   outputVolume: 1,
+  conversationMode: true,
+  autoSend: true,
+  autoSendDelayMs: 850,
+  autoExecute: true,
 };
 
 export function loadVoicePrefs(): VoicePrefs {

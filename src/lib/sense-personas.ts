@@ -15,6 +15,13 @@ export function resolveTtsVoices(lang: string) {
   return TTS_PROFILES[code] ?? TTS_PROFILES.en;
 }
 
+/** Single Sense voice for daily voice UX (ChatGPT Voice / Alexa pattern). */
+export function resolveSenseVoice(lang: string): string {
+  const override = process.env.SENSE_TTS_VOICE?.trim() || process.env.ELEVENLABS_VOICE_SENSE?.trim();
+  if (override) return override;
+  return resolveTtsVoices(lang).nova;
+}
+
 export const SENSE_PERSONA_LABELS = {
   nova: "Nova",
   vera: "Vera",

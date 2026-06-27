@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { toSpeechLocale, toSttLanguage } from "@/lib/voice-locale";
+import { detectLanguageFromText, toSpeechLocale, toSttLanguage } from "@/lib/voice-locale";
 import { loadVoicePrefs, saveVoicePrefs } from "@/lib/voice-prefs";
-import { speakNovaVeraText } from "@/lib/voice-tts-client";
+import { detectVoiceControl, isStopPhrase, type VoiceControlAction } from "@/lib/voice-control-phrases";
+import { speakAssistantText } from "@/lib/voice-tts-client";
 import {
   mediaRecorderSupported,
   speechRecognitionSupported,
@@ -14,20 +15,55 @@ type Options = {
   lang: string;
   /** Browser speech recognition continuous mode */
   continuous?: boolean;
+  /** Hands-free: auto-restart mic after speaking; pause mic while TTS plays */
+  conversationMode?: boolean;
+  /** Fire after a short pause following final speech (conversation mode) */
+  autoSend?: boolean;
+  autoSendDelayMs?: number;
   /** Called with final or interim transcript text */
   onTranscript?: (text: string, final: boolean) => void;
-  /** Push-to-talk: auto-stop after silence (browser SR only) */
-  autoStop?: boolean;
+  /** Called when auto-send fires with the accumulated utterance */
+  onAutoSend?: (text: string, lang: string) => void | Promise<void>;
+  /** UI / STT language updated from spoken text */
+  onLangDetected?: (lang: string) => void;
+  /** Called for spoken control words (stop, confirm, cancel) */
+  onVoiceControl?: (action: VoiceControlAction) => void;
 };
 
+const DEFAULT_AUTO_SEND_MS = 850;
+
 export function useVoiceSession(options: Options) {
-  const { lang, continuous = true, onTranscript, autoStop = false } = options;
+  const {
+    lang,
+    continuous = true,
+    conversationMode: conversationModeDefault = false,
+    autoSend = loadVoicePrefs().autoSend ?? false,
+    autoSendDelayMs = loadVoicePrefs().autoSendDelayMs ?? DEFAULT_AUTO_SEND_MS,
+    onTranscript,
+    onAutoSend,
+    onLangDetected,
+    onVoiceControl,
+  } = options;
+
   const langRef = useRef(lang);
   langRef.current = lang;
+
+  const onTranscriptRef = useRef(onTranscript);
+  onTranscriptRef.current = onTranscript;
+  const onAutoSendRef = useRef(onAutoSend);
+  onAutoSendRef.current = onAutoSend;
+  const onLangDetectedRef = useRef(onLangDetected);
+  onLangDetectedRef.current = onLangDetected;
+  const onVoiceControlRef = useRef(onVoiceControl);
+  onVoiceControlRef.current = onVoiceControl;
 
   const [phase, setPhase] = useState<VoicePhase>("idle");
   const [micStream, setMicStream] = useState<MediaStream | null>(null);
   const [speakerOn, setSpeakerOnState] = useState(() => loadVoicePrefs().speakerOn);
+  const [conversationMode, setConversationModeState] = useState(
+    () => loadVoicePrefs().conversationMode ?? conversationModeDefault,
+  );
+  const [conversationActive, setConversationActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [speakingAudio, setSpeakingAudio] = useState<HTMLAudioElement | null>(null);
 
@@ -37,30 +73,127 @@ export function useVoiceSession(options: Options) {
   const usingServerSttRef = useRef(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const speakAbortRef = useRef(0);
+  const conversationActiveRef = useRef(false);
+  const pausedForSpeechRef = useRef(false);
+  const listeningPausedRef = useRef(false);
+  const streamRef = useRef<MediaStream | null>(null);
+  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingUtteranceRef = useRef("");
+  const autoSendFiredRef = useRef("");
+  const transcriptBufferRef = useRef("");
+  const bargeInActiveRef = useRef(false);
+  const startMicInternalRef = useRef<() => Promise<void>>(async () => {});
 
   const micActive = phase === "listening" || phase === "transcribing";
+  const handsFreeActive = conversationActive && conversationMode;
 
-  const setSpeakerOn = useCallback((on: boolean) => {
-    setSpeakerOnState(on);
-    saveVoicePrefs({ speakerOn: on });
-    if (!on) {
-      speakAbortRef.current += 1;
-      try {
-        audioRef.current?.pause();
-      } catch {}
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
-      setSpeakingAudio(null);
-      setPhase((p) => (p === "speaking" ? "idle" : p));
+  const clearSilenceTimer = useCallback(() => {
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
     }
   }, []);
 
-  const stopMic = useCallback(async () => {
+  const applyDetectedLang = useCallback((text: string) => {
+    const detected = detectLanguageFromText(text);
+    if (!detected || detected === langRef.current.slice(0, 2)) return;
+    langRef.current = detected;
+    onLangDetectedRef.current?.(detected);
+  }, []);
+
+  const interruptSpeaking = useCallback(() => {
+    speakAbortRef.current += 1;
+    bargeInActiveRef.current = false;
+    try {
+      audioRef.current?.pause();
+    } catch {}
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+    setSpeakingAudio(null);
+    pausedForSpeechRef.current = false;
+    if (conversationActiveRef.current && conversationMode) {
+      setPhase("listening");
+    } else {
+      setPhase("idle");
+    }
+  }, [conversationMode]);
+
+  const dispatchVoiceControl = useCallback(
+    (utterance: string) => {
+      const action = detectVoiceControl(utterance);
+      if (!action) return false;
+      if (action === "stop") interruptSpeaking();
+      onVoiceControlRef.current?.(action);
+      clearSilenceTimer();
+      pendingUtteranceRef.current = "";
+      transcriptBufferRef.current = "";
+      autoSendFiredRef.current = utterance;
+      return true;
+    },
+    [clearSilenceTimer, interruptSpeaking],
+  );
+
+  const scheduleAutoSend = useCallback(
+    (text: string) => {
+      if (!autoSend || !conversationActiveRef.current) return;
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      if (dispatchVoiceControl(trimmed)) return;
+      pendingUtteranceRef.current = trimmed;
+      clearSilenceTimer();
+      silenceTimerRef.current = setTimeout(() => {
+        const utterance = pendingUtteranceRef.current.trim();
+        if (!utterance || utterance === autoSendFiredRef.current) return;
+        if (dispatchVoiceControl(utterance)) return;
+        autoSendFiredRef.current = utterance;
+        pendingUtteranceRef.current = "";
+        transcriptBufferRef.current = "";
+        void onAutoSendRef.current?.(utterance, langRef.current);
+      }, autoSendDelayMs);
+    },
+    [autoSend, autoSendDelayMs, clearSilenceTimer, dispatchVoiceControl],
+  );
+
+  const releaseMicStream = useCallback(() => {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+    setMicStream(null);
+  }, []);
+
+  const stopRecognitionOnly = useCallback(() => {
     try {
       recogRef.current?.stop?.();
     } catch {}
     recogRef.current = null;
+  }, []);
+
+  const resetConversationState = useCallback(() => {
+    conversationActiveRef.current = false;
+    setConversationActive(false);
+    pausedForSpeechRef.current = false;
+    listeningPausedRef.current = false;
+    transcriptBufferRef.current = "";
+    pendingUtteranceRef.current = "";
+    autoSendFiredRef.current = "";
+  }, []);
+
+  const failMicStart = useCallback(
+    (message: string) => {
+      resetConversationState();
+      clearSilenceTimer();
+      stopRecognitionOnly();
+      releaseMicStream();
+      setPhase("idle");
+      setError(message);
+    },
+    [clearSilenceTimer, releaseMicStream, resetConversationState, stopRecognitionOnly],
+  );
+
+  const stopMic = useCallback(async () => {
+    resetConversationState();
+    clearSilenceTimer();
+    stopRecognitionOnly();
 
     if (usingServerSttRef.current && mediaRecorderRef.current?.state === "recording") {
       setPhase("transcribing");
@@ -83,146 +216,306 @@ export function useVoiceSession(options: Options) {
           mimeType: recorder.mimeType,
           language: toSttLanguage(langRef.current),
         });
-        if (transcript) onTranscript?.(transcript, true);
-        else setError("Server speech-to-text unavailable");
+        if (transcript) {
+          applyDetectedLang(transcript);
+          onTranscriptRef.current?.(transcript, true);
+          scheduleAutoSend(transcript);
+        } else {
+          setError("Server speech-to-text unavailable");
+        }
       }
     }
 
     usingServerSttRef.current = false;
     mediaRecorderRef.current = null;
-    micStream?.getTracks().forEach((t) => t.stop());
-    setMicStream(null);
-    setPhase((p) => (p === "transcribing" ? "idle" : "idle"));
-  }, [micStream, onTranscript]);
+    releaseMicStream();
+    setPhase("idle");
+  }, [
+    applyDetectedLang,
+    clearSilenceTimer,
+    releaseMicStream,
+    resetConversationState,
+    scheduleAutoSend,
+    stopRecognitionOnly,
+  ]);
 
-  const startMic = useCallback(async () => {
+  const startBrowserRecognition = useCallback(
+    (stream: MediaStream) => {
+      const SR: any =
+        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const rec = new SR();
+      rec.continuous = continuous || conversationActiveRef.current;
+      rec.interimResults = true;
+      rec.lang = toSpeechLocale(langRef.current);
+      transcriptBufferRef.current = "";
+
+      rec.onresult = (e: any) => {
+        let interim = "";
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const r = e.results[i];
+          if (r.isFinal) transcriptBufferRef.current += `${r[0].transcript} `;
+          else interim += r[0].transcript;
+        }
+        const combined = (transcriptBufferRef.current + interim).trim();
+        if (!combined) return;
+
+        if (bargeInActiveRef.current && isStopPhrase(combined)) {
+          dispatchVoiceControl(combined);
+          return;
+        }
+        if (bargeInActiveRef.current) return;
+
+        if (listeningPausedRef.current) return;
+        applyDetectedLang(combined);
+        const isFinal = !interim;
+        onTranscriptRef.current?.(combined, isFinal);
+        if (isFinal) scheduleAutoSend(transcriptBufferRef.current.trim() || combined);
+      };
+
+      rec.onend = () => {
+        recogRef.current = null;
+        if (
+          conversationActiveRef.current &&
+          !pausedForSpeechRef.current &&
+          !listeningPausedRef.current
+        ) {
+          void startMicInternalRef.current();
+          return;
+        }
+        if (!pausedForSpeechRef.current) {
+          releaseMicStream();
+          setPhase((p) => (p === "speaking" ? "speaking" : "idle"));
+        }
+      };
+
+      rec.onerror = (event: any) => {
+        const code = event?.error;
+        if (code === "no-speech" || code === "aborted") {
+          if (
+            conversationActiveRef.current &&
+            !pausedForSpeechRef.current &&
+            !listeningPausedRef.current
+          ) {
+            void startMicInternalRef.current();
+          }
+          return;
+        }
+        if (code === "not-allowed") {
+          failMicStart("Microphone permission denied — tap the mic button to allow access.");
+          return;
+        }
+        failMicStart(code === "network" ? "Speech network error" : "Speech input error");
+      };
+
+      recogRef.current = rec;
+      rec.start();
+    },
+    [applyDetectedLang, continuous, releaseMicStream, scheduleAutoSend],
+  );
+
+  const startMicInternal = useCallback(async () => {
+    if (listeningPausedRef.current || pausedForSpeechRef.current) return;
     setError(null);
-    let stream: MediaStream | null = null;
-    try {
+
+    let stream = streamRef.current;
+    if (!stream || stream.getTracks().every((track) => track.readyState === "ended")) {
       if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
         throw new Error("Microphone not supported");
       }
       stream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
       });
+      streamRef.current = stream;
       setMicStream(stream);
-      setPhase("listening");
-
-      const SR: any = speechRecognitionSupported()
-        ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-        : null;
-
-      if (SR) {
-        const rec = new SR();
-        rec.continuous = continuous;
-        rec.interimResults = true;
-        rec.lang = toSpeechLocale(langRef.current);
-        let finalBuf = "";
-        rec.onresult = (e: any) => {
-          let interim = "";
-          for (let i = e.resultIndex; i < e.results.length; i++) {
-            const r = e.results[i];
-            if (r.isFinal) finalBuf += r[0].transcript + " ";
-            else interim += r[0].transcript;
-          }
-          const combined = (finalBuf + interim).trim();
-          if (combined) onTranscript?.(combined, !interim);
-        };
-        rec.onend = () => {
-          setPhase("idle");
-          stream?.getTracks().forEach((t) => t.stop());
-          setMicStream(null);
-        };
-        rec.onerror = () => {
-          setPhase("idle");
-          stream?.getTracks().forEach((t) => t.stop());
-          setMicStream(null);
-        };
-        recogRef.current = rec;
-        rec.start();
-        return;
-      }
-
-      if (mediaRecorderSupported()) {
-        usingServerSttRef.current = true;
-        const mimeType =
-          ["audio/webm", "audio/mp4"].find((type) => MediaRecorder.isTypeSupported(type)) || "";
-        const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-        mediaChunksRef.current = [];
-        recorder.ondataavailable = (event) => {
-          if (event.data.size > 0) mediaChunksRef.current.push(event.data);
-        };
-        mediaRecorderRef.current = recorder;
-        recorder.start();
-        return;
-      }
-
-      throw new Error("Speech input not supported in this browser");
-    } catch (e) {
-      stream?.getTracks().forEach((t) => t.stop());
-      setMicStream(null);
-      setPhase("idle");
-      setError(e instanceof Error ? e.message : "Microphone permission denied");
     }
-  }, [continuous, onTranscript]);
+
+    setPhase("listening");
+
+    if (speechRecognitionSupported()) {
+      startBrowserRecognition(stream);
+      return;
+    }
+
+    if (mediaRecorderSupported()) {
+      usingServerSttRef.current = true;
+      const mimeType =
+        ["audio/webm", "audio/mp4"].find((type) => MediaRecorder.isTypeSupported(type)) || "";
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      mediaChunksRef.current = [];
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) mediaChunksRef.current.push(event.data);
+      };
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      return;
+    }
+
+    throw new Error("Speech input not supported in this browser");
+  }, [startBrowserRecognition]);
+
+  startMicInternalRef.current = async () => {
+    try {
+      await startMicInternal();
+    } catch (e) {
+      failMicStart(e instanceof Error ? e.message : "Microphone permission denied");
+    }
+  };
+
+  const pauseListening = useCallback(async () => {
+    listeningPausedRef.current = true;
+    clearSilenceTimer();
+    stopRecognitionOnly();
+    if (usingServerSttRef.current && mediaRecorderRef.current?.state === "recording") {
+      try {
+        mediaRecorderRef.current.stop();
+      } catch {}
+    }
+    usingServerSttRef.current = false;
+    mediaRecorderRef.current = null;
+  }, [clearSilenceTimer, stopRecognitionOnly]);
+
+  const resumeListening = useCallback(async () => {
+    if (!conversationActiveRef.current || !conversationMode) return;
+    listeningPausedRef.current = false;
+    pausedForSpeechRef.current = false;
+    autoSendFiredRef.current = "";
+    await startMicInternalRef.current();
+  }, [conversationMode]);
+
+  const startConversation = useCallback(async () => {
+    conversationActiveRef.current = true;
+    setConversationActive(true);
+    pausedForSpeechRef.current = false;
+    listeningPausedRef.current = false;
+    autoSendFiredRef.current = "";
+    pendingUtteranceRef.current = "";
+    await startMicInternalRef.current();
+  }, []);
+
+  const stopConversation = useCallback(async () => {
+    await stopMic();
+  }, [stopMic]);
+
+  const startMic = useCallback(async () => {
+    if (conversationMode) {
+      await startConversation();
+      return;
+    }
+    await startMicInternalRef.current();
+  }, [conversationMode, startConversation]);
 
   const toggleMic = useCallback(async () => {
+    if (conversationMode) {
+      if (conversationActiveRef.current) await stopConversation();
+      else await startConversation();
+      return;
+    }
     if (micActive) await stopMic();
     else await startMic();
-  }, [micActive, startMic, stopMic]);
+  }, [conversationMode, micActive, startConversation, startMic, stopConversation, stopMic]);
+
+  const setConversationMode = useCallback((on: boolean) => {
+    setConversationModeState(on);
+    saveVoicePrefs({ conversationMode: on });
+    if (!on && conversationActiveRef.current) void stopConversation();
+  }, [stopConversation]);
+
+  const setSpeakerOn = useCallback((on: boolean) => {
+    setSpeakerOnState(on);
+    saveVoicePrefs({ speakerOn: on });
+    if (!on) {
+      speakAbortRef.current += 1;
+      try {
+        audioRef.current?.pause();
+      } catch {}
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+      setSpeakingAudio(null);
+      pausedForSpeechRef.current = false;
+      if (conversationActiveRef.current) void resumeListening();
+      else setPhase((p) => (p === "speaking" ? "idle" : p));
+    }
+  }, [resumeListening]);
 
   const stopSpeaking = useCallback(() => {
-    speakAbortRef.current += 1;
-    try {
-      audioRef.current?.pause();
-    } catch {}
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
-    setSpeakingAudio(null);
-    setPhase("idle");
-  }, []);
+    interruptSpeaking();
+    if (conversationActiveRef.current) void resumeListening();
+  }, [interruptSpeaking, resumeListening]);
 
   const speakText = useCallback(
     async (text: string, speakLang?: string) => {
       if (!speakerOn || !text.trim()) return;
       const token = ++speakAbortRef.current;
+      clearSilenceTimer();
+
+      const keepMicForBargeIn = conversationActiveRef.current && conversationMode;
+      if (keepMicForBargeIn) {
+        bargeInActiveRef.current = true;
+      } else {
+        const wasListening = conversationActiveRef.current && !listeningPausedRef.current;
+        if (wasListening) {
+          pausedForSpeechRef.current = true;
+          await pauseListening();
+        }
+      }
+
       setPhase("speaking");
       const langCode = speakLang ?? langRef.current;
-      await speakNovaVeraText(text, langCode, (audio) => {
+      await speakAssistantText(text, langCode, (audio) => {
         if (token !== speakAbortRef.current) return;
         audioRef.current = audio;
         setSpeakingAudio(audio);
       });
+
       if (token !== speakAbortRef.current) return;
       setSpeakingAudio(null);
-      setPhase("idle");
+      bargeInActiveRef.current = false;
+      pausedForSpeechRef.current = false;
+
+      if (conversationActiveRef.current && conversationMode) {
+        setPhase("listening");
+      } else {
+        setPhase("idle");
+      }
     },
-    [speakerOn],
+    [clearSilenceTimer, conversationMode, pauseListening, speakerOn],
   );
 
   useEffect(() => {
     return () => {
+      conversationActiveRef.current = false;
+      clearSilenceTimer();
+      stopRecognitionOnly();
+      releaseMicStream();
+      speakAbortRef.current += 1;
       try {
-        recogRef.current?.stop?.();
+        audioRef.current?.pause();
       } catch {}
-      micStream?.getTracks().forEach((t) => t.stop());
-      stopSpeaking();
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
     };
-  }, []);
+  }, [clearSilenceTimer, releaseMicStream, stopRecognitionOnly]);
 
   return {
     phase,
     micStream,
     micActive,
     speakerOn,
+    conversationMode,
+    handsFreeActive,
     speakingAudio,
     error,
     toggleMic,
     setSpeakerOn,
     toggleSpeaker: () => setSpeakerOn(!speakerOn),
+    setConversationMode,
+    startConversation,
+    stopConversation,
     speakText,
     stopSpeaking,
+    interrupt: stopSpeaking,
     startMic,
     stopMic,
   };

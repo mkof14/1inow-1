@@ -27,9 +27,14 @@ import { createProjectRecord, createTaskRecord } from "@/lib/project-task-engine
 import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
 import { saveVoiceInboxItem, type VoiceInboxKind } from "@/lib/voice-intake";
 import { useI18n } from "@/lib/i18n";
-import { VoiceControlBar } from "@/components/voice/voice-control-bar";
 import { useVoiceSession } from "@/hooks/use-voice-session";
-import { resolveResponseLang } from "@/lib/voice-locale";
+import { VoiceLivePanel } from "@/components/voice/voice-live-panel";
+import { loadVoicePrefs } from "@/lib/voice-prefs";
+import { toSpeakableText } from "@/lib/voice-speakable";
+import { isConfirmPhrase } from "@/lib/voice-control-phrases";
+import { resolveResponseLang, isLikelyQuestion } from "@/lib/voice-locale";
+import { fetchSenseAnswer } from "@/lib/voice-chat-client";
+import { useAiPageContext } from "@/lib/ai-context";
 import { buildPerspectiveSpeech, toVoiceLocale, voiceBundle, VOICE_ROUTES } from "@/lib/voice-i18n";
 
 type VoiceIntent =
@@ -57,6 +62,9 @@ type VoicePlan = {
   quickReplies?: string[];
   advice?: string[];
   executable: boolean;
+  /** Full Sense answer for conversational Q&A */
+  senseReply?: string;
+  conversational?: boolean;
 };
 
 type VoicePerspective = {
@@ -94,22 +102,128 @@ export function VoiceCommandCenter({
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t, lang, setLang } = useI18n();
+  const { context: pageContext } = useAiPageContext();
   const [internalOpen, setInternalOpen] = useState(false);
+  const [history, setHistory] = useState<VoicePlan[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      return JSON.parse(localStorage.getItem("1inow:voice:history:v1") ?? "[]").slice(0, 6);
+    } catch {
+      return [];
+    }
+  });
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
   const [busy, setBusy] = useState(false);
   const [text, setText] = useState("");
   const [plan, setPlan] = useState<VoicePlan | null>(null);
+  const analyzeRef = useRef<(value?: string) => Promise<void>>(async () => {});
   const onTranscriptRef = useRef<(value: string, final: boolean) => void>(() => {});
+  const executeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const planRef = useRef<VoicePlan | null>(null);
+  planRef.current = plan;
+
+  const remember = useCallback((done: VoicePlan) => {
+    setHistory((items) =>
+      [done, ...items.filter((item) => item.summary !== done.summary)].slice(0, 6),
+    );
+  }, []);
+
+  const runExecuteRef = useRef<(targetPlan: VoicePlan) => Promise<void>>(async () => {});
+
+  const runExecute = useCallback(
+    async (targetPlan: VoicePlan) => {
+      if (executeTimerRef.current) clearTimeout(executeTimerRef.current);
+      const toasts = voiceBundle(lang, text).toasts;
+      setBusy(true);
+      try {
+        if (
+          targetPlan.intent === "open_route" ||
+          targetPlan.intent === "show_today" ||
+          targetPlan.intent === "show_risks" ||
+          targetPlan.intent === "search"
+        ) {
+          navigate({ to: (targetPlan.route ?? "/dashboard") as any });
+          remember(targetPlan);
+          setOpen(false);
+          return;
+        }
+
+        if (targetPlan.intent === "create_task") {
+          await createTaskRecord({
+            title: targetPlan.title?.trim() || "Untitled task",
+            description: targetPlan.description || null,
+          });
+          await queryClient.invalidateQueries({ queryKey: ["tasks"] });
+          toast.success(toasts.taskCreated);
+        } else if (targetPlan.intent === "create_project") {
+          await createProjectRecord({
+            name: targetPlan.title?.trim() || "Untitled project",
+            description: targetPlan.description || null,
+          });
+          await queryClient.invalidateQueries({ queryKey: ["projects"] });
+          toast.success(toasts.projectCreated);
+        } else {
+          toast.message(toasts.notExecutable);
+        }
+        remember(targetPlan);
+        setText("");
+        setPlan(null);
+        setOpen(false);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : voiceBundle(lang, text).toasts.failed);
+      } finally {
+        setBusy(false);
+      }
+    },
+    [lang, navigate, queryClient, remember, setOpen, text],
+  );
+  runExecuteRef.current = runExecute;
+
+  const scheduleAutoExecute = useCallback(
+    (nextPlan: VoicePlan) => {
+      if (executeTimerRef.current) clearTimeout(executeTimerRef.current);
+      if (!loadVoicePrefs().autoExecute) return;
+      if (!nextPlan.executable || nextPlan.confidence !== "high") return;
+      executeTimerRef.current = setTimeout(() => {
+        void runExecuteRef.current(nextPlan);
+      }, 1200);
+    },
+    [],
+  );
+
   const voice = useVoiceSession({
     lang,
-    continuous: false,
+    continuous: true,
+    conversationMode: true,
+    autoSend: true,
     onTranscript: (value, final) => onTranscriptRef.current(value, final),
+    onLangDetected: (detected) => {
+      if (detected !== lang) setLang(detected);
+    },
+    onAutoSend: (utterance) => {
+      if (isConfirmPhrase(utterance) && planRef.current?.executable) {
+        void runExecuteRef.current(planRef.current);
+        return;
+      }
+      void analyzeRef.current(utterance);
+    },
+    onVoiceControl: (action) => {
+      if (action === "stop") {
+        if (executeTimerRef.current) clearTimeout(executeTimerRef.current);
+      }
+      if (action === "cancel") {
+        if (executeTimerRef.current) clearTimeout(executeTimerRef.current);
+        setPlan(null);
+        setText("");
+      }
+    },
   });
   onTranscriptRef.current = (value, final) => {
     setText(value);
     if (final) {
       const responseLang = resolveResponseLang(lang, value);
       if (responseLang !== lang) setLang(responseLang);
-      setPlan(parseVoiceCommand(value, responseLang));
     }
   };
   const voiceLabels = {
@@ -121,17 +235,12 @@ export function VoiceCommandCenter({
     transcribing: t("voice.status.transcribing"),
     speaking: t("voice.status.speaking"),
     idle: t("voice.status.idle"),
+    handsFree: t("voice.status.handsFree"),
+    tapMic: t("voice.tapMic", "Tap mic to start"),
+    stop: t("voice.stop", "Stop"),
+    bargeIn: t("voice.bargeIn"),
+    thinking: t("common.thinking"),
   };
-  const [history, setHistory] = useState<VoicePlan[]>(() => {
-    if (typeof window === "undefined") return [];
-    try {
-      return JSON.parse(localStorage.getItem("1inow:voice:history:v1") ?? "[]").slice(0, 6);
-    } catch {
-      return [];
-    }
-  });
-  const open = controlledOpen ?? internalOpen;
-  const setOpen = onOpenChange ?? setInternalOpen;
 
   useEffect(() => {
     try {
@@ -194,10 +303,77 @@ export function VoiceCommandCenter({
     ];
   }, [lang]);
 
-  const analyze = (value = text) => {
-    const next = parseVoiceCommand(value, lang);
-    setPlan(next);
-  };
+  const analyze = useCallback(
+    async (value = text) => {
+      const trimmed = value.trim();
+      if (!trimmed) return;
+      const responseLang = resolveResponseLang(lang, trimmed);
+      if (responseLang !== lang) setLang(responseLang);
+
+      setBusy(true);
+      try {
+        const commandPlan = parseVoiceCommand(trimmed, responseLang);
+        const needsSense =
+          commandPlan.intent === "unknown" ||
+          isLikelyQuestion(trimmed) ||
+          (commandPlan.confidence === "low" && !commandPlan.executable);
+
+        if (needsSense) {
+          const answer = await fetchSenseAnswer({
+            prompt: trimmed,
+            lang: responseLang,
+            pageContext,
+          });
+          if (answer?.text) {
+            const summaryLine = answer.text.split("\n").find((line) => line.trim()) ?? answer.text;
+            const nextPlan: VoicePlan = {
+              ...commandPlan,
+              rawText: trimmed,
+              intent: "unknown",
+              label:
+                responseLang === "ru" || responseLang === "uk"
+                  ? "Sense ответ"
+                  : responseLang === "de"
+                    ? "Sense-Antwort"
+                    : responseLang === "es"
+                      ? "Respuesta de Sense"
+                      : "Sense answer",
+              summary: summaryLine.slice(0, 240),
+              senseReply: answer.text,
+              conversational: true,
+              confidence: "high",
+              executable: false,
+              evidence: [
+                answer.mode === "openai"
+                  ? "Answer generated by Sense AI."
+                  : "Answer generated by Sense (local mode).",
+                `Language: ${responseLang.toUpperCase()}`,
+              ],
+            };
+            setPlan(nextPlan);
+            if (voice.speakerOn) {
+              const spoken = toSpeakableText(answer.text);
+              if (spoken) void voice.speakText(spoken, responseLang);
+            }
+            return;
+          }
+        }
+
+        setPlan(commandPlan);
+        scheduleAutoExecute(commandPlan);
+        if (voice.speakerOn && (commandPlan.executable || commandPlan.summary)) {
+          const spoken = toSpeakableText(
+            [commandPlan.summary, ...(commandPlan.advice ?? [])].filter(Boolean).join(" "),
+          );
+          if (spoken) void voice.speakText(spoken, responseLang);
+        }
+      } finally {
+        setBusy(false);
+      }
+    },
+    [lang, pageContext, scheduleAutoExecute, setLang, text, voice],
+  );
+  analyzeRef.current = analyze;
 
   const answerClarification = (answer: string) => {
     const lowerAnswer = answer.toLowerCase();
@@ -220,56 +396,14 @@ export function VoiceCommandCenter({
     setPlan(parseVoiceCommand(nextText, lang));
   };
 
-  const execute = async () => {
-    if (!plan) return;
-    const toasts = voiceBundle(lang, text).toasts;
-    setBusy(true);
-    try {
-      if (
-        plan.intent === "open_route" ||
-        plan.intent === "show_today" ||
-        plan.intent === "show_risks" ||
-        plan.intent === "search"
-      ) {
-        navigate({ to: (plan.route ?? "/dashboard") as any });
-        remember(plan);
-        setOpen(false);
-        return;
-      }
-
-      if (plan.intent === "create_task") {
-        await createTaskRecord({
-          title: plan.title?.trim() || "Untitled task",
-          description: plan.description || null,
-        });
-        await queryClient.invalidateQueries({ queryKey: ["tasks"] });
-        toast.success(toasts.taskCreated);
-      } else if (plan.intent === "create_project") {
-        await createProjectRecord({
-          name: plan.title?.trim() || "Untitled project",
-          description: plan.description || null,
-        });
-        await queryClient.invalidateQueries({ queryKey: ["projects"] });
-        toast.success(toasts.projectCreated);
-      } else {
-        toast.message(toasts.notExecutable);
-      }
-      remember(plan);
-      setText("");
-      setPlan(null);
-      setOpen(false);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : voiceBundle(lang, text).toasts.failed);
-    } finally {
-      setBusy(false);
-    }
+  const execute = () => {
+    if (plan) void runExecute(plan);
   };
 
-  const remember = (done: VoicePlan) => {
-    setHistory((items) =>
-      [done, ...items.filter((item) => item.summary !== done.summary)].slice(0, 6),
-    );
-  };
+  const handleVoiceStop = useCallback(() => {
+    if (executeTimerRef.current) clearTimeout(executeTimerRef.current);
+    voice.stopSpeaking();
+  }, [voice.stopSpeaking]);
 
   const captureToInbox = async () => {
     if (!text.trim() || !plan) return;
@@ -307,7 +441,7 @@ export function VoiceCommandCenter({
         open={open}
         onOpenChange={(value) => {
           setOpen(value);
-          if (!value) void voice.stopMic();
+          if (!value) void voice.stopConversation();
         }}
       >
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
@@ -326,17 +460,27 @@ export function VoiceCommandCenter({
                     {t("voice.center.title", "Say or type what you want")}
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">{t("voice.center.hint")}</p>
+                  <p className="mt-1 text-[11px] text-muted-foreground/90">
+                    {t(
+                      "voice.center.tapMic",
+                      "Tap the mic once — then speak. Pause to send. Say «Stop» to interrupt.",
+                    )}
+                  </p>
                 </div>
               </div>
-              <VoiceControlBar
+              <VoiceLivePanel
                 phase={voice.phase}
                 lang={lang}
                 micStream={voice.micStream}
                 speakerOn={voice.speakerOn}
                 speakingAudio={voice.speakingAudio}
                 error={voice.error}
+                handsFreeActive={voice.handsFreeActive}
+                conversationMode={voice.conversationMode}
+                thinking={busy}
                 onToggleMic={voice.toggleMic}
                 onToggleSpeaker={voice.toggleSpeaker}
+                onStop={handleVoiceStop}
                 labels={voiceLabels}
                 compact
                 className="mb-3"
@@ -371,8 +515,15 @@ export function VoiceCommandCenter({
                   Supports navigation, task/project creation, today brief, risk review, search,
                   notes/reminders drafts, and clarification questions.
                 </div>
-                <Button type="button" size="sm" onClick={() => analyze()} disabled={!text.trim()}>
-                  Understand
+                <Button type="button" size="sm" onClick={() => void analyze()} disabled={!text.trim() || busy}>
+                  {busy ? (
+                    <>
+                      <Loader2 className="mr-1.5 size-4 animate-spin" />
+                      {t("common.thinking")}
+                    </>
+                  ) : (
+                    "Understand"
+                  )}
                 </Button>
               </div>
             </div>
@@ -382,7 +533,10 @@ export function VoiceCommandCenter({
                 plan={plan}
                 busy={busy}
                 lang={lang}
-                onSpeak={(payload) => voice.speakText(payload)}
+                onSpeak={(payload) => {
+                  const spoken = toSpeakableText(payload);
+                  if (spoken) void voice.speakText(spoken, lang);
+                }}
                 onCancel={() => setPlan(null)}
                 onCapture={captureToInbox}
                 onConfirm={execute}
@@ -463,8 +617,10 @@ function VoicePlanPreview({
   onConfirm: () => void;
   onClarify: (answer: string) => void;
 }) {
-  const perspectives = buildVoicePerspectives(plan, lang);
-  const speechText = `Nova: ${perspectives[0]?.text ?? ""}\n\nVera: ${perspectives[1]?.text ?? ""}`;
+  const speakableSummary = toSpeakableText(
+    plan.senseReply ??
+      [plan.summary, ...(plan.advice ?? [])].filter(Boolean).join(" "),
+  );
 
   return (
     <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
@@ -478,6 +634,27 @@ function VoicePlanPreview({
         </div>
         <ConfidenceBadge value={plan.confidence} />
       </div>
+
+      {plan.senseReply && (
+        <div className="mb-3 rounded-xl border border-teal-500/25 bg-teal-500/10 p-3">
+          <div className="text-[11px] uppercase tracking-[0.14em] text-teal-700 dark:text-teal-300">
+            Sense
+          </div>
+          <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+            {plan.senseReply}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-3 gap-1.5"
+            onClick={() => onSpeak(plan.senseReply!)}
+          >
+            <Volume2 className="size-3.5" />
+            Speak answer
+          </Button>
+        </div>
+      )}
 
       {plan.title && (
         <div className="mb-3 rounded-xl border border-border bg-card/70 p-3">
@@ -512,7 +689,7 @@ function VoicePlanPreview({
         </div>
       )}
 
-      {plan.advice?.length ? (
+      {!plan.conversational && plan.advice?.length ? (
         <div className="mb-3 rounded-xl border border-teal-500/20 bg-teal-500/10 p-3">
           <div className="text-[11px] uppercase tracking-[0.14em] text-teal-700 dark:text-teal-300">
             Sense advice
@@ -528,55 +705,28 @@ function VoicePlanPreview({
         </div>
       ) : null}
 
-      <div className="mb-3 rounded-xl border border-violet-500/20 bg-violet-500/10 p-3">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="text-[11px] uppercase tracking-[0.14em] text-violet-700 dark:text-violet-300">
-              Sense review
+      {!plan.conversational && speakableSummary && (
+        <div className="mb-3 rounded-xl border border-violet-500/20 bg-violet-500/10 p-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="text-[11px] uppercase tracking-[0.14em] text-violet-700 dark:text-violet-300">
+                Sense
+              </div>
+              <p className="mt-2 text-sm leading-relaxed text-foreground">{speakableSummary}</p>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Nova pushes the next useful move. Vera checks meaning, risk, and priority before
-              action.
-            </p>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="shrink-0 gap-1.5"
-            onClick={() => onSpeak(speechText)}
-          >
-            <Volume2 className="size-3.5" />
-            Speak both
-          </Button>
-        </div>
-        <div className="mt-3 grid gap-2 md:grid-cols-2">
-          {perspectives.map((item) => (
-            <div
-              key={item.persona}
-              className="rounded-xl border border-violet-500/20 bg-background/75 p-3"
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="shrink-0 gap-1.5"
+              onClick={() => onSpeak(speakableSummary)}
             >
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex min-w-0 items-center gap-2">
-                  <img
-                    src={item.image}
-                    alt=""
-                    className="size-8 shrink-0 rounded-xl object-cover"
-                  />
-                  <div className="min-w-0 text-xs font-semibold">{item.persona}</div>
-                </div>
-                <div className="rounded-full bg-violet-500/10 px-2 py-0.5 text-[10px] font-medium text-violet-700 dark:text-violet-300">
-                  {item.voice}
-                </div>
-              </div>
-              <div className="mt-1 text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-                {item.role}
-              </div>
-              <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.text}</p>
-            </div>
-          ))}
+              <Volume2 className="size-3.5" />
+              Speak
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="mb-4 rounded-xl border border-border bg-card/70 p-3">
         <div className="mb-2 flex items-center gap-1.5 text-xs font-medium">

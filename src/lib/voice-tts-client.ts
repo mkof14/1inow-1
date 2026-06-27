@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
-import { resolveTtsVoices, splitNovaVeraSpeech } from "@/lib/sense-personas";
+import { isFounderModeEnabled } from "@/lib/founder-mode";
+import { resolveSenseVoice } from "@/lib/sense-personas";
+import { toSpeakableText } from "@/lib/voice-speakable";
 import { loadVoicePrefs } from "@/lib/voice-prefs";
 import { toSpeechLocale } from "@/lib/voice-locale";
 
@@ -31,6 +33,20 @@ const LOCAL_VOICE_HINTS: Record<string, { nova: RegExp[]; vera: RegExp[]; lang: 
   },
 };
 
+const NOVA_VERA_PAUSE_MS = 420;
+
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
+
+function speakUtterance(synth: SpeechSynthesis, utterance: SpeechSynthesisUtterance) {
+  return new Promise<void>((resolve) => {
+    utterance.onend = () => resolve();
+    utterance.onerror = () => resolve();
+    synth.speak(utterance);
+  });
+}
+
 async function waitForVoices() {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return [];
   const synth = window.speechSynthesis;
@@ -51,25 +67,28 @@ function pickVoice(voices: SpeechSynthesisVoice[], hints: RegExp[], lang: string
   );
 }
 
+async function buildTtsHeaders() {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData.session?.access_token;
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  } else if (isFounderModeEnabled()) {
+    headers["X-1inow-Founder-Voice"] = "1";
+  }
+  return headers;
+}
+
 export async function playServerTts(
   text: string,
   lang: string,
   onAudio?: (audio: HTMLAudioElement | null) => void,
+  options?: { singleVoice?: boolean },
 ) {
-  const { data: sessionData } = await supabase.auth.getSession();
-  const token = sessionData.session?.access_token;
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (token) headers.Authorization = `Bearer ${token}`;
+  const headers = await buildTtsHeaders();
 
-  const voices = resolveTtsVoices(lang);
-  const parts = splitNovaVeraSpeech(text);
-  const segments =
-    parts.hasStructure && (parts.nova || parts.vera)
-      ? [
-          { text: parts.nova, voice: voices.nova },
-          { text: parts.vera, voice: voices.vera },
-        ].filter((s) => s.text)
-      : [{ text, voice: voices.nova }];
+  const voice = resolveSenseVoice(lang);
+  const segments = [{ text, voice }];
 
   const volume = loadVoicePrefs().outputVolume ?? 1;
 
@@ -79,7 +98,10 @@ export async function playServerTts(
       headers,
       body: JSON.stringify({ text: segment.text, voice: segment.voice, lang }),
     });
-    if (!res.ok) return false;
+    if (!res.ok) {
+      console.warn("[tts] ElevenLabs/server synthesis unavailable", res.status, await res.text());
+      return false;
+    }
 
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
@@ -97,8 +119,10 @@ export async function playServerTts(
         onAudio?.(null);
         resolve();
       };
-      audio.play().catch(() => resolve());
+      void audio.play().catch(() => resolve());
     });
+
+    if (segments.length > 1 && !options?.singleVoice) await sleep(NOVA_VERA_PAUSE_MS);
   }
   return true;
 }
@@ -107,42 +131,38 @@ export async function speakLocally(text: string, lang: string) {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
   const synth = window.speechSynthesis;
   synth.cancel();
+  const spoken = toSpeakableText(text);
+  if (!spoken) return;
   const code = lang.slice(0, 2).toLowerCase();
   const hints = LOCAL_VOICE_HINTS[code] ?? LOCAL_VOICE_HINTS.en;
   const voices = await waitForVoices();
   const primary = pickVoice(voices, hints.nova, hints.lang);
-  const secondary =
-    pickVoice(
-      voices.filter((v) => v.name !== primary?.name),
-      hints.vera,
-      hints.lang,
-    ) ?? primary;
 
-  const parts = splitNovaVeraSpeech(text);
-  const chunks =
-    parts.hasStructure && (parts.nova || parts.vera)
-      ? [
-          parts.nova ? { persona: "nova" as const, text: parts.nova } : null,
-          parts.vera ? { persona: "vera" as const, text: parts.vera } : null,
-        ].filter(Boolean)
-      : [{ persona: "nova" as const, text }];
-
-  for (const chunk of chunks as Array<{ persona: "nova" | "vera"; text: string }>) {
-    const utterance = new SpeechSynthesisUtterance(chunk.text);
-    utterance.voice = chunk.persona === "nova" ? (primary ?? null) : (secondary ?? primary ?? null);
-    utterance.lang = toSpeechLocale(lang);
-    utterance.rate = chunk.persona === "nova" ? 0.96 : 0.9;
-    utterance.pitch = chunk.persona === "nova" ? 1.0 : 0.95;
-    synth.speak(utterance);
-  }
+  const utterance = new SpeechSynthesisUtterance(spoken);
+  utterance.voice = primary ?? null;
+  utterance.lang = toSpeechLocale(lang);
+  utterance.rate = 0.96;
+  utterance.pitch = 1.0;
+  await speakUtterance(synth, utterance);
 }
 
+export async function speakAssistantText(
+  text: string,
+  lang: string,
+  onAudio?: (audio: HTMLAudioElement | null) => void,
+): Promise<boolean> {
+  const spoken = toSpeakableText(text);
+  if (!spoken) return false;
+  const ok = await playServerTts(spoken, lang, onAudio, { singleVoice: true });
+  if (!ok) await speakLocally(spoken, lang);
+  return true;
+}
+
+/** @deprecated Prefer speakAssistantText — single natural voice for daily use. */
 export async function speakNovaVeraText(
   text: string,
   lang: string,
   onAudio?: (audio: HTMLAudioElement | null) => void,
 ): Promise<boolean> {
-  const ok = await playServerTts(text, lang, onAudio);
-  if (!ok) await speakLocally(text, lang);
-  return true;
+  return speakAssistantText(text, lang, onAudio);
 }

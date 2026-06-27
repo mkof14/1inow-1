@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { FOUNDER_ADMIN_ACCESS, isFounderModeEnabled } from "@/lib/founder-mode";
 
 export type UserRoleFlags = {
   isAdmin: boolean;
@@ -24,7 +25,26 @@ export async function resolveUserRoleFlags(userId: string): Promise<UserRoleFlag
   };
 }
 
+function founderAdminAreaAccess() {
+  return {
+    canAccessAdmin: FOUNDER_ADMIN_ACCESS.canAccessAdmin,
+    permissions: Object.fromEntries(
+      ADMIN_AREA_PERMISSIONS.map((key) => [key, true]),
+    ) as Record<AdminAreaPermission, boolean>,
+  };
+}
+
 export async function requireAdminSession() {
+  if (isFounderModeEnabled()) {
+    return {
+      allowed: true as const,
+      roles: {
+        isAdmin: FOUNDER_ADMIN_ACCESS.isAdmin,
+        isSuperAdmin: FOUNDER_ADMIN_ACCESS.isSuperAdmin,
+      },
+    };
+  }
+
   const { data } = await supabase.auth.getSession();
   const session = data.session;
   if (!session?.user) {
@@ -54,6 +74,10 @@ export async function resolveUserPermission(userId: string, permissionKey: strin
 }
 
 export async function requirePermissionSession(permissionKey: string) {
+  if (isFounderModeEnabled()) {
+    return { allowed: true as const };
+  }
+
   const { data } = await supabase.auth.getSession();
   const session = data.session;
   if (!session?.user) {
@@ -97,13 +121,7 @@ export const ADMIN_ROUTE_PERMISSIONS: Record<string, AdminAreaPermission | null>
 export async function resolveAdminAreaAccess(userId: string) {
   const roles = await resolveUserRoleFlags(userId);
   if (roles.isAdmin || roles.isSuperAdmin) {
-    return {
-      canAccessAdmin: true,
-      permissions: Object.fromEntries(ADMIN_AREA_PERMISSIONS.map((key) => [key, true])) as Record<
-        AdminAreaPermission,
-        boolean
-      >,
-    };
+    return founderAdminAreaAccess();
   }
 
   const checks = await Promise.all(
@@ -120,6 +138,10 @@ export async function resolveAdminAreaAccess(userId: string) {
 }
 
 export async function requireAdminAreaSession() {
+  if (isFounderModeEnabled()) {
+    return { allowed: true as const, access: founderAdminAreaAccess() };
+  }
+
   const { data } = await supabase.auth.getSession();
   const session = data.session;
   if (!session?.user) {

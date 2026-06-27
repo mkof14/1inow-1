@@ -12,6 +12,8 @@ type Props = {
   speakerOn: boolean;
   speakingAudio: HTMLAudioElement | null;
   error?: string | null;
+  handsFreeActive?: boolean;
+  conversationMode?: boolean;
   onToggleMic: () => void;
   onToggleSpeaker: () => void;
   labels: {
@@ -23,6 +25,8 @@ type Props = {
     transcribing: string;
     speaking: string;
     idle: string;
+    handsFree?: string;
+    tapMic?: string;
   };
   statusOverride?: string;
   compact?: boolean;
@@ -36,6 +40,8 @@ export function VoiceControlBar({
   speakerOn,
   speakingAudio,
   error,
+  handsFreeActive = false,
+  conversationMode = false,
   onToggleMic,
   onToggleSpeaker,
   labels,
@@ -66,15 +72,16 @@ export function VoiceControlBar({
       <div className="flex items-center gap-2">
         <Button
           type="button"
-          variant={micActive ? "default" : "outline"}
+          variant={micActive || handsFreeActive ? "default" : "outline"}
           size="icon"
           className={cn(
             "size-9 shrink-0 rounded-full transition-all",
-            micActive && "bg-accent text-accent-foreground shadow-md shadow-accent/25",
+            (micActive || handsFreeActive) &&
+              "bg-accent text-accent-foreground shadow-md shadow-accent/25",
           )}
           onClick={onToggleMic}
-          title={micActive ? labels.micOn : labels.micOff}
-          aria-pressed={micActive}
+          title={handsFreeActive ? labels.handsFree : micActive ? labels.micOn : labels.micOff}
+          aria-pressed={micActive || handsFreeActive}
         >
           {phase === "transcribing" ? (
             <Loader2 className="size-4 animate-spin" />
@@ -136,6 +143,11 @@ export function VoiceControlBar({
           )}
           <span className="truncate text-[10px] text-muted-foreground">{statusText}</span>
         </div>
+        {!handsFreeActive && !micActive && phase === "idle" && conversationMode && (
+          <span className="truncate text-[10px] text-accent max-w-[45%]">
+            {labels.tapMic ?? "Tap mic to start"}
+          </span>
+        )}
         {error && (
           <span className="truncate text-[10px] text-destructive max-w-[45%]">{error}</span>
         )}

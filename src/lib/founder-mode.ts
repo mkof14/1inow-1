@@ -52,3 +52,9 @@ export const FOUNDER_USER = {
     role: "super_admin",
   },
 };
+
+export const FOUNDER_ADMIN_ACCESS = {
+  isAdmin: true,
+  isSuperAdmin: true,
+  canAccessAdmin: true,
+} as const;

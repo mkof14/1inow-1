@@ -76,8 +76,8 @@ export async function saveMemoryTeach(input: {
 
   const ru = input.lang?.startsWith("ru") || input.lang?.startsWith("uk");
   return ru
-    ? `Запомнила.\n\nNova: Сохранила «${input.key}» в память.\nVera: Буду учитывать это в следующих ответах.\n\nNext steps:\n- Спроси снова, если нужно проверить\n- Открой Intelligence → Memory для правок`
-    : `Got it — saved to memory.\n\nNova: Stored “${input.key}” for faster future answers.\nVera: I'll apply this in upcoming guidance.\n\nNext steps:\n- Ask again to verify\n- Edit in Intelligence → Memory if needed`;
+    ? `Запомнила «${input.key}». Буду учитывать в следующих ответах.`
+    : `Saved “${input.key}” to memory. I'll use this in future answers.`;
 }
 
 /** Store a Q&A snippet for long-term recall (deduped by question key). */

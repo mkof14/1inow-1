@@ -47,8 +47,12 @@ prepare_vite_production_env() {
   set -a
   # shellcheck disable=SC1091
   source .env
+  if [[ -f .env.local ]]; then
+    # shellcheck disable=SC1091
+    source .env.local
+  fi
   set +a
-  echo "▶ Loaded Vite build env from .env"
+  echo "▶ Loaded Vite build env from .env (+ .env.local when present)"
 }
 
 # Link project on first run (non-interactive when env ids are present).

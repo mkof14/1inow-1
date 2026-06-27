@@ -15,6 +15,7 @@ export const Route = createFileRoute("/api/tts")({
           voice,
           lang,
           authorizationHeader: request.headers.get("authorization"),
+          requestHeaders: request.headers,
         });
 
         if (!result.ok) {

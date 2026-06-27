@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { subscribeToAuthSession } from "@/lib/auth-session";
 import {
   completeAuthenticatedInvite,
   fetchInvitationPreview,
@@ -106,12 +107,28 @@ function AuthPage() {
       return;
     }
 
-    supabase.auth.getSession().then(({ data }) => {
-      syncFounderModeWithSession(Boolean(data.session));
-      setHasSession(Boolean(data.session));
+    return subscribeToAuthSession(async (session) => {
+      if (session) {
+        const { data, error } = await supabase.auth.getUser();
+        if (error || !data.user) {
+          await supabase.auth.signOut();
+          syncFounderModeWithSession(false);
+          setHasSession(false);
+          setSessionReady(true);
+          setError("Your session expired. Please sign in again.");
+          return;
+        }
+      }
+      syncFounderModeWithSession(Boolean(session));
+      setHasSession(Boolean(session));
       setSessionReady(true);
     });
   }, [founderMode]);
+
+  useEffect(() => {
+    if (!founderMode || !sessionReady) return;
+    void navigate({ to: "/dashboard", replace: true });
+  }, [founderMode, sessionReady, navigate]);
 
   useEffect(() => {
     if (founderMode || !sessionReady || !hasSession) return;
@@ -123,7 +140,11 @@ function AuthPage() {
       try {
         const { data, error: userError } = await supabase.auth.getUser();
         if (userError) throw userError;
-        if (!data.user) return;
+        if (!data.user) {
+          await supabase.auth.signOut();
+          setHasSession(false);
+          return;
+        }
 
         await completeAuthenticatedInvite(data.user, inviteToken);
         if (cancelled) return;
@@ -142,7 +163,9 @@ function AuthPage() {
     };
   }, [founderMode, hasSession, inviteToken, navigate, sessionReady]);
 
-  if ((founderMode || hasSession) && sessionReady) {
+  const pendingRedirect = (founderMode || hasSession) && sessionReady && !error;
+
+  if (pendingRedirect) {
     return (
       <main className="grid min-h-screen place-items-center bg-background px-4">
         <p className="text-sm text-muted-foreground">
@@ -212,12 +235,16 @@ function AuthPage() {
 
     setBusy(true);
     setError(null);
+    disableFounderMode();
+    const redirectPath = inviteToken ? `/auth?invite=${inviteToken}` : "/auth";
     const { error: googleError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: inviteToken
-          ? `${window.location.origin}/auth?invite=${inviteToken}`
-          : `${window.location.origin}/dashboard`,
+        redirectTo: `${window.location.origin}${redirectPath}`,
+        queryParams: {
+          access_type: "offline",
+          prompt: "consent",
+        },
       },
     });
     if (googleError) {
@@ -228,7 +255,7 @@ function AuthPage() {
 
   const enterFounderWorkspace = async () => {
     enableFounderMode();
-    toast.success(`Local founder access: ${FOUNDER_EMAIL}`);
+    toast.success(`Founder access: ${FOUNDER_EMAIL}`);
     await navigate({ to: "/dashboard", replace: true });
   };
 
@@ -397,27 +424,31 @@ function AuthPage() {
                 </Button>
               )}
 
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-center gap-2"
-                disabled={busy}
-                onClick={signInWithGoogle}
-              >
-                <span className="grid size-5 place-items-center rounded-full border border-border text-[13px] font-semibold">
-                  G
-                </span>
-                Continue with Google
-              </Button>
+              {googleEnabled && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full justify-center gap-2"
+                  disabled={busy}
+                  onClick={signInWithGoogle}
+                >
+                  <span className="grid size-5 place-items-center rounded-full border border-border text-[13px] font-semibold">
+                    G
+                  </span>
+                  Continue with Google
+                </Button>
+              )}
 
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border" />
+              {(googleEnabled || (founderAccessAvailable && !invitePreview)) && (
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase tracking-[0.16em]">
+                    <span className="bg-card px-3 text-muted-foreground">or email</span>
+                  </div>
                 </div>
-                <div className="relative flex justify-center text-xs uppercase tracking-[0.16em]">
-                  <span className="bg-card px-3 text-muted-foreground">or email</span>
-                </div>
-              </div>
+              )}
 
               <form className="space-y-4" onSubmit={submit}>
                 {invitePreview && (
@@ -487,8 +518,11 @@ function AuthPage() {
               </form>
 
               <p className="text-center text-xs leading-5 text-muted-foreground">
-                Google OAuth is available after Supabase provider configuration. Local development
-                can use Founder access.
+                {googleEnabled
+                  ? "Sign in with Google or your email."
+                  : founderAccessAvailable
+                    ? "Use Founder access or sign in with email."
+                    : "Sign in with your email and password."}
               </p>
             </CardContent>
           </Card>

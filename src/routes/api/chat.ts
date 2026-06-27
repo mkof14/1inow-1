@@ -20,7 +20,18 @@ export const Route = createFileRoute("/api/chat")({
           lang,
           pageContext: body.pageContext,
           authorizationHeader: request.headers.get("authorization"),
+          requestHeaders: request.headers,
         });
+
+        if (body.stream === false) {
+          return Response.json(result, {
+            headers: {
+              "Cache-Control": "no-store",
+              "x-1inow-sense-provider": result.provider,
+              "x-1inow-sense-mode": result.mode,
+            },
+          });
+        }
         const textId = `sense-${Date.now()}`;
 
         const stream = createUIMessageStream({
@@ -50,6 +61,7 @@ type ChatBody = {
   message?: UIMessage;
   lang?: string;
   pageContext?: unknown;
+  stream?: boolean;
 };
 
 function getLatestUserText(body: ChatBody) {

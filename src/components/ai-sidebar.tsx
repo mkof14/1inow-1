@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { supabase } from "@/integrations/supabase/client";
+import { isFounderModeEnabled } from "@/lib/founder-mode";
 import { Button } from "@/components/ui/button";
 import {
   X,
@@ -18,7 +19,8 @@ import { useAiPageContext } from "@/lib/ai-context";
 import { useI18n } from "@/lib/i18n";
 import { BrandMark } from "@/components/icons/compass-mark";
 import { SENSE_ASSETS, SENSE_NAME } from "@/lib/sense-assets";
-import { VoiceControlBar } from "@/components/voice/voice-control-bar";
+import { VoiceLivePanel } from "@/components/voice/voice-live-panel";
+import { toSpeakableText } from "@/lib/voice-speakable";
 import { useVoiceSession } from "@/hooks/use-voice-session";
 import { resolveResponseLang } from "@/lib/voice-locale";
 
@@ -32,6 +34,7 @@ function makeTransport(getCtx: () => unknown, getLang: () => string) {
       const token = data.session?.access_token;
       const headers = new Headers(init?.headers);
       if (token) headers.set("Authorization", `Bearer ${token}`);
+      else if (isFounderModeEnabled()) headers.set("X-1inow-Founder-Voice", "1");
       headers.set("x-user-language", getLang());
       // Inject page context into body
       let body = init?.body;
@@ -113,10 +116,13 @@ export function AiSidebar({
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const spokenIdsRef = useRef<Set<string>>(new Set());
+  const submitRef = useRef<(text: string) => void>(() => {});
 
   const voice = useVoiceSession({
     lang,
     continuous: true,
+    conversationMode: true,
+    autoSend: true,
     onTranscript: (text, final) => {
       setInput(text);
       if (final && text.trim()) {
@@ -124,6 +130,18 @@ export function AiSidebar({
         if (responseLang !== lang) setLang(responseLang);
         activeLangRef.current = responseLang;
       }
+    },
+    onLangDetected: (detected) => {
+      if (detected !== lang) setLang(detected);
+      activeLangRef.current = detected;
+    },
+    onAutoSend: (utterance, utteranceLang) => {
+      if (utteranceLang !== lang) setLang(utteranceLang);
+      activeLangRef.current = utteranceLang;
+      submitRef.current(utterance);
+    },
+    onVoiceControl: (action) => {
+      if (action === "stop") setInput("");
     },
   });
 
@@ -146,9 +164,21 @@ export function AiSidebar({
     transcribing: t("voice.status.transcribing"),
     speaking: t("voice.status.speaking"),
     idle: t("voice.status.idle"),
+    handsFree: t("voice.status.handsFree"),
+    tapMic: t("voice.tapMic", "Tap mic to start"),
+    stop: t("voice.stop", "Stop"),
+    bargeIn: t("voice.bargeIn"),
+    thinking: t("common.thinking"),
   };
 
-  // Speak new assistant replies via Nova/Vera voices.
+  const handleVoiceStop = useCallback(() => {
+    voice.stopSpeaking();
+    if (status === "streaming" || status === "submitted") {
+      // useChat may not expose stop — at minimum halt TTS
+    }
+  }, [voice.stopSpeaking, status]);
+
+  // Speak new assistant replies — single natural voice.
   useEffect(() => {
     if (!voice.speakerOn) return;
     const last = messages[messages.length - 1];
@@ -159,7 +189,8 @@ export function AiSidebar({
       .map((p) => (p.type === "text" ? p.text : ""))
       .join("")
       .trim();
-    if (!text) return;
+    const spoken = toSpeakableText(text);
+    if (!spoken) return;
     spokenIdsRef.current.add(last.id);
     const lastUser = [...messages].reverse().find((m) => m.role === "user");
     const userText = lastUser?.parts
@@ -167,8 +198,8 @@ export function AiSidebar({
       .join("")
       .trim();
     const speakLang = userText ? resolveResponseLang(lang, userText) : lang;
-    void voice.speakText(text, speakLang);
-  }, [messages, status, voice.speakerOn, voice.speakText]);
+    void voice.speakText(spoken, speakLang);
+  }, [messages, status, voice.speakerOn, voice.speakText, lang]);
 
   const SUGGESTIONS = [
     t("ai.chip.attention"),
@@ -193,6 +224,7 @@ export function AiSidebar({
     },
     [sendMessage, status, lang, setLang],
   );
+  submitRef.current = submit;
 
   if (!open) return null;
   const loading = status === "streaming" || status === "submitted";
@@ -317,18 +349,24 @@ export function AiSidebar({
         }}
         className="border-t border-border p-3 space-y-2"
       >
-        <VoiceControlBar
+        <VoiceLivePanel
           phase={voice.phase}
+          thinking={status === "streaming" || status === "submitted"}
           statusOverride={
-            status === "streaming" || status === "submitted" ? t("common.thinking") : undefined
+            voice.handsFreeActive
+              ? t("voice.status.handsFree")
+              : undefined
           }
           lang={lang}
           micStream={voice.micStream}
           speakerOn={voice.speakerOn}
           speakingAudio={voice.speakingAudio}
           error={voice.error}
+          handsFreeActive={voice.handsFreeActive}
+          conversationMode={voice.conversationMode}
           onToggleMic={voice.toggleMic}
           onToggleSpeaker={voice.toggleSpeaker}
+          onStop={handleVoiceStop}
           labels={voiceLabels}
         />
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2">
@@ -336,6 +374,11 @@ export function AiSidebar({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                e.preventDefault();
+                handleVoiceStop();
+                return;
+              }
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 submit(input);
