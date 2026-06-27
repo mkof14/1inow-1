@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import {
   AlertTriangle,
   ArrowRight,
+  Brain,
   CalendarDays,
   CheckSquare,
   FolderKanban,
@@ -1453,19 +1454,20 @@ function VoiceCommandsCore({
     const loc = toVoiceLocale(lang);
     const labels =
       loc === "ru"
-        ? { today: "Сегодня", risks: "Риски", task: "Задача", project: "Проект" }
+        ? { today: "Сегодня", risks: "Риски", memory: "Память", task: "Задача", project: "Проект" }
         : loc === "uk"
-          ? { today: "Сьогодні", risks: "Ризики", task: "Задача", project: "Проєкт" }
+          ? { today: "Сьогодні", risks: "Ризики", memory: "Пам'ять", task: "Задача", project: "Проєкт" }
           : loc === "es"
-            ? { today: "Hoy", risks: "Riesgos", task: "Tarea", project: "Proyecto" }
+            ? { today: "Hoy", risks: "Riesgos", memory: "Memoria", task: "Tarea", project: "Proyecto" }
             : loc === "de"
-              ? { today: "Heute", risks: "Risiken", task: "Aufgabe", project: "Projekt" }
-              : { today: "Today", risks: "Risks", task: "New task", project: "New project" };
+              ? { today: "Heute", risks: "Risiken", memory: "Gedächtnis", task: "Aufgabe", project: "Projekt" }
+              : { today: "Today", risks: "Risks", memory: "Memory", task: "New task", project: "New project" };
     const texts =
       loc === "ru"
         ? {
             today: "Что сегодня важно?",
             risks: "Покажи риски",
+            memory: "Покажи память",
             task: "Создай задачу ",
             project: "Создай проект ",
           }
@@ -1473,6 +1475,7 @@ function VoiceCommandsCore({
           ? {
               today: "Що сьогодні важливо?",
               risks: "Покажи ризики",
+              memory: "Покажи пам'ять",
               task: "Створи задачу ",
               project: "Створи проєкт ",
             }
@@ -1480,6 +1483,7 @@ function VoiceCommandsCore({
             ? {
                 today: "¿Qué es importante hoy?",
                 risks: "Mostrar riesgos",
+                memory: "Mostrar memoria",
                 task: "Crear tarea ",
                 project: "Crear proyecto ",
               }
@@ -1487,18 +1491,21 @@ function VoiceCommandsCore({
               ? {
                   today: "Was ist heute wichtig?",
                   risks: "Risiken zeigen",
+                  memory: "Gedächtnis zeigen",
                   task: "Aufgabe erstellen ",
                   project: "Projekt erstellen ",
                 }
               : {
                   today: "What is important today?",
                   risks: "Show risks",
+                  memory: "Show memory",
                   task: "Create task ",
                   project: "Create project ",
                 };
     return [
       { label: labels.today, icon: CalendarDays, text: texts.today },
       { label: labels.risks, icon: AlertTriangle, text: texts.risks },
+      { label: labels.memory, icon: Brain, text: texts.memory },
       { label: labels.task, icon: CheckSquare, text: texts.task },
       { label: labels.project, icon: FolderKanban, text: texts.project },
     ];
@@ -1799,7 +1806,7 @@ function VoiceCommandsCore({
             setText(event.target.value);
             setPlan(null);
           }}
-          placeholder="Example: create task call Alex tomorrow, open projects, show risks..."
+          placeholder={t("voice.center.placeholder")}
           rows={embedded ? 2 : 3}
         />
         <div className="mt-3 flex flex-wrap gap-2">

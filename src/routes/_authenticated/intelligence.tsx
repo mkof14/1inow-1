@@ -19,6 +19,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useSetPageContext } from "@/lib/ai-context";
+import { setAssistantMemoryEnabled } from "@/lib/voice-learning";
+import { saveVoicePrefs } from "@/lib/voice-prefs";
 import {
   Brain,
   Bot,
@@ -131,11 +133,17 @@ function IntelligencePage() {
   useEffect(() => {
     const onFocus = (event: Event) => {
       const detail = (event as CustomEvent<{ tab?: string }>).detail;
-      if (detail?.tab) setActiveTab(detail.tab);
+      if (!detail?.tab) return;
+      setActiveTab(detail.tab);
+      void navigate({
+        to: "/intelligence",
+        search: detail.tab === "memory" ? {} : { tab: detail.tab },
+        replace: true,
+      });
     };
     window.addEventListener("1inow:intelligence-focus", onFocus);
     return () => window.removeEventListener("1inow:intelligence-focus", onFocus);
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-8">
@@ -1104,7 +1112,10 @@ function PrefsPanel() {
         <NumField
           label="Proactive level (0–4)"
           value={data?.proactive_level ?? 2}
-          onChange={(n) => save.mutate({ proactive_level: n })}
+          onChange={(n) => {
+            saveVoicePrefs({ ambientSense: n >= 2 });
+            save.mutate({ proactive_level: n });
+          }}
         />
         <NumField
           label="Notification level (0–4)"
@@ -1120,7 +1131,10 @@ function PrefsPanel() {
           </div>
           <Switch
             checked={data?.memory_enabled ?? true}
-            onCheckedChange={(v) => save.mutate({ memory_enabled: v })}
+            onCheckedChange={(v) => {
+              setAssistantMemoryEnabled(v);
+              save.mutate({ memory_enabled: v });
+            }}
           />
         </div>
       </div>

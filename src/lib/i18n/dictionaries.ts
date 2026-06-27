@@ -804,7 +804,9 @@ const EXT2: Record<string, Dict> = {
     "voice.fab.open": "Open voice commands",
     "voice.center.title": "Say or type what you want 1inow to do",
     "voice.center.hint":
-      "Speak naturally — show overdue/blocked, open person, undo last action, or batch with «then».",
+      "Speak naturally — show memory, snooze a reminder, undo last action, or chain commands with «then».",
+    "voice.center.placeholder":
+      "Example: show memory, snooze reminder 1 hour, create task call Alex tomorrow…",
     "voice.chat.runAction": "Run",
     "voice.chat.actionHint": "Say «Yes» or tap Run to execute Vera's proposed action.",
     "cmd.placeholder": "Jump to anything…",
@@ -975,7 +977,9 @@ const EXT2: Record<string, Dict> = {
     "voice.fab.open": "Открыть голосовые команды",
     "voice.center.title": "Скажите или напишите, что нужно сделать",
     "voice.center.hint":
-      "Говорите естественно — «просроченные», «заблокированные», «открой человека …», «отмени последнее», «и потом».",
+      "Говорите естественно — «покажи память», «отложи на час», «отмени последнее», «и потом».",
+    "voice.center.placeholder":
+      "Например: покажи память, отложи напоминание на час, создай задачу позвонить Алексею…",
     "voice.chat.runAction": "Выполнить",
     "voice.chat.actionHint": "Скажите «Да» или нажмите «Выполнить» для действия из чата.",
     "cmd.placeholder": "Перейти к чему угодно…",
@@ -1146,7 +1150,9 @@ const EXT2: Record<string, Dict> = {
     "voice.fab.open": "Відкрити голосові команди",
     "voice.center.title": "Скажи або напиши, що потрібно зробити",
     "voice.center.hint":
-      "Говори природно — «прострочені», «заблоковані», «відкрий людину …», «скасуй останнє», «і потім».",
+      "Говори природно — «покажи пам'ять», «відклади на годину», «скасуй останнє», «і потім».",
+    "voice.center.placeholder":
+      "Наприклад: покажи пам'ять, відклади нагадування на годину, створи задачу…",
     "voice.chat.runAction": "Виконати",
     "voice.chat.actionHint": "Скажи «Так» або натисни «Виконати» для дії з чату.",
     "cmd.placeholder": "Перейти будь-куди…",
@@ -1212,6 +1218,10 @@ const EXT2: Record<string, Dict> = {
     "ai.subtitle": "Siempre contigo",
     "ai.placeholder": "Pregunta a Sense…",
     "ai.welcome": "Hola — soy 1inow.",
+    "voice.center.hint":
+      "Habla con naturalidad — mostrar memoria, posponer recordatorio, deshacer último, o encadenar con «y luego».",
+    "voice.center.placeholder":
+      "Ejemplo: mostrar memoria, posponer recordatorio 1 hora, crear tarea llamar a Alex…",
     "quick.title": "Creación rápida",
     "quick.tab.task": "Tarea",
     "quick.tab.project": "Proyecto",
@@ -1252,6 +1262,10 @@ const EXT2: Record<string, Dict> = {
     "ai.subtitle": "Immer bei dir",
     "ai.placeholder": "Frage Sense…",
     "ai.welcome": "Hi — ich bin 1inow.",
+    "voice.center.hint":
+      "Sprich natürlich — Gedächtnis zeigen, Erinnerung verschieben, rückgängig, oder mit «und dann» verketten.",
+    "voice.center.placeholder":
+      "Beispiel: Gedächtnis zeigen, Erinnerung um 1 Stunde verschieben, Aufgabe Alex anrufen…",
     "quick.title": "Schnellerstellung",
     "quick.tab.task": "Aufgabe",
     "quick.tab.project": "Projekt",
