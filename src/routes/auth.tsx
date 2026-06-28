@@ -35,9 +35,9 @@ import {
 import {
   ArrowLeft,
   ArrowRight,
-  CheckCircle2,
+  Eye,
+  EyeOff,
   Fingerprint,
-  LockKeyhole,
   ShieldCheck,
 } from "lucide-react";
 
@@ -73,6 +73,7 @@ function AuthPage() {
   const [invitePreview, setInvitePreview] = useState<InvitationPreview | null>(null);
   const [inviteLoading, setInviteLoading] = useState(false);
   const [authMode, setAuthMode] = useState<"sign-in" | "sign-up">("sign-in");
+  const [showPassword, setShowPassword] = useState(false);
   const [oauthCompleting, setOauthCompleting] = useState(() => hasOAuthCallbackInUrl());
   const [googleStatus, setGoogleStatus] = useState<GoogleOAuthStatus | null>(null);
   const googleEnabled = import.meta.env.VITE_ENABLE_GOOGLE_AUTH === "true";
@@ -390,44 +391,6 @@ function AuthPage() {
               1inow keeps the workspace focused: portfolio context, personal priorities, voice
               capture, and operational signals in one controlled system.
             </p>
-
-            <div className="mt-8 overflow-hidden rounded-[2rem] border border-white/12 bg-white/[0.07] p-3 shadow-2xl shadow-black/30 backdrop-blur-xl">
-              <img
-                src="/marketing/voice-capture.jpg"
-                alt=""
-                className="h-52 w-full rounded-[1.4rem] object-cover"
-              />
-              <div className="grid grid-cols-3 gap-2 pt-3">
-                {[
-                  ["Voice", "capture"],
-                  ["Projects", "clarity"],
-                  ["Signals", "control"],
-                ].map(([label, value]) => (
-                  <div key={label} className="rounded-2xl bg-white/[0.07] px-3 py-2">
-                    <div className="text-[10px] uppercase tracking-[0.16em] text-white/42">
-                      {label}
-                    </div>
-                    <div className="mt-1 text-sm font-semibold text-white/86">{value}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="grid max-w-xl gap-3">
-            {[
-              "Email sign-up for your workspace",
-              "Supabase auth for production",
-              "Voice and projects after sign in",
-            ].map((item) => (
-              <div
-                key={item}
-                className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white/76"
-              >
-                <CheckCircle2 className="size-4 text-cyan-200" />
-                {item}
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -445,30 +408,8 @@ function AuthPage() {
 
           <Card className="relative z-10 overflow-hidden border-white/70 bg-white/82 shadow-[0_32px_100px_-48px_color-mix(in_oklab,var(--foreground)_58%,transparent)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06]">
             <div className="h-2 bg-gradient-to-r from-teal-400 via-blue-400 to-amber-300" />
-            <CardHeader className="space-y-6">
-              <div className="flex items-center justify-between gap-3">
-                <BrandWordmark size={36} />
-                <div className="rounded-full border border-border bg-muted/50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Secure access
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  [LockKeyhole, "Secure"],
-                  [Fingerprint, "Founder"],
-                  [ShieldCheck, "Control"],
-                ].map(([Icon, label]) => (
-                  <div
-                    key={label as string}
-                    className="rounded-2xl border border-border/70 bg-background/70 p-3 text-center"
-                  >
-                    <Icon className="mx-auto size-4 text-accent" />
-                    <div className="mt-2 text-[11px] font-semibold text-muted-foreground">
-                      {label as string}
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <CardHeader className="space-y-4">
+              <BrandWordmark size={36} />
               <div>
                 <CardTitle className="text-2xl">
                   {invitePreview ? "Accept your invitation" : "Sign in to 1inow"}
@@ -591,15 +532,26 @@ function AuthPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    autoComplete={authMode === "sign-up" ? "new-password" : "current-password"}
-                    placeholder={authMode === "sign-up" ? "Choose a password" : "Enter password"}
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      autoComplete={authMode === "sign-up" ? "new-password" : "current-password"}
+                      placeholder={authMode === "sign-up" ? "Choose a password" : "Enter password"}
+                      className="pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+                      onClick={() => setShowPassword((value) => !value)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
                 </div>
                 {error && (
                   <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
