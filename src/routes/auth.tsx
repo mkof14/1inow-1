@@ -87,6 +87,7 @@ function AuthPage() {
   const [sessionReady, setSessionReady] = useState(false);
   const [hasSession, setHasSession] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [inviteToken, setInviteToken] = useState<string | null>(null);
   const [invitePreview, setInvitePreview] = useState<InvitationPreview | null>(null);
@@ -316,30 +317,36 @@ function AuthPage() {
   };
 
   const signInWithGoogle = async () => {
-    if (!googleEnabled) {
-      setError("Google sign-in is available after Supabase Google OAuth is configured.");
-      return;
-    }
+    if (!googleEnabled || googleBusy) return;
 
-    setBusy(true);
+    setGoogleBusy(true);
     setError(null);
     disableFounderMode();
     const redirectPath = inviteToken ? `/auth?invite=${inviteToken}` : "/auth";
     const redirectTo = `${window.location.origin}${redirectPath}`;
 
-    const { error: googleError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo,
-        queryParams: {
-          access_type: "offline",
-          prompt: "select_account",
+    try {
+      const { data, error: googleError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+          skipBrowserRedirect: true,
+          queryParams: {
+            access_type: "offline",
+            prompt: "select_account",
+          },
         },
-      },
-    });
-    if (googleError) {
-      setError(formatGoogleAuthError(googleError.message));
-      setBusy(false);
+      });
+      if (googleError) throw googleError;
+      if (!data.url) {
+        throw new Error("Google sign-in could not start. Try again or use email.");
+      }
+      window.location.assign(data.url);
+    } catch (err) {
+      setError(
+        formatGoogleAuthError(err instanceof Error ? err.message : "Google sign-in failed"),
+      );
+      setGoogleBusy(false);
     }
   };
 
@@ -397,17 +404,17 @@ function AuthPage() {
       </section>
 
       <section className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-8 sm:px-6">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(20,184,166,0.18),transparent_30%),radial-gradient(circle_at_20%_80%,rgba(59,130,246,0.16),transparent_32%)] dark:bg-[radial-gradient(circle_at_78%_18%,rgba(20,184,166,0.12),transparent_30%),radial-gradient(circle_at_20%_80%,rgba(59,130,246,0.12),transparent_32%)]" />
-        <div className="w-full max-w-md">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(20,184,166,0.18),transparent_30%),radial-gradient(circle_at_20%_80%,rgba(59,130,246,0.16),transparent_32%)] dark:bg-[radial-gradient(circle_at_78%_18%,rgba(20,184,166,0.12),transparent_30%),radial-gradient(circle_at_20%_80%,rgba(59,130,246,0.12),transparent_32%)]" />
+        <div className="relative z-10 w-full max-w-md">
           <Link
             to="/"
-            className="relative z-10 mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground lg:hidden"
+            className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground lg:hidden"
           >
             <ArrowLeft className="size-4" />
             Public site
           </Link>
 
-          <Card className="relative z-10 overflow-hidden border-white/70 bg-white/82 shadow-[0_32px_100px_-48px_color-mix(in_oklab,var(--foreground)_58%,transparent)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06]">
+          <Card className="overflow-hidden border-white/70 bg-white/82 shadow-[0_32px_100px_-48px_color-mix(in_oklab,var(--foreground)_58%,transparent)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06]">
             <div className="h-2 bg-gradient-to-r from-teal-400 via-blue-400 to-amber-300" />
             <CardHeader className="space-y-4">
               <BrandWordmark size={36} />
@@ -467,11 +474,11 @@ function AuthPage() {
                   type="button"
                   variant="outline"
                   className="w-full justify-center gap-3"
-                  disabled={busy}
-                  onClick={signInWithGoogle}
+                  disabled={googleBusy}
+                  onClick={() => void signInWithGoogle()}
                 >
-                  <GoogleMark className="size-5 shrink-0" />
-                  Continue with Google
+                  <GoogleMark className="size-5 shrink-0 pointer-events-none" />
+                  {googleBusy ? "Opening Google…" : "Continue with Google"}
                 </Button>
               )}
 
