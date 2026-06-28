@@ -8,8 +8,8 @@ The system speaks through **two conversational layers**:
 
 | Persona | Role | Voice character |
 | --- | --- | --- |
-| **Nova** | Execution — movement, next steps, momentum | Direct, energetic (`marin` TTS) |
-| **Vera** | Review — meaning, risk, missing context, clarifying questions | Calm, analytical (`shimmer` TTS) |
+| **Nova** | Execution — movement, next steps, momentum | Direct, energetic (OpenAI TTS: `coral` en; locale profiles in code) |
+| **Vera** | Review — meaning, risk, missing context, clarifying questions | Calm, analytical (`sage` en; locale profiles in code) |
 
 **Sense** is the umbrella assistant brand (`1inow Sense`) that coordinates Nova + Vera, chat, voice commands, memory, and workspace context.
 
@@ -42,13 +42,21 @@ User voice/text
 
 | Gap | Priority | Notes |
 | --- | --- | --- |
-| Voice inbox → Supabase sync | High | Still localStorage |
-| Memory write-back from chat/voice | High | `ai_memories` read in chat; no teach flow |
-| Admin voice settings → runtime | Medium | Env vars vs DB settings split |
-| Server STT in ai-sidebar mic | Medium | Voice center has fallback; sidebar uses browser SR |
-| Notes/reminders voice intents | Medium | Parsed but not executable |
-| Self-learning loop | Medium | Intelligence UI exists; not closed loop |
-| Multilingual voice parsers (es/de) | Medium | UI i18n yes; voice keywords mostly en/ru |
+| Dedicated file upload storage | Medium | Vault/Documents search workspace records; binary uploads planned |
+| External calendar sync | Medium | Calendar shows task due dates only |
+| Device cloud sync | Medium | `/devices` is local transcript review |
+| Autonomous agent runtime | Low | Intelligence UI exists; agents not auto-executing |
+| Multilingual voice parsers (es/de) | Low | UI i18n yes; expanding keyword coverage ongoing |
+
+### Shipped (voice-first blocks A–F)
+
+- Voice inbox → Supabase sync + localStorage migration
+- Memory write-back from chat/voice → `ai_memories`
+- Admin voice settings → runtime hydration
+- Server STT in ai-sidebar + command center
+- Notes/reminders voice intents (executable)
+- Self-learning loop (Intelligence ↔ voice ↔ memory)
+- Vault workspace search (`/files?q=`)
 
 ---
 

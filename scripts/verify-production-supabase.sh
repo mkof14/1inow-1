@@ -74,6 +74,14 @@ echo "Org foundation migrations"
 bash "$ROOT/scripts/verify-org-migrations.sh" | sed 's/^/  /'
 
 echo
+echo "Remote database checks"
+if command -v node >/dev/null 2>&1; then
+  node "$ROOT/scripts/check-supabase-remote.mjs" || failures=$((failures + 1))
+else
+  warn "Node not available — skip remote Supabase checks"
+fi
+
+echo
 echo "Migration runbook"
 echo "  See docs/supabase-migration-runbook.md for apply order and post-check SQL."
 

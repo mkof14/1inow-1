@@ -89,7 +89,7 @@ Current implemented flow:
 - Authenticated app routes are protected under `_authenticated`.
 - Unauthenticated users are redirected to `/auth`.
 - `/auth` supports email/password sign-in.
-- Open self-sign-up is not exposed in the UI.
+- Email/password sign-up is exposed on `/auth` (first account can bootstrap as Super Admin per UI hint).
 - Google auth is feature-flagged by `VITE_ENABLE_GOOGLE_AUTH`.
 - Founder dev mode is local-only and requires:
   - `import.meta.env.DEV`

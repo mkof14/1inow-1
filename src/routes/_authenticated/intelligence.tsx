@@ -166,9 +166,9 @@ function IntelligencePage() {
         <IntelligenceSignal
           icon={Radio}
           label="Model execution"
-          value="Disabled"
-          description="AI routes are safe stubs until a provider is explicitly approved."
-          tone="paused"
+          value="Local Sense"
+          description="Chat and voice use local Sense by default. Enable OpenAI in Vercel env when approved."
+          tone="active"
         />
         <IntelligenceSignal
           icon={CheckCircle2}
@@ -179,9 +179,9 @@ function IntelligencePage() {
         />
         <IntelligenceSignal
           icon={AlertTriangle}
-          label="Next decision"
-          value="Gateway plan"
-          description="Define permissions, costs, logs, and provider routing before connecting AI."
+          label="External providers"
+          value="Env-gated"
+          description="OpenAI STT/TTS and paid models require keys, permissions, and cost review."
           tone="review"
         />
       </div>

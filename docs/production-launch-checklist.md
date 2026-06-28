@@ -49,9 +49,9 @@ Native Electron path remains in `/desktop/` for macOS power users.
 - [x] Sitemap `/sitemap.xml`, robots.txt, Google verification
 - [x] OG/Twitter defaults + per-page meta on landing
 - [x] Nova/Vera personas on landing (`public-assistant-personas`)
-- [ ] Add `og:image` to all public info pages
+- [x] Add `og:image` to all public info pages
 - [ ] hreflang if multi-locale SEO is a priority
-- [ ] Update `public/llms.txt` with full public URL list
+- [x] Update `public/llms.txt` with full public URL list
 
 ## 6. Performance
 

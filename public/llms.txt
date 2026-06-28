@@ -1,15 +1,39 @@
 # 1inow
 
-> 1inow is a private personal command center for projects, tasks, voice capture, decisions, and daily execution.
+> 1inow is a voice-first personal command center for projects, tasks, decisions, voice capture, and daily execution — coordinated by Sense (Nova + Vera).
+
+Site: https://1inow.com
 
 ## Public pages
 
-- [Home](/): Product overview and entry point.
-- [Strategic vs Tactical](/principles/strategic-vs-tactical): Operating principle for decision and execution balance.
-- [Sign in](/auth): Access the private workspace.
+- https://1inow.com/ — Product overview and sign-in entry
+- https://1inow.com/how-it-works — Operating flow (capture → organize → execute → review)
+- https://1inow.com/security-trust — Security and trust principles
+- https://1inow.com/roadmap — Public development roadmap
+- https://1inow.com/device-connections — Conversation and device intake direction
+- https://1inow.com/principles/strategic-vs-tactical — Strategic vs tactical planning guide
+- https://1inow.com/legal/privacy — Privacy policy
+- https://1inow.com/legal/terms — Terms of use
+- https://1inow.com/auth — Sign in / sign up
 
-## Product direction
+## Authenticated workspace (login required)
 
-- Voice capture and Voice Inbox are available without external AI services.
-- External AI, speech-to-text, and text-to-speech providers require explicit approval and environment configuration before use.
-- The authenticated workspace contains dashboard, projects, tasks, calendar, inbox, communication, people, reports, intelligence, admin, and settings modules.
+- Dashboard, projects, tasks, calendar, inbox, communication
+- People, teams, team map, approvals, reports, portfolio
+- Intelligence (memory, rules, questions, reminders)
+- Vault search (`/files?q=`) and knowledge search (`/documents?q=`)
+- Administration (users, roles, invitations, audit, voice settings)
+- Sense sidebar: Chat (Vera) + Voice commands (Nova)
+
+## Product facts (current code)
+
+- Local Sense chat works without paid AI keys; OpenAI STT/TTS/chat is env-gated.
+- Voice inbox persists in Supabase when org migrations are applied.
+- Memory teach-back (“remember that…”) writes to `ai_memories`.
+- File upload storage is not shipped; Vault/Documents search workspace records.
+
+## Docs in repository
+
+- docs/production-launch-checklist.md
+- docs/voice-first-production-plan.md
+- docs/supabase-migration-runbook.md

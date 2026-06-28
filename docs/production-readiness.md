@@ -8,8 +8,8 @@ The application currently uses:
 
 - TanStack Start server functions for authenticated server-side actions.
 - Supabase browser and server clients for data access and auth-aware server work.
-- Local API routes for `/api/chat`, `/api/stt`, and `/api/tts`.
-- Safe disabled-service stubs for AI, speech-to-text, text-to-speech, translation, and rewrite behavior.
+- Local API routes for `/api/chat`, `/api/stt`, and `/api/tts` with env-gated external providers.
+- Local Sense chat and browser STT/TTS fallbacks when paid providers are disabled.
 - Vercel-oriented build settings through standard Vite/TanStack configuration.
 
 No Lovable runtime, package, gateway endpoint, or environment variable is required for the current build.
@@ -52,7 +52,7 @@ No Vite/Rollup build warnings remain in the current production build.
 
 - Several UI and route files still rely on broad `any` types. TypeScript build settings currently allow this, but a stricter typing pass should be planned.
 - The lint setup treats formatting as errors, but the existing codebase is not fully Prettier-formatted.
-- AI, speech, translation, email, billing, analytics, and monitoring are intentionally disconnected.
+- AI, speech, translation, email, billing, analytics, and monitoring external providers are env-gated; local Sense + browser voice remain available.
 - Dev-owner and demo-data helpers remain available and should be reviewed before production exposure.
 - Bundle chunking is now below the default warning threshold, but future feature additions should be watched so charting, PDF, AI SDK, and UI vendor chunks do not drift upward unchecked.
 
@@ -60,12 +60,12 @@ No Vite/Rollup build warnings remain in the current production build.
 
 See **`docs/production-launch-checklist.md`** for the full go-live checklist and **`docs/voice-first-production-plan.md`** for Nova/Vera voice-first architecture.
 
-1. Apply Supabase migrations 1–10 when approved (not yet on production).
+1. Apply Supabase org migrations 1–10 when approved (`npm run migrate:org` or runbook).
 2. Run a dedicated Prettier formatting pass and commit it separately.
 3. Keep dev-owner and demo-data tools environment-gated in production.
 4. Enable OpenAI, Resend, Stripe, Sentry, and analytics in separate phases per env gates.
 5. Complete PWA Lighthouse audit after deploy.
-6. Persist voice inbox and memory teach-back for full self-learning loop.
+6. ~~Persist voice inbox and memory teach-back~~ — shipped; dedicated file upload storage remains planned.
 
 ## Validation
 

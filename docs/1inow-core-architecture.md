@@ -2,22 +2,20 @@
 
 ## 1. Current Project State
 
-1inow is now prepared for independent long-term production development.
+1inow is prepared for independent long-term production development.
 
 - Lovable platform dependencies have been removed.
 - The production build is successful.
-- The production base tag is `v0.1.0-production-base`.
-- AI routes are intentionally stubbed and do not call external AI services.
-- Supabase remains the planned backend platform.
-- Vercel remains the planned deployment target.
+- Supabase is the live backend (auth, Postgres, RLS).
+- Vercel is the deployment target (Nitro serverless via Vite plugin).
 
 Current AI-related routes:
 
-- `/api/chat`: returns a disabled-service placeholder response.
-- `/api/stt`: returns `501 Not Implemented`.
-- `/api/tts`: returns `501 Not Implemented`.
+- `/api/chat`: **always works** — local Sense templates by default; OpenAI when `AI_PROVIDER=openai` + key + `use_assistant`.
+- `/api/stt`: returns **501** until `STT_PROVIDER=openai` + key; browser STT is the default client path.
+- `/api/tts`: returns **501** until `TTS_PROVIDER=openai|elevenlabs` + keys; browser `speechSynthesis` is the default fallback.
 
-No OpenAI, Anthropic, Gemini, Resend, Stripe, analytics, monitoring, or other paid external service is connected in this base state.
+OpenAI, Resend, Stripe, analytics, and monitoring remain **env-gated off** until explicitly configured.
 
 ## 2. Core Product Modules
 

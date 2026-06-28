@@ -22,7 +22,7 @@ git push origin main
 4. **Output Directory:** `.output/public` (already set in `vercel.json`).
 5. **Install Command:** leave default (`bun install` / `npm install`).
 
-The `NITRO_PRESET=vercel` env var in `vercel.json` tells the TanStack Start / Nitro build to emit a Vercel-compatible serverless bundle instead of the default Cloudflare Workers output.
+The TanStack Start / Nitro Vercel preset is configured in `vite.config.ts` (Nitro plugin). No separate `NITRO_PRESET` entry is required in `vercel.json`.
 
 ## 3. Environment variables (Vercel → Project Settings → Environment Variables)
 

@@ -18,26 +18,17 @@ import { PublicAssistantPersonas } from "@/components/public-assistant-personas"
 import { PublicFooter } from "@/components/public-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useI18n } from "@/lib/i18n";
+import { publicPageMeta } from "@/lib/seo";
 
 export const Route = createFileRoute("/device-connections")({
-  head: () => ({
-    meta: [
-      { title: "Device Connections - 1inow" },
-      {
-        name: "description",
-        content:
-          "How 1inow will import conversations, calls, meetings, and voice recorder files from compatible recorders and meeting capture tools.",
-      },
-      { property: "og:title", content: "1inow Device Connections" },
-      {
-        property: "og:description",
-        content:
-          "Bring conversations, phone calls, meetings, and voice recorder files into a useful project and life command system.",
-      },
-      { property: "og:type", content: "article" },
-    ],
-    links: [{ rel: "canonical", href: "https://1inow.com/device-connections" }],
-  }),
+  head: () =>
+    publicPageMeta({
+      title: "Device Connections - 1inow",
+      description:
+        "How 1inow will import conversations, calls, meetings, and voice recorder files from compatible recorders and meeting capture tools.",
+      path: "/device-connections",
+      type: "article",
+    }),
   component: DeviceConnectionsPage,
 });
 

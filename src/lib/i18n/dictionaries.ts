@@ -742,6 +742,15 @@ const EXT2: Record<string, Dict> = {
     "page.documents.title": "Knowledge",
     "page.documents.desc":
       "Company knowledge, project notes, policies, templates and multilingual versions.",
+    "page.documents.searchNote":
+      "Searches Sense memory, decisions, and voice inbox. Full document uploads are coming next.",
+    "page.documents.resultsFor": "Knowledge results for «{q}»",
+    "page.files.resultsFor": "Results for «{q}»",
+    "search.kind.project": "Project",
+    "search.kind.task": "Task",
+    "search.kind.inbox": "Voice Inbox",
+    "search.kind.memory": "Memory",
+    "search.kind.decision": "Decision",
     "page.files.eyebrow": "Vault",
     "page.files.title": "Vault",
     "page.files.desc":

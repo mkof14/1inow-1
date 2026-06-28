@@ -1,5 +1,5 @@
 {
-  "name": "tanstack_start_ts",
+  "name": "1inow",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -11,6 +11,8 @@
     "lint": "eslint .",
     "smoke": "bash scripts/smoke-check.sh",
     "verify:production": "bash scripts/verify-production-supabase.sh",
+    "verify:remote": "node scripts/check-supabase-remote.mjs",
+    "migrate:org": "bash scripts/apply-org-migrations.sh",
     "format": "prettier --write .",
     "deploy": "bash scripts/deploy-vercel.sh",
     "deploy:prod": "bash scripts/deploy-vercel.sh --prod"

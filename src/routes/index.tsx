@@ -79,6 +79,7 @@ const landingCopy = {
       ["Open tasks", "14"],
       ["Active projects", "8"],
     ],
+    metricsDemoNote: "Illustrative preview — sign in for live workspace data",
     assistantEyebrow: "Two personal voices",
     assistantTitle: "Nova and Vera turn voice control into a thinking workflow.",
     assistantText:
@@ -151,6 +152,7 @@ const landingCopy = {
       ["Открытые задачи", "14"],
       ["Активные проекты", "8"],
     ],
+    metricsDemoNote: "Пример для превью — войдите для живых данных",
     assistantEyebrow: "Два персональных голоса",
     assistantTitle: "Nova и Vera превращают голосовое управление в думающий процесс.",
     assistantText:
@@ -659,6 +661,11 @@ function HeroDashboard({ copy: c }: { copy: (typeof landingCopy)["en"] }) {
                 {c.metrics.map(([label, value], index) => (
                   <Metric key={label} label={label} value={value} slug={metricTopicSlugs[index]} />
                 ))}
+                {"metricsDemoNote" in c && c.metricsDemoNote ? (
+                  <p className="pt-1 text-[10px] uppercase tracking-wide text-slate-400 dark:text-white/40">
+                    {c.metricsDemoNote}
+                  </p>
+                ) : null}
               </div>
             </div>
 

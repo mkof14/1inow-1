@@ -4,118 +4,105 @@ import { BrandWordmark } from "@/components/icons/compass-icons";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { PublicFooter } from "@/components/public-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { publicPageMeta } from "@/lib/seo";
 
 const CANONICAL = "https://1inow.com/principles/strategic-vs-tactical";
 
 export const Route = createFileRoute("/principles/strategic-vs-tactical")({
-  head: () => ({
-    meta: [
-      { title: "Strategic vs Tactical Planning for Investment Teams — 1inow" },
-      {
-        name: "description",
-        content:
-          "A practical guide for investment teams on the difference between strategic and tactical planning — horizons, decisions, owners, cadence, and how 1inow operationalizes both.",
-      },
-      { property: "og:title", content: "Strategic vs Tactical Planning for Investment Teams" },
-      {
-        property: "og:description",
-        content:
-          "Horizons, decisions, owners, and cadence — how strategic and tactical planning differ and how to run them in one workspace.",
-      },
-      { property: "og:type", content: "article" },
-      { property: "og:url", content: CANONICAL },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "Strategic vs Tactical Planning for Investment Teams" },
-      {
-        name: "twitter:description",
-        content:
-          "Horizons, decisions, owners, and cadence — how strategic and tactical planning differ.",
-      },
-    ],
-    links: [{ rel: "canonical", href: CANONICAL }],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Article",
-          headline: "Strategic vs Tactical Planning for Investment Teams",
-          description:
-            "A practical guide on the difference between strategic and tactical planning in investment teams.",
-          mainEntityOfPage: CANONICAL,
-          author: { "@type": "Organization", name: "1inow" },
-          publisher: {
-            "@type": "Organization",
-            name: "1inow",
-            logo: {
-              "@type": "ImageObject",
-              url: "https://1inow.com/icons/icon-512.png",
-            },
-          },
-        }),
-      },
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "BreadcrumbList",
-          itemListElement: [
-            {
-              "@type": "ListItem",
-              position: 1,
-              name: "Home",
-              item: "https://1inow.com/",
-            },
-            {
-              "@type": "ListItem",
-              position: 2,
-              name: "Principles",
-              item: "https://1inow.com/principles",
-            },
-            {
-              "@type": "ListItem",
-              position: 3,
-              name: "Strategic vs Tactical",
-              item: CANONICAL,
-            },
-          ],
-        }),
-      },
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
-          mainEntity: [
-            {
-              "@type": "Question",
-              name: "What is the difference between strategic and tactical planning?",
-              acceptedAnswer: {
-                "@type": "Answer",
-                text: "Strategic planning sets multi-year direction — thesis, allocation, capabilities. Tactical planning translates that direction into quarterly and weekly moves — sourcing, sizing, follow-ons, and operating decisions.",
+  head: () => {
+    const base = publicPageMeta({
+      title: "Strategic vs Tactical Planning for Investment Teams — 1inow",
+      description:
+        "A practical guide for investment teams on the difference between strategic and tactical planning — horizons, decisions, owners, cadence, and how 1inow operationalizes both.",
+      path: "/principles/strategic-vs-tactical",
+      type: "article",
+    });
+    return {
+      ...base,
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: "Strategic vs Tactical Planning for Investment Teams",
+            description:
+              "A practical guide on the difference between strategic and tactical planning in investment teams.",
+            mainEntityOfPage: CANONICAL,
+            author: { "@type": "Organization", name: "1inow" },
+            publisher: {
+              "@type": "Organization",
+              name: "1inow",
+              logo: {
+                "@type": "ImageObject",
+                url: "https://1inow.com/icons/icon-512.png",
               },
             },
-            {
-              "@type": "Question",
-              name: "Who owns each layer in an investment team?",
-              acceptedAnswer: {
-                "@type": "Answer",
-                text: "Partners own the strategic layer (thesis, mandate, allocation). Investment leads and operators own the tactical layer (pipeline, diligence, portfolio actions).",
+          }),
+        },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Home",
+                item: "https://1inow.com/",
               },
-            },
-            {
-              "@type": "Question",
-              name: "How often should each be reviewed?",
-              acceptedAnswer: {
-                "@type": "Answer",
-                text: "Strategy is reviewed annually with a mid-year checkpoint. Tactics are reviewed weekly in the IC and monthly at the portfolio level.",
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "Principles",
+                item: "https://1inow.com/principles",
               },
-            },
-          ],
-        }),
-      },
-    ],
-  }),
+              {
+                "@type": "ListItem",
+                position: 3,
+                name: "Strategic vs Tactical",
+                item: CANONICAL,
+              },
+            ],
+          }),
+        },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              {
+                "@type": "Question",
+                name: "What is the difference between strategic and tactical planning?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Strategic planning sets multi-year direction — thesis, allocation, capabilities. Tactical planning translates that direction into quarterly and weekly moves — sourcing, sizing, follow-ons, and operating decisions.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "Who owns each layer in an investment team?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Partners own the strategic layer (thesis, mandate, allocation). Investment leads and operators own the tactical layer (pipeline, diligence, portfolio actions).",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "How often should each be reviewed?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Strategy is reviewed annually with a mid-year checkpoint. Tactics are reviewed weekly in the IC and monthly at the portfolio level.",
+                },
+              },
+            ],
+          }),
+        },
+      ],
+    };
+  },
   component: StrategicVsTacticalPage,
 });
 
