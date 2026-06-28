@@ -222,6 +222,30 @@ export function BrandLogo({ size = 28, className, ...rest }: IconProps) {
   );
 }
 
+/* Full lockup: SVG mark (1 + dot together) + "inow" word */
+export function BrandLockup({
+  className,
+  size = 32,
+  wordClassName,
+}: {
+  className?: string;
+  size?: number;
+  wordClassName?: string;
+}) {
+  const textSize = Math.max(14, Math.round(size * 0.56));
+  return (
+    <span className={cn("inline-flex items-center gap-2.5", className)}>
+      <BrandLogo size={size} className="shrink-0" aria-hidden />
+      <span
+        className={cn("font-semibold tracking-tight text-foreground", wordClassName)}
+        style={{ fontSize: textSize, lineHeight: 1 }}
+      >
+        inow
+      </span>
+    </span>
+  );
+}
+
 /* 1inow wordmark — full "1inow" lockup as SVG-free HTML usage helper. */
 export function BrandWordmark({ className, size = 18 }: { className?: string; size?: number }) {
   return (
@@ -229,16 +253,16 @@ export function BrandWordmark({ className, size = 18 }: { className?: string; si
       className={cn("inline-flex items-baseline font-semibold tracking-tight", className)}
       style={{ fontSize: size, lineHeight: 1 }}
     >
-      <span className="relative text-accent" style={{ marginRight: 1 }}>
+      <span className="relative inline-block text-accent" style={{ marginRight: 2 }}>
         1
         <span
           aria-hidden
           className="absolute rounded-full bg-accent"
           style={{
-            width: size * 0.22,
-            height: size * 0.22,
-            top: -size * 0.08,
-            right: -size * 0.18,
+            width: size * 0.2,
+            height: size * 0.2,
+            top: -size * 0.06,
+            right: -size * 0.1,
           }}
         />
       </span>

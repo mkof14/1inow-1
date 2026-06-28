@@ -2,7 +2,7 @@ import type { User } from "@supabase/supabase-js";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
-import { BrandWordmark } from "@/components/icons/compass-icons";
+import { BrandLockup } from "@/components/icons/compass-icons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -281,7 +281,7 @@ function AuthPage() {
 
           <div className="max-w-xl">
             <div className="mb-8">
-              <BrandWordmark size={58} />
+              <BrandLockup size={52} wordClassName="text-white" />
             </div>
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-cyan-100">
               <Fingerprint className="size-3.5" />
@@ -320,9 +320,9 @@ function AuthPage() {
 
           <div className="grid max-w-xl gap-3">
             {[
-              "Founder-first local access for development",
-              "Supabase auth path for production",
-              "Google OAuth ready when provider is configured",
+              "Email sign-up for your workspace",
+              "Supabase auth for production",
+              "Voice and projects after sign in",
             ].map((item) => (
               <div
                 key={item}
@@ -351,7 +351,7 @@ function AuthPage() {
             <div className="h-2 bg-gradient-to-r from-teal-400 via-blue-400 to-amber-300" />
             <CardHeader className="space-y-6">
               <div className="flex items-center justify-between gap-3">
-                <BrandWordmark size={48} />
+                <BrandLockup size={44} />
                 <div className="rounded-full border border-border bg-muted/50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                   Secure access
                 </div>
