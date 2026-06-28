@@ -41,6 +41,12 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
+import {
+  formatGoogleAuthError,
+  probeGoogleOAuthReady,
+  type GoogleOAuthStatus,
+} from "@/lib/google-oauth";
+
 export const Route = createFileRoute("/auth")({
   ssr: false,
   head: () => ({
@@ -53,16 +59,6 @@ function readInviteFromUrl() {
   if (typeof window === "undefined") return undefined;
   const token = new URLSearchParams(window.location.search).get("invite")?.trim();
   return token || undefined;
-}
-
-function formatAuthError(message: string) {
-  if (/redirect_uri_mismatch/i.test(message)) {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    if (supabaseUrl) {
-      return `Google OAuth redirect mismatch. In Google Cloud Console add Authorized redirect URI: ${supabaseUrl}/auth/v1/callback`;
-    }
-  }
-  return message;
 }
 
 function AuthPage() {
@@ -78,6 +74,7 @@ function AuthPage() {
   const [inviteLoading, setInviteLoading] = useState(false);
   const [authMode, setAuthMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [oauthCompleting, setOauthCompleting] = useState(() => hasOAuthCallbackInUrl());
+  const [googleStatus, setGoogleStatus] = useState<GoogleOAuthStatus | null>(null);
   const googleEnabled = import.meta.env.VITE_ENABLE_GOOGLE_AUTH === "true";
   const founderAccessAvailable = isFounderAccessAvailable();
   const founderMode = isFounderModeEnabled();
@@ -117,6 +114,23 @@ function AuthPage() {
     };
   }, [inviteToken]);
 
+  useEffect(() => {
+    if (!googleEnabled || typeof window === "undefined") {
+      setGoogleStatus(null);
+      return;
+    }
+
+    let cancelled = false;
+    const redirectPath = inviteToken ? `/auth?invite=${inviteToken}` : "/auth";
+    void probeGoogleOAuthReady(`${window.location.origin}${redirectPath}`).then((status) => {
+      if (!cancelled) setGoogleStatus(status);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [googleEnabled, inviteToken]);
+
   const finishAuth = useCallback(
     async (user: User) => {
       await completeAuthenticatedInvite(user, inviteToken);
@@ -135,7 +149,7 @@ function AuthPage() {
   useEffect(() => {
     const oauthError = readOAuthCallbackError();
     if (oauthError) {
-      setError(formatAuthError(oauthError));
+      setError(formatGoogleAuthError(oauthError));
       clearOAuthCallbackFromUrl(inviteToken ? { invite: inviteToken } : undefined);
       setOauthCompleting(false);
     }
@@ -158,7 +172,7 @@ function AuthPage() {
 
         if (!session?.user) {
           setError(
-          formatAuthError(
+          formatGoogleAuthError(
             readOAuthCallbackError() ??
               "Google sign-in did not complete. Confirm Supabase redirect URLs include this site.",
           ),
@@ -169,7 +183,7 @@ function AuthPage() {
         await finishAuth(session.user);
       } catch (err) {
         if (cancelled) return;
-        setError(formatAuthError(err instanceof Error ? err.message : "Google sign-in failed"));
+        setError(formatGoogleAuthError(err instanceof Error ? err.message : "Google sign-in failed"));
       } finally {
         if (!cancelled) {
           setBusy(false);
@@ -309,18 +323,28 @@ function AuthPage() {
     setError(null);
     disableFounderMode();
     const redirectPath = inviteToken ? `/auth?invite=${inviteToken}` : "/auth";
+    const redirectTo = `${window.location.origin}${redirectPath}`;
+
+    const status = googleStatus ?? (await probeGoogleOAuthReady(redirectTo));
+    setGoogleStatus(status);
+    if (!status.ready) {
+      setError(status.message);
+      setBusy(false);
+      return;
+    }
+
     const { error: googleError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}${redirectPath}`,
+        redirectTo,
         queryParams: {
           access_type: "offline",
-          prompt: "consent",
+          prompt: "select_account",
         },
       },
     });
     if (googleError) {
-      setError(formatAuthError(googleError.message));
+      setError(formatGoogleAuthError(googleError.message));
       setBusy(false);
     }
   };
@@ -497,18 +521,29 @@ function AuthPage() {
               )}
 
               {googleEnabled && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full justify-center gap-2"
-                  disabled={busy}
-                  onClick={signInWithGoogle}
-                >
-                  <span className="grid size-5 place-items-center rounded-full border border-border text-[13px] font-semibold">
-                    G
-                  </span>
-                  Continue with Google
-                </Button>
+                <>
+                  {googleStatus && !googleStatus.ready && (
+                    <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-950 dark:text-amber-100">
+                      {googleStatus.message}
+                      <p className="mt-2 text-xs opacity-90">
+                        Supabase → Authentication → Providers → Google: включите провайдер и сохраните
+                        Client ID + Client Secret.
+                      </p>
+                    </div>
+                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full justify-center gap-2"
+                    disabled={busy || (googleStatus !== null && !googleStatus.ready)}
+                    onClick={signInWithGoogle}
+                  >
+                    <span className="grid size-5 place-items-center rounded-full border border-border text-[13px] font-semibold">
+                      G
+                    </span>
+                    Continue with Google
+                  </Button>
+                </>
               )}
 
               {(googleEnabled || (founderAccessAvailable && !invitePreview)) && (

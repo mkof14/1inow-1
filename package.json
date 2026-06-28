@@ -12,6 +12,8 @@
     "smoke": "bash scripts/smoke-check.sh",
     "verify:production": "bash scripts/verify-production-supabase.sh",
     "verify:remote": "node scripts/check-supabase-remote.mjs",
+    "verify:google-oauth": "node scripts/verify-google-oauth.mjs",
+    "configure:google-oauth": "node scripts/configure-google-oauth.mjs",
     "migrate:org": "bash scripts/apply-org-migrations.sh",
     "format": "prettier --write .",
     "deploy": "bash scripts/deploy-vercel.sh",

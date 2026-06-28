@@ -38,6 +38,16 @@ export function clearOAuthCallbackFromUrl(preserveQuery?: Record<string, string>
 /** Wait for Supabase to finish PKCE / hash OAuth exchange before route guards run. */
 export async function resolveAuthSession(options?: { timeoutMs?: number }) {
   const timeoutMs = options?.timeoutMs ?? 8000;
+
+  if (typeof window !== "undefined") {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    if (code) {
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      if (error) throw error;
+    }
+  }
+
   const deadline = Date.now() + timeoutMs;
 
   while (Date.now() < deadline) {
