@@ -1,7 +1,7 @@
 # Dev Phase Final — Testing Baseline
 
 **Tag:** `v0.2.0-dev-phase-final`  
-**Branch:** `main` @ `e6ccda2`  
+**Branch for review:** `cursor/dev-phase-final`  
 **Date:** 2026-06-28  
 **Live URL:** https://www.1inow.com  
 **Supabase project:** `xpaevgvmweyqgsfisxak`
