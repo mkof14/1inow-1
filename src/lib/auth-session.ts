@@ -1,7 +1,7 @@
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
-function hasOAuthCallbackInUrl() {
+export function hasOAuthCallbackInUrl() {
   if (typeof window === "undefined") return false;
   const { search, hash } = window.location;
   return (
@@ -10,6 +10,29 @@ function hasOAuthCallbackInUrl() {
     hash.includes("access_token=") ||
     hash.includes("error=")
   );
+}
+
+export function readOAuthCallbackError() {
+  if (typeof window === "undefined") return null;
+  const params = new URLSearchParams(window.location.search);
+  const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  const raw =
+    params.get("error_description") ||
+    params.get("error") ||
+    hashParams.get("error_description") ||
+    hashParams.get("error");
+  if (!raw) return null;
+  return decodeURIComponent(raw.replace(/\+/g, " "));
+}
+
+export function clearOAuthCallbackFromUrl(preserveQuery?: Record<string, string>) {
+  if (typeof window === "undefined") return;
+  const next = new URLSearchParams();
+  for (const [key, value] of Object.entries(preserveQuery ?? {})) {
+    if (value) next.set(key, value);
+  }
+  const suffix = next.toString();
+  window.history.replaceState({}, "", suffix ? `/auth?${suffix}` : "/auth");
 }
 
 /** Wait for Supabase to finish PKCE / hash OAuth exchange before route guards run. */

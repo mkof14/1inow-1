@@ -1,1 +1,15 @@
 project_id = "xpaevgvmweyqgsfisxak"
+
+[auth]
+enabled = true
+site_url = "https://www.1inow.com"
+additional_redirect_urls = [
+  "https://www.1inow.com/**",
+  "https://1inow.com/**",
+  "https://*.vercel.app/**",
+  "http://localhost:3000/**",
+  "http://localhost:3001/**",
+  "http://localhost:3002/**",
+  "http://localhost:5173/**",
+]
+enable_signup = true

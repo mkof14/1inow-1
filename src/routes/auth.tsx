@@ -1,14 +1,20 @@
 import type { User } from "@supabase/supabase-js";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
-import { BrandLockup } from "@/components/icons/compass-icons";
+import { BrandWordmark } from "@/components/icons/compass-icons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { subscribeToAuthSession } from "@/lib/auth-session";
+import {
+  clearOAuthCallbackFromUrl,
+  hasOAuthCallbackInUrl,
+  readOAuthCallbackError,
+  resolveAuthSession,
+  subscribeToAuthSession,
+} from "@/lib/auth-session";
 import {
   completeAuthenticatedInvite,
   fetchInvitationPreview,
@@ -49,6 +55,16 @@ function readInviteFromUrl() {
   return token || undefined;
 }
 
+function formatAuthError(message: string) {
+  if (/redirect_uri_mismatch/i.test(message)) {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (supabaseUrl) {
+      return `Google OAuth redirect mismatch. In Google Cloud Console add Authorized redirect URI: ${supabaseUrl}/auth/v1/callback`;
+    }
+  }
+  return message;
+}
+
 function AuthPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -61,6 +77,7 @@ function AuthPage() {
   const [invitePreview, setInvitePreview] = useState<InvitationPreview | null>(null);
   const [inviteLoading, setInviteLoading] = useState(false);
   const [authMode, setAuthMode] = useState<"sign-in" | "sign-up">("sign-in");
+  const [oauthCompleting, setOauthCompleting] = useState(() => hasOAuthCallbackInUrl());
   const googleEnabled = import.meta.env.VITE_ENABLE_GOOGLE_AUTH === "true";
   const founderAccessAvailable = isFounderAccessAvailable();
   const founderMode = isFounderModeEnabled();
@@ -100,6 +117,72 @@ function AuthPage() {
     };
   }, [inviteToken]);
 
+  const finishAuth = useCallback(
+    async (user: User) => {
+      await completeAuthenticatedInvite(user, inviteToken);
+      toast.success(
+        inviteToken
+          ? "Invitation accepted"
+          : authMode === "sign-up"
+            ? "Account created"
+            : "Signed in",
+      );
+      await navigate({ to: "/dashboard", replace: true });
+    },
+    [authMode, inviteToken, navigate],
+  );
+
+  useEffect(() => {
+    const oauthError = readOAuthCallbackError();
+    if (oauthError) {
+      setError(formatAuthError(oauthError));
+      clearOAuthCallbackFromUrl(inviteToken ? { invite: inviteToken } : undefined);
+      setOauthCompleting(false);
+    }
+  }, [inviteToken]);
+
+  useEffect(() => {
+    if (!hasOAuthCallbackInUrl()) return;
+
+    let cancelled = false;
+    setBusy(true);
+    setOauthCompleting(true);
+    setError(null);
+
+    void (async () => {
+      try {
+        const session = await resolveAuthSession({ timeoutMs: 15000 });
+        if (cancelled) return;
+
+        clearOAuthCallbackFromUrl(inviteToken ? { invite: inviteToken } : undefined);
+
+        if (!session?.user) {
+          setError(
+          formatAuthError(
+            readOAuthCallbackError() ??
+              "Google sign-in did not complete. Confirm Supabase redirect URLs include this site.",
+          ),
+        );
+          return;
+        }
+
+        await finishAuth(session.user);
+      } catch (err) {
+        if (cancelled) return;
+        setError(formatAuthError(err instanceof Error ? err.message : "Google sign-in failed"));
+      } finally {
+        if (!cancelled) {
+          setBusy(false);
+          setOauthCompleting(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [finishAuth, inviteToken]);
+
   useEffect(() => {
     enforceFounderModePolicy();
     if (founderMode) {
@@ -131,7 +214,7 @@ function AuthPage() {
   }, [founderMode, sessionReady, navigate]);
 
   useEffect(() => {
-    if (founderMode || !sessionReady || !hasSession) return;
+    if (founderMode || !sessionReady || !hasSession || hasOAuthCallbackInUrl()) return;
 
     let cancelled = false;
     setBusy(true);
@@ -163,29 +246,18 @@ function AuthPage() {
     };
   }, [founderMode, hasSession, inviteToken, navigate, sessionReady]);
 
-  const pendingRedirect = (founderMode || hasSession) && sessionReady && !error;
+  const pendingRedirect =
+    (founderMode || hasSession) && sessionReady && !error && !oauthCompleting;
 
-  if (pendingRedirect) {
+  if (pendingRedirect || oauthCompleting) {
     return (
       <main className="grid min-h-screen place-items-center bg-background px-4">
         <p className="text-sm text-muted-foreground">
-          {busy ? "Completing sign in..." : "Redirecting..."}
+          {busy || oauthCompleting ? "Completing sign in..." : "Redirecting..."}
         </p>
       </main>
     );
   }
-
-  const finishAuth = async (user: User) => {
-    await completeAuthenticatedInvite(user, inviteToken);
-    toast.success(
-      inviteToken
-        ? "Invitation accepted"
-        : authMode === "sign-up"
-          ? "Account created"
-          : "Signed in",
-    );
-    await navigate({ to: "/dashboard", replace: true });
-  };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -248,7 +320,7 @@ function AuthPage() {
       },
     });
     if (googleError) {
-      setError(googleError.message);
+      setError(formatAuthError(googleError.message));
       setBusy(false);
     }
   };
@@ -281,7 +353,7 @@ function AuthPage() {
 
           <div className="max-w-xl">
             <div className="mb-8">
-              <BrandLockup size={52} wordClassName="text-white" />
+              <BrandWordmark size={48} suffixClassName="text-white" />
             </div>
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-cyan-100">
               <Fingerprint className="size-3.5" />
@@ -351,7 +423,7 @@ function AuthPage() {
             <div className="h-2 bg-gradient-to-r from-teal-400 via-blue-400 to-amber-300" />
             <CardHeader className="space-y-6">
               <div className="flex items-center justify-between gap-3">
-                <BrandLockup size={44} />
+                <BrandWordmark size={36} />
                 <div className="rounded-full border border-border bg-muted/50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                   Secure access
                 </div>
