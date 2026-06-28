@@ -391,6 +391,14 @@ function AuthPage() {
               1inow keeps the workspace focused: portfolio context, personal priorities, voice
               capture, and operational signals in one controlled system.
             </p>
+
+            <div className="mt-8 overflow-hidden rounded-[2rem] border border-white/12 bg-white/[0.07] p-3 shadow-2xl shadow-black/30 backdrop-blur-xl">
+              <img
+                src="/marketing/voice-capture.jpg"
+                alt=""
+                className="h-52 w-full rounded-[1.4rem] object-cover"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -462,29 +470,18 @@ function AuthPage() {
               )}
 
               {googleEnabled && (
-                <>
-                  {googleStatus && !googleStatus.ready && (
-                    <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-950 dark:text-amber-100">
-                      {googleStatus.message}
-                      <p className="mt-2 text-xs opacity-90">
-                        Supabase → Authentication → Providers → Google: включите провайдер и сохраните
-                        Client ID + Client Secret.
-                      </p>
-                    </div>
-                  )}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full justify-center gap-2"
-                    disabled={busy || (googleStatus !== null && !googleStatus.ready)}
-                    onClick={signInWithGoogle}
-                  >
-                    <span className="grid size-5 place-items-center rounded-full border border-border text-[13px] font-semibold">
-                      G
-                    </span>
-                    Continue with Google
-                  </Button>
-                </>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full justify-center gap-2"
+                  disabled={busy || (googleStatus !== null && !googleStatus.ready)}
+                  onClick={signInWithGoogle}
+                >
+                  <span className="grid size-5 place-items-center rounded-full border border-border text-[13px] font-semibold">
+                    G
+                  </span>
+                  Continue with Google
+                </Button>
               )}
 
               {(googleEnabled || (founderAccessAvailable && !invitePreview)) && (
