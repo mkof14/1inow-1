@@ -1,5 +1,10 @@
 # Production Readiness
 
+## Current milestone
+
+**Dev phase final (testing):** tag `v0.2.0-dev-phase-final` — see **`docs/dev-phase-final.md`**.  
+Use this baseline for QA; production hardening follows `docs/production-launch-checklist.md`.
+
 ## Current Architecture Summary
 
 1inow is a TanStack Start application built with Vite, React, TanStack Router, TanStack Query, Tailwind CSS, and Supabase.
