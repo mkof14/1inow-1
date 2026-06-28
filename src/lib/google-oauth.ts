@@ -7,12 +7,10 @@ export type GoogleOAuthStatus =
 
 export function formatGoogleAuthError(message: string) {
   if (/missing OAuth secret/i.test(message)) {
-    return "Google OAuth не настроен в Supabase: сохраните Client ID и Client Secret в Authentication → Providers → Google.";
+    return "Вход через Google сейчас недоступен. Попробуйте email или Founder.";
   }
   if (/redirect_uri_mismatch/i.test(message)) {
-    if (SUPABASE_URL) {
-      return `Google OAuth: добавьте Authorized redirect URI: ${SUPABASE_URL}/auth/v1/callback`;
-    }
+    return "Ошибка Google OAuth. Попробуйте другой способ входа.";
   }
   return message;
 }
